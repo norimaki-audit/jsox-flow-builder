@@ -948,6 +948,11 @@
       <button class="modal-x" onclick="aiClose()"><i class="ph ph-x" style="font-size:16px"></i></button>
     </div>
     <div class="modal-body">
+      <div class="seg seg-view" style="margin-bottom:12px">
+        <button id="aiTabAsk" class="on" onclick="aiTab('ask')"><i class="ph ph-clipboard-text"></i>コピーして相談</button>
+        <button id="aiTabImp" onclick="aiTab('imp')"><i class="ph ph-download-simple"></i>回答を取り込む</button>
+      </div>
+      <div id="aiPaneAsk">
       <div class="evw-row" style="margin-bottom:10px">
         <label>相談の目的
           <select id="aiPurpose" onchange="aiBuild()" style="min-width:300px">
@@ -961,10 +966,16 @@
       </div>
       <textarea id="aiText" class="evw-note" style="min-height:300px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.6"></textarea>
       <div class="hint" style="margin-top:10px">⚠ 貼り付け先は<b>会社で承認されたAIツール（入力が学習に使用されない契約のもの）</b>をご利用ください。送信前にプレビューを確認し、機密性の高い固有名詞等は編集・削除してください。AIの回答はあくまで下書き・参考であり、<b>評価判断と結論は評価者自身が行い、調書に記録</b>してください。</div>
+      </div>
+      <div id="aiPaneImp" style="display:none">
+        <textarea id="aiInText" class="evw-note" style="min-height:240px;font-size:12px" placeholder="AIの回答をここにそのまま貼り付けてください（回答に含まれる ```json コードブロックを自動で認識します）" oninput="aiParse()"></textarea>
+        <div id="aiParseInfo" class="hint" style="margin-top:10px">「相談の目的」で<b>網羅性チェック</b>や<b>文章改善</b>を選んでコピーすると、AIがこのツールで取り込める形式（JSON）で回答するよう指示が自動で含まれます。回答を貼り付けると、追加・更新される内容のプレビューがここに表示されます。</div>
+      </div>
     </div>
     <div class="modal-foot">
       <button onclick="aiClose()">閉じる</button>
-      <button class="primary" onclick="aiCopy()"><i class="ph ph-clipboard-text"></i>クリップボードにコピー</button>
+      <button class="primary" id="aiCopyBtn" onclick="aiCopy()"><i class="ph ph-clipboard-text"></i>クリップボードにコピー</button>
+      <button class="primary" id="aiApplyBtn" style="display:none" disabled onclick="aiApply()"><i class="ph ph-check"></i>取り込みを実行</button>
     </div>
   </div>
 </div>
@@ -2150,6 +2161,8 @@ function aiContext(){
     default:return head+_aiSteps(p)+"\n"+_aiRcm(p)+"\n"+_aiEval(p);
   }
 }
+const AI_FMT_RCM='\n\n---\n回答の最後に、このツールへ取り込むためのデータを、次のJSON形式の```jsonコードブロックで出力してください（説明文と分けること）:\n{"type":"rcm_add","rows":[{"gyomu":"受注","risk_id":"R004","risk_desc":"リスクの内容","fs":"売上高","assertion":["実在性","期間配分の適切性"],"control_id":"C004","step_no":"20","control_desc":"統制の内容","objective":"統制目的","prev_det":"予防","man_auto":"手動","freq":"都度","key":true,"evidence":"証跡"}]}';
+const AI_FMT_UPD='\n\n---\n回答の最後に、このツールへ取り込むための修正データを、次のJSON形式の```jsonコードブロックで出力してください（変更するフィールドのみ記載・説明文と分けること）:\n{"type":"steps_update","rows":[{"no":"20","label":"改善後の業務内容","detail":"改善後の詳細"}]}\n{"type":"rcm_update","rows":[{"control_id":"C001","risk_desc":"改善後のリスク記述","control_desc":"改善後の統制記述"}]}';
 const AI_TPL={
   review:"あなたはJ-SOX（内部統制報告制度）に詳しい公認会計士です。以下の三点セット文書をレビューし、(1)記載の不足、(2)文書間の不整合、(3)改善提案を、重要度順に具体的に指摘してください。",
   risk:"あなたはJ-SOXに詳しい公認会計士です。以下の業務プロセスについて、財務報告リスクの観点で想定すべきリスクと統制に漏れがないか、アサーション（実在性・網羅性・権利義務・評価・期間配分・表示）別に検討し、追加すべきリスク・統制を提案してください。",
@@ -2157,12 +2170,94 @@ const AI_TPL={
   write:"以下の内部統制文書の記述を、監査に耐える明確な表現（主語・タイミング・頻度・証跡が特定できる書き方）に改善してください。変更点がわかるように修正案を提示してください。",
   free:"",
 };
-function aiOpen(){document.getElementById("aiModal").style.display="flex";aiBuild();}
+function aiOpen(){document.getElementById("aiModal").style.display="flex";aiTab("ask");aiBuild();}
+function aiTab(t){
+  document.getElementById("aiPaneAsk").style.display=t==="ask"?"":"none";
+  document.getElementById("aiPaneImp").style.display=t==="imp"?"":"none";
+  document.getElementById("aiTabAsk").classList.toggle("on",t==="ask");
+  document.getElementById("aiTabImp").classList.toggle("on",t==="imp");
+  document.getElementById("aiCopyBtn").style.display=t==="ask"?"":"none";
+  document.getElementById("aiApplyBtn").style.display=t==="imp"?"":"none";
+  if(t==="imp")aiParse();
+}
+let _aiOps=[];
+const ASRT_MAP={"実在":"as_exist","網羅":"as_comp","権利":"as_rights","評価":"as_val","期間":"as_cutoff","表示":"as_pres"};
+function aiParse(){
+  const txt=document.getElementById("aiInText").value;
+  const info=document.getElementById("aiParseInfo");
+  const btn=document.getElementById("aiApplyBtn");
+  _aiOps=[];
+  if(!txt.trim()){info.innerHTML="「相談の目的」で<b>網羅性チェック</b>や<b>文章改善</b>を選んでコピーすると、AIがこのツールで取り込める形式（JSON）で回答するよう指示が自動で含まれます。回答を貼り付けると、追加・更新される内容のプレビューがここに表示されます。";btn.disabled=true;return;}
+  // ```json ブロック優先、なければ全体・行単位でJSONを探す
+  const blocks=[...txt.matchAll(/```(?:json)?\s*([\s\S]*?)```/g)].map(m=>m[1]);
+  if(!blocks.length)blocks.push(txt);
+  const cands=[];
+  blocks.forEach(b=>{
+    const t=b.trim();
+    try{const o=JSON.parse(t);cands.push(...(Array.isArray(o)?o:[o]));return;}catch(e){}
+    // 複数のJSONオブジェクトが並んでいる場合
+    const re=/\{[\s\S]*?"type"[\s\S]*?\}(?=\s*(?:\{|$))/g;let m;
+    while((m=re.exec(t))){try{cands.push(JSON.parse(m[0]));}catch(e){}}
+  });
+  const msgs=[];
+  cands.forEach(o=>{
+    if(!o||!o.type||!Array.isArray(o.rows))return;
+    if(o.type==="rcm_add"){_aiOps.push(o);msgs.push(`リスク・統制の追加: ${o.rows.length}件（${o.rows.map(r=>r.control_id||r.risk_id||"?").join(", ")}）`);}
+    else if(o.type==="rcm_update"){_aiOps.push(o);msgs.push(`統制・リスクの更新: ${o.rows.length}件（${o.rows.map(r=>r.control_id||r.risk_id||"?").join(", ")}）`);}
+    else if(o.type==="steps_update"){_aiOps.push(o);msgs.push(`工程の更新: ${o.rows.length}件（No.${o.rows.map(r=>r.no).join(", ")}）`);}
+  });
+  if(!_aiOps.length){info.innerHTML='<span style="color:var(--c-warn)">取り込めるJSONが見つかりません。</span> 回答に ```json ブロック（type: rcm_add / rcm_update / steps_update）が含まれているか確認してください。見つからない場合は、AIに「先ほどの提案を指定のJSON形式で出力して」と依頼してください。';btn.disabled=true;return;}
+  info.innerHTML='<b>取り込みプレビュー</b><br>'+msgs.map(m=>"・"+esc(m)).join("<br>")+'<br><span style="color:var(--c-text-faint)">適用は元に戻せます（Ctrl+Z）。追加行は内容を必ず確認・修正してください。</span>';
+  btn.disabled=false;
+}
+const STEP_UPD_FIELDS=["gyomu","dept","role","type","label","detail","system","evidence","point","dur","yes","no2","jump"];
+const RCM_UPD_FIELDS=["gyomu","risk_desc","fs","control_desc","objective","prev_det","man_auto","freq","evidence","test","step_no","owner","reviewer"];
+function aiApply(){
+  if(!_aiOps.length)return;
+  pushUndo();
+  const p=P();let added=0,updated=0,missed=[];
+  _aiOps.forEach(op=>{
+    if(op.type==="rcm_add"){
+      op.rows.forEach(row=>{
+        const r=blankRcm();
+        RCM_UPD_FIELDS.forEach(f=>{if(row[f]!=null)r[f]=String(row[f]);});
+        r.risk_id=String(row.risk_id||"");r.control_id=String(row.control_id||"");
+        r.key=!!row.key;
+        (Array.isArray(row.assertion)?row.assertion:String(row.assertion||"").split(/[、,・]/)).forEach(a=>{
+          Object.keys(ASRT_MAP).forEach(k=>{if(String(a).includes(k))r[ASRT_MAP[k]]=true;});
+        });
+        p.rcm.push(r);added++;
+      });
+    }else if(op.type==="rcm_update"){
+      op.rows.forEach(row=>{
+        const key=String(row.control_id||row.risk_id||"").trim();
+        const r=p.rcm.find(x=>(x.control_id||"").trim()===key||(key&&(x.risk_id||"").trim()===key));
+        if(!r){missed.push(key||"?");return;}
+        RCM_UPD_FIELDS.forEach(f=>{if(row[f]!=null&&f!=="step_no")r[f]=String(row[f]);});
+        if(row.step_no!=null)r.step_no=String(row.step_no);
+        if(row.key!=null)r.key=!!row.key;
+        updated++;
+      });
+    }else if(op.type==="steps_update"){
+      op.rows.forEach(row=>{
+        const s=p.steps.find(x=>String(x.no).trim()===String(row.no).trim());
+        if(!s){missed.push("No."+row.no);return;}
+        STEP_UPD_FIELDS.forEach(f=>{if(row[f]!=null)s[f]=String(row[f]);});
+        updated++;
+      });
+    }
+  });
+  markDirty();
+  if(curPage==="steps")renderSteps();else if(curPage==="rcm")renderRcm();else if(curPage==="evalwork")renderEvalWork();
+  aiClose();
+  toast(`AI回答を取り込みました: 追加 ${added}件・更新 ${updated}件`+(missed.length?`（未一致: ${missed.join(", ")}）`:"")+"。内容を確認し、問題なければ［反映］してください。",7000);
+}
 function aiClose(){document.getElementById("aiModal").style.display="none";}
 function aiBuild(){
   const k=document.getElementById("aiPurpose").value;
   const tpl=AI_TPL[k];
-  const txt=(tpl?tpl+"\n\n---\n\n":"")+aiContext();
+  const fmt=k==="risk"?AI_FMT_RCM:(k==="write"?AI_FMT_UPD:"");
+  const txt=(tpl?tpl+"\n\n---\n\n":"")+aiContext()+fmt;
   const ta=document.getElementById("aiText");ta.value=txt;
   document.getElementById("aiCount").textContent="約 "+txt.length.toLocaleString()+" 文字";
 }
