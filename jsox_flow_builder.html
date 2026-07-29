@@ -469,10 +469,14 @@
   .oewp-concl{border:1px solid var(--c-border);border-top:none;padding:12px 14px;font-size:13px;line-height:1.7;}
   .oewp-concl b.ok{color:var(--c-ok);}
   .oewp-concl b.ng{color:var(--c-err);}
-  @media print{.oewp-sheet{border:none;border-radius:0;padding:0;margin-bottom:0;break-after:page;}
+  @media print{.oewp-sheet{border:none;border-radius:0;padding:0;margin-bottom:0;}
+    #oewpBody .oewp-sheet+.oewp-sheet{break-before:page;}
     table.oewp th{background:#E8F0EE !important;color:#111;border:0.5pt solid #888;}
     table.oewp td,table.oewp-res td{border:0.5pt solid #999;}
     table.oewp-res th{background:#F0F2F0 !important;color:#333;border:0.5pt solid #888;}
+    .oewp-ta{display:none !important;}
+    .oewp-taprint{white-space:pre-wrap;word-break:break-all;font-size:8.5pt;line-height:1.7;}
+
     .oewp-concl{border:0.5pt solid #999;}}
   /* ===== 業務の棚卸・改善 ===== */
   .kz-card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-card);padding:16px 18px;margin-bottom:12px;}
@@ -495,6 +499,14 @@
   .doc.help-article li{margin-bottom:7px;}
   .doc.help-article p{margin:8px 0;}
   .doc.help-article b{color:var(--c-primary-d);}
+  /* 整備・運用評価: グループ区切りの明確化 */
+  #evalWorkBody th.gs,#evalWorkBody td.gs{border-left:2px solid #9FC2B8 !important;}
+  #evalWorkBody thead th.ctl{background:#E1EEE9;color:#0A5E57;}
+  #evalWorkBody thead th.evalc{background:#EAF3E3;color:#4A6B2F;}
+  #evalWorkBody tbody td.ctl{background:#F4FAF7;}
+  #evalWorkBody tbody td.evalc{background:#F7FBF2;}
+  /* 評価内容セルの行高抑制 */
+  td.col-note{max-width:300px;word-break:break-word;}
   /* ===== トースト通知 ===== */
   #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
   #toastBox.on{opacity:1;transform:translate(-50%,0);}
@@ -1116,7 +1128,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 // =================================================================
 function blankJournal(){return {jno:"",trigger:"",step_no:"",type:"定型",system:"",side:"借",account:"",sub:"",note:""};}
 function blankStep(no){return {no:no==null?"":no,gyomu:"",dept:"",role:"",type:"手動処理",label:"",detail:"",system:"",evidence:"",yes:"",no2:"",jump:"",point:"",dur:"",img:"",images:[],custom:{}};}
-function blankRcm(){return {gyomu:"",risk_id:"",fs:"",assertion:"",as_exist:false,as_comp:false,as_rights:false,as_val:false,as_cutoff:false,as_pres:false,risk_desc:"",control_id:"",step_no:"",objective:"",control_desc:"",prev_det:"",man_auto:"",it_dep:false,freq:"",owner:"",reviewer:"",evidence:"",key:false,ipe:false,ipe_ca:"",test:"",fraud:false,evaluation:"",eval_note:"",de_result:"",de_note:"",oe_method:"",oe_n:"",oe_excns:"",oe_result:"",oe_note:"",de_by:"",de_date:"",oe_by:"",oe_date:"",de_role:"",de_proc:"",oe_role:"",oe_period:"",oe_pop:"",wp_ref:"",wp_rev_by:"",wp_rev_date:"",custom:{}};}
+function blankRcm(){return {gyomu:"",risk_id:"",fs:"",assertion:"",as_exist:false,as_comp:false,as_rights:false,as_val:false,as_cutoff:false,as_pres:false,risk_desc:"",control_id:"",step_no:"",objective:"",control_desc:"",prev_det:"",man_auto:"",it_dep:false,freq:"",owner:"",reviewer:"",evidence:"",key:false,ipe:false,ipe_ca:"",test:"",fraud:false,evaluation:"",eval_note:"",de_result:"",de_note:"",oe_method:"",oe_n:"",oe_excns:"",oe_result:"",oe_note:"",de_by:"",de_date:"",oe_by:"",oe_date:"",de_role:"",de_proc:"",oe_role:"",oe_period:"",oe_pop:"",wp_ref:"",wp_rev_by:"",wp_rev_date:"",oe_sample_nos:"",custom:{}};}
 const ASRT_KEYS=["as_exist","as_comp","as_rights","as_val","as_cutoff","as_pres"];
 const ASRT_LBL=["実在性","網羅性","権利と義務の帰属","評価の妥当性","期間配分の適切性","表示の妥当性"];
 const ASRT_SHORT=["実在","網羅","権利","評価","期間","表示"];
@@ -1539,7 +1551,8 @@ function renderOewp(){
           ${rec!=null?`<span style="font-size:11px;color:var(--c-text-faint)" title="${SAMPLE_GUIDE.map(g=>g[0]+" → "+g[1]+"件").join("\n")}">（一般的な実務目安: ${rec}件）</span>`:""}
         </div></td></tr>
         <tr><th class="sub">抽出方法</th><td colspan="2">${inp3(i,"oe_method",r.oe_method,"無作為抽出")}</td></tr>
-        <tr><th class="sub">テスト内容</th><td colspan="2"><textarea rows="3" onfocus="evwPush()" oninput="evwSet(${i},'test',this.value)" placeholder="各サンプルについて (1)必要な証憑が揃っているか (2)チェック・承認の証跡があるか (3)証憑の日付・金額等が原帳票と一致するか を検証する">${esc(r.test||"")}</textarea></td></tr>
+        <tr><th class="sub">抽出対象No.</th><td colspan="2"><textarea class="oewp-ta" rows="1" style="word-break:break-all" onfocus="evwPush()" oninput="evwSet(${i},'oe_sample_nos',this.value)" placeholder="「乱数でサンプル抽出」で自動記録されます">${esc(r.oe_sample_nos||"")}</textarea><div class="oewp-taprint print-only num">${esc(r.oe_sample_nos||"—")}</div></td></tr>
+        <tr><th class="sub">テスト内容</th><td colspan="2"><textarea class="oewp-ta" rows="3" onfocus="evwPush()" oninput="evwSet(${i},'test',this.value)" placeholder="各サンプルについて (1)必要な証憑が揃っているか (2)チェック・承認の証跡があるか (3)証憑の日付・金額等が原帳票と一致するか を検証する">${esc(r.test||"")}</textarea><div class="oewp-taprint print-only">${esc(r.test||"—")}</div></td></tr>
       </table>
       <table class="oewp" style="border-top:none"><tr><th style="vertical-align:top;padding-top:14px">サンプリング<br>テスト結果</th><td style="padding:8px">
         <div class="no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
@@ -1878,14 +1891,14 @@ function addEvalDetailSheet(wb){
   if(!rows.length)return;
   const ws=wb.addWorksheet("評価手続詳細");
   const thin={style:"thin",color:{argb:"FFE2E8E7"}};
-  const head=["統制ID","調書No","統制内容","整備:主体","整備:手続種類","整備:結果","整備:評価者","整備:評価日","整備評価の内容","運用:主体","テスト手続","対象期間","母集団","抽出方法","件数","例外","運用:結果","運用:評価者","運用:評価日","運用評価の内容","査閲者","査閲日","総合"];
+  const head=["統制ID","調書No","統制内容","整備:主体","整備:手続種類","整備:結果","整備:評価者","整備:評価日","整備評価の内容","運用:主体","テスト手続","対象期間","母集団","抽出方法","抽出対象No.","件数","例外","運用:結果","運用:評価者","運用:評価日","運用評価の内容","査閲者","査閲日","総合"];
   const hr=ws.addRow(head);
   hr.eachCell(x=>{x.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0E7C73"}};x.font={name:XL_FONT,bold:true,color:{argb:"FFFFFFFF"},size:9};x.alignment={vertical:"middle",horizontal:"center",wrapText:true};x.border={top:thin,left:thin,bottom:thin,right:thin};});
   rows.forEach(r=>{
-    const xr=ws.addRow([r.control_id,r.wp_ref||"",r.control_desc||"",r.de_role||"",r.de_proc||"",r.de_result||"",r.de_by||"",r.de_date||"",r.de_note||"",r.oe_role||"",r.test||"",r.oe_period||"",r.oe_pop||"",r.oe_method||"",r.oe_n||"",r.oe_excns||"",r.oe_result||"",r.oe_by||"",r.oe_date||"",r.oe_note||"",r.wp_rev_by||"",r.wp_rev_date||"",overallEvalText(r)]);
+    const xr=ws.addRow([r.control_id,r.wp_ref||"",r.control_desc||"",r.de_role||"",r.de_proc||"",r.de_result||"",r.de_by||"",r.de_date||"",r.de_note||"",r.oe_role||"",r.test||"",r.oe_period||"",r.oe_pop||"",r.oe_method||"",r.oe_sample_nos||"",r.oe_n||"",r.oe_excns||"",r.oe_result||"",r.oe_by||"",r.oe_date||"",r.oe_note||"",r.wp_rev_by||"",r.wp_rev_date||"",overallEvalText(r)]);
     xr.eachCell(x=>{x.font={name:XL_FONT,size:9};x.alignment={vertical:"top",horizontal:"left",wrapText:true};x.border={top:thin,left:thin,bottom:thin,right:thin};});
   });
-  ws.columns=[{width:9},{width:10},{width:30},{width:10},{width:12},{width:7},{width:10},{width:11},{width:40},{width:10},{width:26},{width:20},{width:22},{width:9},{width:6},{width:6},{width:8},{width:10},{width:11},{width:40},{width:10},{width:11},{width:8}];
+  ws.columns=[{width:9},{width:10},{width:30},{width:10},{width:12},{width:7},{width:10},{width:11},{width:40},{width:10},{width:26},{width:20},{width:22},{width:9},{width:24},{width:6},{width:6},{width:8},{width:10},{width:11},{width:40},{width:10},{width:11},{width:8}];
   ws.views=[{state:"frozen",ySplit:1}];
 }
 function addStepsDetailSheet(wb){
@@ -1974,7 +1987,7 @@ function exportXlsx(){
   const rh=[[...RCM_H,...csR.map(c=>c.label)]];p.rcm.forEach(r=>rh.push([...RCM_F.map(f=>{const v=r[f];return typeof v==="boolean"?(v?"○":""):v;}),...csR.map(c=>(r.custom||{})[c.id]||"")]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rh),"RCM");
   const evh=[["統制ID","業務","リスク","統制内容","整備評価","抽出方法","件数","例外","運用評価","総合","評価内容"]];
-  p.rcm.filter(r=>(r.control_id||"").trim()).forEach(r=>evh.push([r.control_id,r.gyomu,r.risk_desc,r.control_desc,r.de_result||"",r.oe_method||"",r.oe_n||"",r.oe_excns||"",r.oe_result||"",overallEvalText(r),r.oe_note||""]));
+  p.rcm.filter(r=>(r.control_id||"").trim()).forEach(r=>evh.push([r.control_id,r.gyomu,r.risk_desc,r.control_desc,r.de_result||"",r.oe_method||"",r.oe_sample_nos||"",r.oe_n||"",r.oe_excns||"",r.oe_result||"",overallEvalText(r),r.oe_note||""]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(evh),"評価結果");
   const gh=[["レベル","区分","内容"]];gapCheck(p).forEach(g=>gh.push([g.lv==="error"?"エラー":g.lv==="warning"?"警告":"提案",g.cat,g.msg]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(gh),"GapCheck");
@@ -2174,7 +2187,17 @@ document.getElementById("fileCsv").addEventListener("change",function(ev){const 
 function saveProject(){db.projectName=document.getElementById("projName").value;db.savedAt=new Date().toISOString();download(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),(db.projectName||"jsox_project").replace(/[\\/:*?"<>|\s]+/g,"_")+".json");clearDirty();}
 function openProject(){document.getElementById("fileProj").click();}
 document.getElementById("fileProj").addEventListener("change",function(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.processes)throw new Error("形式が不正");db=o;normalize();applyMode();document.getElementById("projName").value=db.projectName||"";syncProcSel();clearDirty();_applied={};applyAll();show(curPage);}catch(e){alert("読込エラー: "+e.message);}};rd.readAsText(f);ev.target.value="";});
-function normalize(){db.mode=db.mode||"jsox";db.evStore=db.evStore||"browser";db.evDirName=db.evDirName||"";db.mappingProfiles=db.mappingProfiles||[];db.customCols=db.customCols||[];db.processes.forEach(p=>{p.steps=(p.steps||[]).map(s=>Object.assign(blankStep(),s));p.rcm=(p.rcm||[]).map(r=>{r=Object.assign(blankRcm(),r);if((r.assertion||"").trim()&&!ASRT_KEYS.some(k=>r[k])){const a=r.assertion;if(/実在/.test(a))r.as_exist=true;if(/網羅/.test(a))r.as_comp=true;if(/権利/.test(a))r.as_rights=true;if(/評価/.test(a))r.as_val=true;if(/期間/.test(a))r.as_cutoff=true;if(/表示/.test(a))r.as_pres=true;}
+function normalize(){db.mode=db.mode||"jsox";db.evStore=db.evStore||"browser";db.evDirName=db.evDirName||"";
+  (db.processes||[]).forEach(pp=>(pp.rcm||[]).forEach(r=>{
+    if(r&&r.oe_note&&/【乱数抽出/.test(r.oe_note)){
+      const m=r.oe_note.match(/【乱数抽出[^】]*】[^\n]*/g)||[];
+      if(m.length){
+        const nums=m.map(x=>{const i=x.indexOf("："),j=x.indexOf(":");const k=(i>=0&&(j<0||i<j))?i:j;return k>=0?x.slice(k+1).trim():x;}).join(" / ");
+        r.oe_sample_nos=[r.oe_sample_nos,nums].filter(Boolean).join(" / ");
+        r.oe_note=r.oe_note.replace(/\n?【乱数抽出[^】]*】[^\n]*/g,"").trim();
+      }
+    }
+  }));db.mappingProfiles=db.mappingProfiles||[];db.customCols=db.customCols||[];db.processes.forEach(p=>{p.steps=(p.steps||[]).map(s=>Object.assign(blankStep(),s));p.rcm=(p.rcm||[]).map(r=>{r=Object.assign(blankRcm(),r);if((r.assertion||"").trim()&&!ASRT_KEYS.some(k=>r[k])){const a=r.assertion;if(/実在/.test(a))r.as_exist=true;if(/網羅/.test(a))r.as_comp=true;if(/権利/.test(a))r.as_rights=true;if(/評価/.test(a))r.as_val=true;if(/期間/.test(a))r.as_cutoff=true;if(/表示/.test(a))r.as_pres=true;}
     if(!r.oe_result && r.evaluation){
       r.oe_result = ({ "○":"有効","×":"不備","△":"不備","－":"対象外" }[r.evaluation]) || "";
       if(r.evaluation==="△" && !r.oe_note) r.oe_note="（旧データ：一部不備）";
@@ -2299,10 +2322,11 @@ function genSampleFor(i){
   const nums=[...set].sort((a,b)=>a-b);
   pushUndo();
   r.oe_n=String(n);if(!(r.oe_method||"").trim())r.oe_method="無作為";
-  r.oe_note=((r.oe_note||"").trim()?r.oe_note+"\n":"")+"【乱数抽出 "+today()+"】母集団"+N+"件から"+n+"件を無作為抽出（対象No.）: "+nums.join(", ");
-  _evwOpen.add((r.control_id||"").trim());
-  markDirty();renderEvalWork();
-  toast("サンプル番号を生成し、運用評価の評価内容に追記しました。");
+  if(!(r.oe_pop||"").trim())r.oe_pop="母集団 "+N+"件";
+  r.oe_sample_nos=nums.join(", ")+"（"+today()+" 乱数抽出・母集団"+N+"件）";
+  markDirty();
+  if(curPage==="oewp")renderOewp();else{_evwOpen.add((r.control_id||"").trim());renderEvalWork();}
+  toast("サンプル番号を生成し、「抽出対象No.」に記録しました（評価内容には含まれません）。");
 }
 /* =================================================================
    列幅のドラッグ調整（table.dr / 成果物テーブル共通・localStorageに記憶）
@@ -2516,6 +2540,10 @@ function applyNavEval(){const it=document.getElementById("navEvalItems");if(it)i
 let _printZoomed=false;
 window.addEventListener("beforeprint",function(){
   try{
+    /* サンプリング調書は縦向きが読みやすい */
+    let po=document.getElementById("printOrient");
+    if(!po){po=document.createElement("style");po.id="printOrient";document.head.appendChild(po);}
+    po.textContent=(curPage==="oewp")?"@media print{@page{size:A4 portrait;margin:12mm 11mm 15mm;}}":"";
     const pg=document.querySelector(".page.active");if(!pg)return;
     let w=0;
     pg.querySelectorAll("table").forEach(t=>{
@@ -2524,7 +2552,7 @@ window.addEventListener("beforeprint",function(){
       w=Math.max(w,Math.min(t.scrollWidth||0,cols*70));
     });
     pg.querySelectorAll("#flowCanvas svg").forEach(el=>{w=Math.max(w,el.scrollWidth||el.getBoundingClientRect().width||0);});
-    const printW=1045; /* A4横 277mm ≒ 1045px @96dpi */
+    const printW=(curPage==="oewp")?710:1045; /* A4縦188mm≒710px / A4横277mm≒1045px @96dpi */
     const z=Math.min(1,printW/(w||printW));
     if(z<0.999){document.querySelector(".main").style.zoom=String(Math.max(0.55,z));_printZoomed=true;}
   }catch(e){}
@@ -3330,6 +3358,7 @@ function prnNotesBlock(rows){
       (r.oe_period||"").trim()?`対象期間: ${esc(r.oe_period)}`:"",
       (r.oe_pop||"").trim()?`母集団: ${esc(r.oe_pop)}`:"",
       ((r.oe_method||"").trim()||(r.oe_n||"").toString().trim())?`サンプル: ${esc(r.oe_method||"")} ${esc(r.oe_n||"")}件・例外 ${esc(r.oe_excns||"0")}件`:"",
+      (r.oe_sample_nos||"").trim()?`抽出対象No.: ${esc(r.oe_sample_nos)}`:"",
       (r.wp_ref||"").trim()?`調書番号: ${esc(r.wp_ref)}`:"",
       ((r.wp_rev_by||"").trim()||(r.wp_rev_date||"").trim())?`査閲: ${esc(r.wp_rev_by||"")} ${esc(r.wp_rev_date||"")}`:"",
     ].filter(Boolean).join("　／　");
@@ -3455,14 +3484,14 @@ function renderEvalWork(){
     <thead>
       <tr>
         <th rowspan="2" style="min-width:250px">統制</th>
-        <th class="ctl" colspan="4" style="text-align:center;border-bottom:1px solid #D4E4E0">整備評価（デザイン）</th>
-        <th class="evalc" colspan="7" style="text-align:center;border-bottom:1px solid #CBE3D4">運用評価（オペレーション）</th>
-        <th rowspan="2" style="text-align:center">総合</th>
+        <th class="ctl gs" colspan="4" style="text-align:center;border-bottom:1px solid #D4E4E0">整備評価（デザイン）</th>
+        <th class="evalc gs" colspan="7" style="text-align:center;border-bottom:1px solid #CBE3D4">運用評価（オペレーション）</th>
+        <th rowspan="2" class="gs" style="text-align:center">総合</th>
         <th rowspan="2" style="text-align:center">詳細</th>
       </tr>
       <tr>
-        <th class="ctl">結果</th><th class="ctl">主体</th><th class="ctl">評価者</th><th class="ctl">評価日</th>
-        <th class="evalc">抽出方法</th><th class="evalc">件数</th><th class="evalc">例外</th><th class="evalc">結果</th><th class="evalc">主体</th><th class="evalc">評価者</th><th class="evalc">評価日</th>
+        <th class="ctl gs">結果</th><th class="ctl">主体</th><th class="ctl">評価者</th><th class="ctl">評価日</th>
+        <th class="evalc gs">抽出方法</th><th class="evalc">件数</th><th class="evalc">例外</th><th class="evalc">結果</th><th class="evalc">主体</th><th class="evalc">評価者</th><th class="evalc">評価日</th>
       </tr>
     </thead><tbody>`;
   rows.forEach(([r,i])=>{
@@ -3476,18 +3505,18 @@ function renderEvalWork(){
         <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap"><span style="width:8px;height:8px;border-radius:2px;background:${ph2[0]};flex:none"></span><span class="idchip">${esc(cid)}</span>${r.key?keyTag():""}</div>
         <div style="font-size:12.5px;line-height:1.5;color:#2A3633">${esc(r.control_desc||r.objective||"（統制内容未入力）")}</div>
       </td>
-      <td class="ctl" style="min-width:82px">${sel(i,"de_result",r.de_result||"",["","有効","不備"])}</td>
+      <td class="ctl gs" style="min-width:82px">${sel(i,"de_result",r.de_result||"",["","有効","不備"])}</td>
       <td class="ctl" style="min-width:96px">${sel(i,"de_role",r.de_role||"",ROLES)}</td>
       <td class="ctl" style="min-width:88px">${inp2(i,"de_by",r.de_by,"氏名")}</td>
       <td class="ctl" style="min-width:98px">${inp2(i,"de_date",r.de_date,"YYYY-MM-DD")}</td>
-      <td class="evalc" style="min-width:82px">${inp2(i,"oe_method",r.oe_method,"無作為","dlOeMethod")}</td>
+      <td class="evalc gs" style="min-width:82px">${inp2(i,"oe_method",r.oe_method,"無作為","dlOeMethod")}</td>
       <td class="evalc w-sm">${inp2(i,"oe_n",r.oe_n,"25")}</td>
       <td class="evalc w-sm">${inp2(i,"oe_excns",r.oe_excns,"0")}</td>
       <td class="evalc" style="min-width:90px">${sel(i,"oe_result",r.oe_result||"",["","有効","不備","対象外"])}</td>
       <td class="evalc" style="min-width:96px">${sel(i,"oe_role",r.oe_role||"",ROLES)}</td>
       <td class="evalc" style="min-width:88px">${inp2(i,"oe_by",r.oe_by,"氏名")}</td>
       <td class="evalc" style="min-width:98px">${inp2(i,"oe_date",r.oe_date,"YYYY-MM-DD")}</td>
-      <td style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px"><span id="evw-total-${i}">${evalPill(overallEval(r))}</span></td>
+      <td class="gs" style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px"><span id="evw-total-${i}">${evalPill(overallEval(r))}</span></td>
       <td style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px">
         <button class="detailbtn${hasNotes?" on":""}" onclick="evwToggle('${escAttr(cid)}')" title="評価手続・評価内容を${open?"閉じる":"開く"}"><i class="ph ${open?"ph-caret-up":"ph-note-pencil"}"></i></button>
         <button class="sm" id="evw-deflink-${i}" style="${showDefLink?"":"display:none"};margin-left:4px;padding:0 7px" onclick="gotoDef('${escAttr(cid)}')" title="不備管理の該当行へ"><i class="ph ph-warning"></i></button>
@@ -3515,6 +3544,7 @@ function renderEvalWork(){
             <label>対象期間 ${inp2(i,"oe_period",r.oe_period,"2025-04-01〜2026-03-31")}</label>
             <label>母集団 ${inp2(i,"oe_pop",r.oe_pop,"定義・件数（例: 期間中の出荷取引 2,480件）")}</label>
           </div>
+          ${(r.oe_sample_nos||"").trim()?`<div style="margin-bottom:9px;font-size:11.5px;color:var(--c-text-mid)"><b>抽出対象No.:</b> <span class="num" style="word-break:break-all">${esc(r.oe_sample_nos)}</span></div>`:""}
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
             <span style="font-size:11.5px;font-weight:700;color:#44514E"><i class="ph ph-magnifying-glass" style="color:var(--c-primary)"></i> 運用評価の内容（サンプル・例外と結論の根拠）</span>
             <button class="sm" onclick="genSampleFor(${i})" title="母集団件数を入力すると、無作為のサンプル番号を生成してここに追記します"><i class="ph ph-dice-five"></i>乱数でサンプル抽出</button>
