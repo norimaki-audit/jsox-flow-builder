@@ -426,7 +426,15 @@
   <button id="applyBtn" class="sm applybtn" onclick="applyAll()" title="いまの編集内容を、業務記述書・フロー図・RCM等の成果物に反映します（アクティブプロセス）"><i class="ph ph-check-circle"></i>反映</button>
   <span class="ab-sep"></span>
   <button class="sm" onclick="saveProject()" title="現在のプロジェクトを .json ファイルに保存します"><i class="ph ph-floppy-disk" style="color:#5A6863"></i>保存</button>
-  <button class="sm" onclick="exportXlsxRich()" title="色・罫線・結合・フロー図を含むExcelを出力します（配布用）"><i class="ph ph-microsoft-excel-logo" style="color:#1D7044"></i>Excel出力</button>
+  <div class="filemenu-wrap">
+    <button class="sm" id="xlsMenuBtn" onclick="toggleXlsMenu(event)" title="Excel出力（いま見ている画面に対応した出力を選べます）"><i class="ph ph-microsoft-excel-logo" style="color:#1D7044"></i>Excel出力<i class="ph ph-caret-down" style="font-size:11px;color:#9AA6A2"></i></button>
+    <div class="filemenu" id="xlsMenu" style="width:270px">
+      <button id="xlsCtxBtn" onclick="closeXlsMenu();exportContextXlsx()"><i class="ph ph-file-xls"></i><span id="xlsCtxLbl">この画面をExcel出力</span></button>
+      <div class="fm-sep"></div>
+      <button onclick="closeXlsMenu();exportXlsxRich()"><i class="ph ph-files"></i>三点セット一式<span class="fm-sub">装飾＋フロー図</span></button>
+      <button onclick="closeXlsMenu();exportXlsx()"><i class="ph ph-table"></i>全データ<span class="fm-sub">.xlsx 値のみ</span></button>
+    </div>
+  </div>
   <div class="filemenu-wrap">
     <button class="sm" id="fileMenuBtn" onclick="toggleFileMenu(event)" title="プロジェクトの新規作成・読込・その他の出力"><i class="ph ph-folder-open" style="color:#5A6863"></i>ファイル<i class="ph ph-caret-down" style="font-size:11px;color:#9AA6A2"></i></button>
     <div class="filemenu" id="fileMenu">
@@ -1759,10 +1767,40 @@ function applyMode(){
   const sdh2=document.getElementById("stepsDocPageH2");if(sdh2)sdh2.textContent=m==="manual"?"手順書（プレビュー）":"業務記述書";
   if(typeof updateTmplSel==="function")updateTmplSel();
 }
-/* ===== ファイルメニュー開閉 ===== */
-function toggleFileMenu(e){e.stopPropagation();document.getElementById("fileMenu").classList.toggle("open");}
-function closeFileMenu(){document.getElementById("fileMenu").classList.remove("open");}
-document.addEventListener("click",function(e){if(!e.target.closest(".filemenu-wrap"))closeFileMenu();});
+/* ===== ファイル / Excel出力メニュー開閉 ===== */
+function toggleFileMenu(e){e.stopPropagation();closeXlsMenu();document.getElementById("fileMenu").classList.toggle("open");}
+function closeFileMenu(){const m=document.getElementById("fileMenu");if(m)m.classList.remove("open");}
+function toggleXlsMenu(e){e.stopPropagation();closeFileMenu();updateXlsMenu();document.getElementById("xlsMenu").classList.toggle("open");}
+function closeXlsMenu(){const m=document.getElementById("xlsMenu");if(m)m.classList.remove("open");}
+document.addEventListener("click",function(e){document.querySelectorAll(".filemenu.open").forEach(function(m){const w=m.closest(".filemenu-wrap");if(!w||!w.contains(e.target))m.classList.remove("open");});});
+/* ===== 画面対応のExcel出力（コンテキスト出力） ===== */
+function xlsCtxOf(){
+  const manual=((db&&db.mode)||"jsox")==="manual";
+  const stepsLbl=manual?"手順書":"業務記述書";
+  const map={
+    steps:{lbl:stepsLbl+" をExcel出力",run:function(){applyAll();renderStepsDoc();exportDocXlsx("stepsDocBody",fname()+"_"+stepsLbl);}},
+    stepsdoc:null, // steps と同じ（下で共有）
+    rcm:{lbl:"RCM をExcel出力",run:function(){applyAll();renderRcmDoc();exportDocXlsx("rcmDocBody",fname()+"_RCM");}},
+    rcmdoc:null,
+    evalwork:{lbl:"評価調書 をExcel出力",run:function(){applyAll();renderEvalDoc();exportDocXlsx("evalDocBody",fname()+"_評価調書");}},
+    evaldoc:null,
+    flow:{lbl:"フロー図込みExcel（装飾）を出力",run:function(){exportXlsxRich();}},
+    gap:{lbl:"ギャップチェック をExcel出力",run:function(){renderGap();exportDocXlsx("gapBody",fname()+"_ギャップ");}},
+    manualout:{lbl:"マニュアル出力 をExcel出力",run:function(){applyAll();renderManualOut();exportDocXlsx("manualOutBody",fname()+"_マニュアル出力");}},
+    library:{lbl:"規程・資料の一覧 をExcel出力",run:function(){exportLibraryXlsx();}},
+    dash:{lbl:"全データ（.xlsx）を出力",run:function(){exportXlsx();}}
+  };
+  map.stepsdoc=map.steps;map.rcmdoc=map.rcm;map.evaldoc=map.evalwork;
+  return map[curPage]||null;
+}
+function updateXlsMenu(){
+  const c=xlsCtxOf();
+  const btn=document.getElementById("xlsCtxBtn"),lbl=document.getElementById("xlsCtxLbl");
+  if(!btn||!lbl)return;
+  if(c){btn.style.display="";lbl.textContent=c.lbl;}
+  else{btn.style.display="";lbl.textContent="全データ（.xlsx）を出力";}
+}
+function exportContextXlsx(){const c=xlsCtxOf();if(c)c.run();else exportXlsx();}
 function setMode(m){if(((db&&db.mode)||"jsox")===m)return;switchMode();}
 function switchMode(){pushUndo();db.mode=(db.mode||"jsox")==="jsox"?"manual":"jsox";markDirty();applyMode();show(curPage);}
 /* ===== 編集｜プレビュー 統合ナビ（§2-1 / FIXES §12-A） ===== */
@@ -1951,7 +1989,7 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   if(pg==="rcm"||pg==="rcmdoc")_viewPref.rcm=(pg==="rcm")?"edit":"preview";
   document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById("page-"+pg).classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.dataset.pg===(NAV_ALIAS[pg]||pg)));
   if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
-  updateApplyBtn();}
+  updateApplyBtn();if(typeof updateXlsMenu==="function")updateXlsMenu();}
 function fzoom(d){fscale=Math.min(2,Math.max(0.4,fscale+d*0.1));document.getElementById("flowCanvas").style.transform="scale("+fscale+")";document.getElementById("zlabel").textContent=Math.round(fscale*100)+"%";}
 function fzoomReset(){fscale=1;document.getElementById("flowCanvas").style.transform="scale(1)";document.getElementById("zlabel").textContent="100%";}
 
