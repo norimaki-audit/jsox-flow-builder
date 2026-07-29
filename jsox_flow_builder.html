@@ -353,6 +353,19 @@
   .img-add{width:160px;height:104px;border-radius:8px;border:1.5px dashed #C0CCC8;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--c-primary-d);cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
   .img-add:hover{border-color:var(--c-primary);background:#F2F8F6;}
   .img-add i{font-size:20px;}
+  /* ===== 整備・運用評価ページ ===== */
+  .evw-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:960px){.evw-grid{grid-template-columns:1fr;}}
+  .evw-sec{border:1px solid var(--c-border);border-radius:10px;padding:14px 16px;background:#FAFCFB;}
+  .evw-sec h4{margin:0 0 10px;font-size:12.5px;font-weight:700;color:#44514E;display:flex;align-items:center;gap:7px;}
+  .evw-row{display:flex;gap:12px;align-items:center;margin-bottom:9px;flex-wrap:wrap;}
+  .evw-row label{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--c-text-mid);font-weight:600;flex:none;}
+  .evw-row input,.evw-row select{height:30px;padding:0 9px;border:1px solid #DCE5E3;border-radius:7px;font:inherit;font-size:12.5px;background:#fff;}
+  .evw-note{width:100%;min-height:62px;font:inherit;font-size:12.5px;line-height:1.6;padding:9px 11px;border:1px solid #DCE5E3;border-radius:8px;resize:vertical;background:#fff;box-sizing:border-box;}
+  @keyframes cardflash{0%{box-shadow:0 0 0 3px rgba(14,124,115,.5);}100%{box-shadow:0 0 0 0 rgba(14,124,115,0);}}
+  .card-flash{animation:cardflash 1.3s ease-out;}
+  a.linkpill{cursor:pointer;text-decoration:none;}
+  a.linkpill:hover .evalpill,a.linkpill:hover .idchip{box-shadow:0 0 0 2px rgba(14,124,115,.18);}
 </style>
 </head>
 <body>
@@ -410,7 +423,8 @@
       <a data-pg="rcm" tabindex="0" onclick="navRcm()" onkeydown="if(event.key==='Enter')navRcm()"><i class="ph ph-table"></i><span class="nav-lbl">RCM（リスクと統制）</span></a>
       <a class="manual-only" data-pg="manualout" tabindex="0" onclick="show('manualout')" onkeydown="if(event.key==='Enter')show('manualout')"><i class="ph ph-files"></i><span class="nav-lbl">マニュアル出力</span></a>
       <div class="grp jsox-only">評価・点検</div>
-      <a class="jsox-only" data-pg="evaldoc" tabindex="0" onclick="show('evaldoc')" onkeydown="if(event.key==='Enter')show('evaldoc')"><i class="ph ph-clipboard-text"></i><span class="nav-lbl">評価結果</span></a>
+      <a class="jsox-only" data-pg="evalwork" tabindex="0" onclick="show('evalwork')" onkeydown="if(event.key==='Enter')show('evalwork')"><i class="ph ph-list-checks"></i><span class="nav-lbl">整備・運用評価</span></a>
+      <a class="jsox-only" data-pg="evaldoc" tabindex="0" onclick="show('evaldoc')" onkeydown="if(event.key==='Enter')show('evaldoc')"><i class="ph ph-clipboard-text"></i><span class="nav-lbl">評価結果（一覧）</span></a>
       <a data-pg="gap" tabindex="0" onclick="show('gap')" onkeydown="if(event.key==='Enter')show('gap')"><i class="ph ph-magnifying-glass"></i><span class="nav-lbl">ギャップチェック</span></a>
       <a data-pg="walk" tabindex="0" onclick="show('walk')" onkeydown="if(event.key==='Enter')show('walk')"><i class="ph ph-pencil-line"></i><span class="nav-lbl">ウォークスルー</span></a>
       <a class="jsox-only" data-pg="rollf" tabindex="0" onclick="show('rollf')" onkeydown="if(event.key==='Enter')show('rollf')"><i class="ph ph-arrows-clockwise"></i><span class="nav-lbl">ロールフォワード</span></a>
@@ -572,6 +586,15 @@
         <label style="font-size:12px;font-weight:600;white-space:nowrap">様式：<select id="rcmDocFmt" onchange="renderRcmDoc()"><option value="detail" selected>詳細（一般的なRCM）</option><option value="simple">簡潔（画像準拠）</option></select></label><button class="sm applybtn" onclick="applyAll()" title="編集内容を反映して再描画">反映</button><button class="sm primary" onclick="exportXlsxRich()" title="色・罫線・フロー図込みのExcelを出力します（配布用）">Excel出力（装飾＋図）</button><button class="sm" onclick="exportDocXlsx('rcmDocBody',fname()+'_RCM')" title="値のみのExcelを出力します（分析用）">データ(.xlsx)</button><button class="sm" onclick="exportRcmCSV()" title="全フィールドのCSVを保存">CSV(.csv)</button><button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="rcmDocBanner"></div>
       <div id="rcmDocBody" class="doc"></div>
+    </div></section>
+
+    <!-- EVAL WORK (整備・運用評価の記録) -->
+    <section class="page" id="page-evalwork"><div class="pad">
+      <div class="ph"><h2>整備・運用評価</h2><span class="sub">統制ごとに「何を・どのように評価したか」を記録します（入力は即時反映）</span><span class="sp"></span>
+        <button class="sm" onclick="show('evaldoc')"><i class="ph ph-clipboard-text"></i>評価結果（一覧）へ</button>
+        <button class="sm applybtn" onclick="applyAll()" title="編集内容を成果物に反映">反映</button>
+        <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
+      <div id="evalWorkBody" style="max-width:1180px"></div>
     </div></section>
 
     <!-- EVAL DOC (評価結果/評価調書) -->
@@ -830,7 +853,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 // =================================================================
 function blankJournal(){return {jno:"",trigger:"",step_no:"",type:"定型",system:"",side:"借",account:"",sub:"",note:""};}
 function blankStep(no){return {no:no==null?"":no,gyomu:"",dept:"",role:"",type:"手動処理",label:"",detail:"",system:"",evidence:"",yes:"",no2:"",jump:"",point:"",dur:"",img:"",images:[],custom:{}};}
-function blankRcm(){return {gyomu:"",risk_id:"",fs:"",assertion:"",as_exist:false,as_comp:false,as_rights:false,as_val:false,as_cutoff:false,as_pres:false,risk_desc:"",control_id:"",step_no:"",objective:"",control_desc:"",prev_det:"",man_auto:"",it_dep:false,freq:"",owner:"",reviewer:"",evidence:"",key:false,ipe:false,ipe_ca:"",test:"",fraud:false,evaluation:"",eval_note:"",de_result:"",de_note:"",oe_method:"",oe_n:"",oe_excns:"",oe_result:"",oe_note:"",custom:{}};}
+function blankRcm(){return {gyomu:"",risk_id:"",fs:"",assertion:"",as_exist:false,as_comp:false,as_rights:false,as_val:false,as_cutoff:false,as_pres:false,risk_desc:"",control_id:"",step_no:"",objective:"",control_desc:"",prev_det:"",man_auto:"",it_dep:false,freq:"",owner:"",reviewer:"",evidence:"",key:false,ipe:false,ipe_ca:"",test:"",fraud:false,evaluation:"",eval_note:"",de_result:"",de_note:"",oe_method:"",oe_n:"",oe_excns:"",oe_result:"",oe_note:"",de_by:"",de_date:"",oe_by:"",oe_date:"",custom:{}};}
 const ASRT_KEYS=["as_exist","as_comp","as_rights","as_val","as_cutoff","as_pres"];
 const ASRT_LBL=["実在性","網羅性","権利と義務の帰属","評価の妥当性","期間配分の適切性","表示の妥当性"];
 const ASRT_SHORT=["実在","網羅","権利","評価","期間","表示"];
@@ -1776,7 +1799,7 @@ const MODE_CONFIG={
     navLabels:{processes:"業務の管理",steps:"手順書",stepsdoc:"手順書",rcm:"業務ルール表 編集",rcmdoc:"業務ルール表",flow:"業務フロー図",gap:"抜け漏れチェック",walk:"業務ヒアリングメモ",def:"改善ポイント",ev:"使用資料",library:"規程・資料",manualout:"マニュアル出力"},
     terms:{process:"業務",risk:"起こりうるミス・問題",control:"チェックポイント",keyControl:"重要チェック",evidence:"使用帳票・関連資料・記録",deficiency:"改善ポイント",evaluation:"実施確認"},
     /* §7: マニュアルモードでは J-SOX 系ページを非表示（手順書・フロー図・取込・規程資料・ヘルプ中心） */
-    hiddenPages:["dash","rcm","rcmdoc","evaldoc","gap","walk","rollf","def","ev","report","jnl"],
+    hiddenPages:["dash","rcm","rcmdoc","evalwork","evaldoc","gap","walk","rollf","def","ev","report","jnl"],
     hiddenFields:["assertion","ipe","itac"],
     templates:["expense_manual","bill_manual","collect_manual","payment_manual","monthly_manual","order_manual","inquiry_manual"]
   },
@@ -2006,7 +2029,7 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   if(pg==="steps"||pg==="stepsdoc")_viewPref.steps=(pg==="steps")?"edit":"preview";
   if(pg==="rcm"||pg==="rcmdoc")_viewPref.rcm=(pg==="rcm")?"edit":"preview";
   document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById("page-"+pg).classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.dataset.pg===(NAV_ALIAS[pg]||pg)));
-  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="report")renderReport();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
+  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="report")renderReport();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
   updateApplyBtn();}
 function fzoom(d){fscale=Math.min(2,Math.max(0.4,fscale+d*0.1));document.getElementById("flowCanvas").style.transform="scale("+fscale+")";document.getElementById("zlabel").textContent=Math.round(fscale*100)+"%";}
 function fzoomReset(){fscale=1;document.getElementById("flowCanvas").style.transform="scale(1)";document.getElementById("zlabel").textContent="100%";}
@@ -2577,7 +2600,7 @@ function renderRcmDoc(){
         +`<td>${esc(r.risk_desc)}</td>`
         +`<td>${(r.control_id||"").trim()?`<span class="idchip" style="margin-right:6px">${esc(r.control_id)}</span>`:""}${r.key?keyTag():""}<div style="margin-top:3px">${esc(r.control_desc)}</div></td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
-        +`<td style="text-align:center;white-space:nowrap">${evalPill(overallEval(r))}</td>`
+        +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
         +`<td>${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
         +cc.map(c=>`<td>${esc((r.custom||{})[c.id]||"")}</td>`).join("")
         +`</tr>`;});
@@ -2604,7 +2627,7 @@ function renderRcmDoc(){
         +`<td>${esc(r.risk_desc)}</td>`
         +`<td>${esc(r.control_desc)}</td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
-        +`<td style="text-align:center;white-space:nowrap">${evalPill(overallEval(r))}</td>`
+        +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
         +`<td>${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
         +`<td style="white-space:nowrap">${(r.control_id||"").trim()?`<span class="idchip">${esc(r.control_id)}</span>`:""}${r.key?" "+keyTag():""}</td>`
         +`<td style="text-align:center">${esc(r.prev_det||"")}</td>`
@@ -2623,6 +2646,83 @@ function renderRcmDoc(){
   }
   document.getElementById("rcmDocBody").innerHTML=h;
 }
+/* =================================================================
+   整備・運用評価ページ（統制ごとの評価記録） ＋ 不備ジャンプ
+   ================================================================= */
+function evwSet(i,f,v){const r=P().rcm[i];if(!r)return;r[f]=v;markDirty();
+  const t=document.getElementById("evw-total-"+i);if(t)t.innerHTML=evalPill(overallEval(r));
+  const d=document.getElementById("evw-deflink-"+i);if(d)d.style.display=(r.de_result==="不備"||r.oe_result==="不備")?"":"none";}
+function evwPush(){pushUndo();}
+function hasDefFor(cid){cid=(cid||"").trim();return P().deficiencies.some(d=>(d.control_id||"").trim()===cid);}
+function gotoDef(cid){cid=(cid||"").trim();show("def");
+  setTimeout(()=>{const i=P().deficiencies.findIndex(d=>(d.control_id||"").trim()===cid);
+    if(i>=0){const tb=document.getElementById("defBody");const tr=tb&&tb.querySelector(`tr[data-i="${i}"]`);
+      if(tr)tr.scrollIntoView({block:"center",behavior:"smooth"});flashRow("defBody",i);}
+    else alert(`統制 ${cid} に紐づく不備はまだ登録されていません。\n「＋不備を追加」で登録し、「関連統制」に ${cid} を入力すると、評価結果からここへ直接ジャンプできるようになります。`);},60);}
+function gotoDefById(defId){show("def");
+  setTimeout(()=>{const i=P().deficiencies.findIndex(d=>(d.def_id||"").trim()===String(defId).trim());
+    if(i>=0){const tb=document.getElementById("defBody");const tr=tb&&tb.querySelector(`tr[data-i="${i}"]`);
+      if(tr)tr.scrollIntoView({block:"center",behavior:"smooth"});flashRow("defBody",i);}},60);}
+function gotoEvalWork(cid){cid=(cid||"").trim();show("evalwork");
+  setTimeout(()=>{const el=document.getElementById("evw-"+CSS.escape(cid));
+    if(el){el.scrollIntoView({block:"start",behavior:"smooth"});el.classList.remove("card-flash");void el.offsetWidth;el.classList.add("card-flash");}},60);}
+function renderEvalWork(){
+  const p=P();const rows=[];p.rcm.forEach((r,i)=>{if((r.control_id||"").trim())rows.push([r,i]);});
+  const pal=phasePalette(p.steps);
+  let h="";
+  if(!rows.length)h=`<div class="hint">統制ID付きのRCM行がありません。「RCM（リスクと統制）」の編集で統制IDを入力すると、ここに評価カードが表示されます。</div>`;
+  const sel=(i,f,v,opts)=>`<select onfocus="evwPush()" onchange="evwSet(${i},'${f}',this.value)">${opts.map(o=>`<option value="${escAttr(o)}"${o===v?" selected":""}>${esc(o||"（未評価）")}</option>`).join("")}</select>`;
+  const inp2=(i,f,v,w,ph,list)=>`<input style="width:${w}px" value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""}${list?` list="${list}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">`;
+  const ta=(i,f,v,ph)=>`<textarea class="evw-note" placeholder="${escAttr(ph)}" onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">${esc(v||"")}</textarea>`;
+  rows.forEach(([r,i])=>{
+    const cid=(r.control_id||"").trim();
+    const ph2=pal[(r.gyomu||"").trim()]||["#7C8B86","#F2F6F5"];
+    const showDefLink=(r.de_result==="不備"||r.oe_result==="不備");
+    h+=`<div class="card" id="evw-${escAttr(cid)}" style="margin-bottom:14px">
+      <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:4px;flex-wrap:wrap">
+        <span style="width:9px;height:9px;border-radius:2px;background:${ph2[0]};flex:none;margin-top:6px"></span>
+        <span class="idchip">${esc(cid)}</span>${r.key?keyTag():""}
+        <span style="flex:1;min-width:220px;font-size:13.5px;font-weight:600;color:#1F2B27;line-height:1.5">${esc(r.control_desc||r.objective||"（統制内容未入力）")}</span>
+        <span id="evw-total-${i}">${evalPill(overallEval(r))}</span>
+        <button class="sm" id="evw-deflink-${i}" style="${showDefLink?"":"display:none"}" onclick="gotoDef('${escAttr(cid)}')" title="不備管理の該当行へ"><i class="ph ph-warning"></i>不備管理へ</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 20px;font-size:12px;color:var(--c-text-mid);flex-wrap:wrap">
+        ${r.risk_id?`<span class="rc-mini r">${esc(r.risk_id)}</span>`:""}<span>${esc(r.risk_desc||"")}</span>
+        <span style="color:var(--c-text-faint)">／ 対象工程 No.${esc(String(r.step_no||"—"))} ・ ${esc(r.freq||"頻度未設定")} ・ ${r.man_auto?esc(r.man_auto):"手動/自動未設定"}</span>
+      </div>
+      <div class="evw-grid">
+        <div class="evw-sec">
+          <h4><i class="ph ph-compass" style="font-size:15px;color:var(--c-primary)"></i>整備評価（デザインの適切性）</h4>
+          <div class="evw-row">
+            <label>結果 ${sel(i,"de_result",r.de_result||"",["","有効","不備"])}</label>
+            <label>評価者 ${inp2(i,"de_by",r.de_by,110,"氏名")}</label>
+            <label>評価日 ${inp2(i,"de_date",r.de_date,110,"YYYY-MM-DD")}</label>
+          </div>
+          ${ta(i,"de_note",r.de_note,"何をどのように確かめたか（例：ウォークスルーで注文書→受注入力→承認記録を1件追跡し、統制のデザインが リスクを低減できる設計であることを確認）")}
+        </div>
+        <div class="evw-sec">
+          <h4><i class="ph ph-list-magnifying-glass" style="font-size:15px;color:var(--c-primary)"></i>運用評価（継続的な運用状況）</h4>
+          <div class="evw-row">
+            <label>テスト手続 ${inp2(i,"test",r.test,260,"例：一定期間の出荷を25件抽出し出荷指図書と突合")}</label>
+          </div>
+          <div class="evw-row">
+            <label>抽出方法 ${inp2(i,"oe_method",r.oe_method,90,"無作為","dlOeMethod")}</label>
+            <label>件数 ${inp2(i,"oe_n",r.oe_n,56,"25")}</label>
+            <label>例外 ${inp2(i,"oe_excns",r.oe_excns,56,"0")}</label>
+            <label>結果 ${sel(i,"oe_result",r.oe_result||"",["","有効","不備","対象外"])}</label>
+          </div>
+          <div class="evw-row">
+            <label>評価者 ${inp2(i,"oe_by",r.oe_by,110,"氏名")}</label>
+            <label>評価日 ${inp2(i,"oe_date",r.oe_date,110,"YYYY-MM-DD")}</label>
+          </div>
+          ${ta(i,"oe_note",r.oe_note,"サンプルの内容・例外の内容と評価結論の根拠（例：25件中、例外3件。繁忙期に照合印の漏れ。追加サンプルの要否と不備評価を記載）")}
+        </div>
+      </div>
+    </div>`;
+  });
+  if(rows.length)h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>結果が「不備」の統制は、不備管理に登録して是正状況を追跡してください（カード右上の「不備管理へ」からジャンプ）。入力後は上部の［反映］で成果物・一覧に反映されます。</div>`;
+  document.getElementById("evalWorkBody").innerHTML=h;
+}
 function renderEvalDoc(){
   setBanner("evalDocBanner");const p=outProc();
   const ctrls=p.rcm.filter(r=>(r.control_id||"").trim());
@@ -2630,23 +2730,27 @@ function renderEvalDoc(){
   const rows=keyCtrls.length?keyCtrls:ctrls;
   let h=`<h1>${esc(p.name||"")} — 評価結果（評価調書）</h1><div class="meta">プロセスID: ${esc(p.id)}　／　作成日: ${today()}　／　対象統制数: ${rows.length}${keyCtrls.length?`（キー統制。全統制数 ${ctrls.length}）`:""}</div>`;
   h+=`<div style="overflow:auto"><table style="font-size:12px"><thead><tr>`
-    +`<th>統制ID</th><th>業務</th><th>リスク</th><th>統制内容</th><th>整備評価</th><th>運用：抽出方法・件数・例外</th><th>運用評価</th><th>総合</th><th>評価内容</th>`
+    +`<th>統制ID</th><th>業務</th><th>リスク</th><th>統制内容</th><th>整備評価</th><th>運用：抽出方法・件数・例外</th><th>運用評価</th><th>評価者・評価日</th><th>総合</th><th>評価内容</th>`
     +`</tr></thead><tbody>`;
-  if(!rows.length)h+=`<tr><td colspan="9" style="color:var(--muted)">統制が未登録です</td></tr>`;
+  if(!rows.length)h+=`<tr><td colspan="10" style="color:var(--muted)">統制が未登録です</td></tr>`;
   rows.forEach(r=>{
     const oeDetail=[r.oe_method,(r.oe_n||"").toString().trim()?`件数:${r.oe_n}`:"",(r.oe_excns||"").toString().trim()?`例外:${r.oe_excns}`:""].filter(Boolean).join(" / ");
+    const cid=(r.control_id||"").trim();
+    const defLink=x=>(x==="不備")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr(cid)}');return false">${resPill(x)}</a>`:resPill(x);
+    const evby=[[r.de_by,r.de_date],[r.oe_by,r.oe_date]].filter(x=>x[0]||x[1]).map(x=>`${esc(x[0]||"—")}<span style="color:var(--c-text-faint)"> ${esc(x[1]||"")}</span>`).join("<br>")||`<span style="color:var(--c-text-faint)">—</span>`;
     h+=`<tr class="${r.key?"kc":""}">`
-      +`<td style="white-space:nowrap"><span class="idchip">${esc(r.control_id)}</span>${r.key?" "+keyTag():""}</td>`
+      +`<td style="white-space:nowrap"><a href="#" class="linkpill" title="整備・運用評価の詳細へジャンプ" onclick="gotoEvalWork('${escAttr(cid)}');return false"><span class="idchip">${esc(r.control_id)}</span></a>${r.key?" "+keyTag():""}</td>`
       +`<td>${esc(r.gyomu)}</td>`
       +`<td>${esc(r.risk_desc)}</td>`
       +`<td>${esc(r.control_desc)}</td>`
-      +`<td style="text-align:center">${resPill(r.de_result)}</td>`
+      +`<td style="text-align:center">${defLink(r.de_result)}</td>`
       +`<td>${esc(oeDetail||"-")}</td>`
-      +`<td style="text-align:center">${resPill(r.oe_result)}</td>`
-      +`<td style="text-align:center;white-space:nowrap">${evalPill(overallEval(r))}</td>`
+      +`<td style="text-align:center">${defLink(r.oe_result)}</td>`
+      +`<td style="font-size:11.5px;white-space:nowrap">${evby}</td>`
+      +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr(cid)}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
       +`<td>${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
       +`</tr>`;});
-  h+=`</tbody></table></div><div class="hint" style="margin-top:8px">整備評価＝統制が適切にデザインされているかの評価。運用評価＝サンプルテスト（抽出方法・件数・例外件数）に基づく運用状況の評価。総合＝整備・運用の結果を踏まえた総合判定です。キー統制が設定されている場合はキー統制のみを表示します。</div>`;
+  h+=`</tbody></table></div><div class="hint" style="margin-top:8px">整備評価＝統制が適切にデザインされているかの評価。運用評価＝サンプルテスト（抽出方法・件数・例外件数）に基づく運用状況の評価。総合＝整備・運用の結果を踏まえた総合判定です。キー統制が設定されている場合はキー統制のみを表示します。統制IDをクリックすると評価の詳細（整備・運用評価）へ、「不備」の表示をクリックすると不備管理の該当行へジャンプします。</div>`;
   document.getElementById("evalDocBody").innerHTML=h;
 }
 function deepCopy(o){return JSON.parse(JSON.stringify(o));}
@@ -2986,7 +3090,7 @@ function renderDash(){
   // ---- 不備管理 3段階 + 証憑格納 ----
   const tiers=[["不備",minor,"#9A6614","#FBF7EE","#EBDFC4"],["開示すべき重要な不備",mat,"#7A1F1A","#F7EEED","#E6CBC6"],["未是正",openD,"#B0413B","#FBEEEC","#EFD3CE"]];
   let tierH=`<div style="display:flex;gap:10px;margin-bottom:14px">`;tiers.forEach(t=>{tierH+=`<div style="flex:1;padding:12px;border-radius:10px;background:${t[3]};border:1px solid ${t[4]}"><div class="mono" style="font-size:24px;font-weight:700;color:${t[2]};line-height:1">${t[1]}</div><div style="font-size:10.5px;font-weight:600;color:${t[2]};margin-top:5px;line-height:1.3">${t[0]}</div></div>`;});tierH+=`</div>`;
-  let defH="";ds.filter(d=>d.status!=="是正済").slice(0,3).forEach(d=>{defH+=`<div style="display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #EFD3CE;border-radius:10px;background:#FDF7F6;margin-bottom:8px"><i class="ph ph-warning-circle" style="font-size:18px;color:var(--c-err);flex:none;margin-top:1px"></i><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap"><span class="mono" style="font-size:11px;font-weight:600;color:#7A1F1A">${esc(d.def_id)}</span><span style="font-size:10px;font-weight:600;color:var(--c-err);padding:1px 7px;border-radius:5px;background:#F7E2DF">${esc(d.type)}</span><span style="font-size:11px;color:var(--c-text-faint)">統制 ${esc(d.control_id||"—")}</span></div><div style="font-size:12.5px;color:#2A3633;line-height:1.5">${esc(d.desc||"")}</div>${d.due?`<div style="margin-top:5px;font-size:11px;color:var(--c-text-mid)">是正期限 <b class="mono" style="color:var(--c-err)">${esc(d.due)}</b></div>`:""}</div></div>`;});
+  let defH="";ds.filter(d=>d.status!=="是正済").slice(0,3).forEach(d=>{defH+=`<div onclick="gotoDefById('${escAttr(d.def_id)}')" title="クリックで不備管理の該当行へ" style="display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #EFD3CE;border-radius:10px;background:#FDF7F6;margin-bottom:8px;cursor:pointer"><i class="ph ph-warning-circle" style="font-size:18px;color:var(--c-err);flex:none;margin-top:1px"></i><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap"><span class="mono" style="font-size:11px;font-weight:600;color:#7A1F1A">${esc(d.def_id)}</span><span style="font-size:10px;font-weight:600;color:var(--c-err);padding:1px 7px;border-radius:5px;background:#F7E2DF">${esc(d.type)}</span><span style="font-size:11px;color:var(--c-text-faint)">統制 ${esc(d.control_id||"—")}</span></div><div style="font-size:12.5px;color:#2A3633;line-height:1.5">${esc(d.desc||"")}</div>${d.due?`<div style="margin-top:5px;font-size:11px;color:var(--c-text-mid)">是正期限 <b class="mono" style="color:var(--c-err)">${esc(d.due)}</b></div>`:""}</div></div>`;});
   let evH="";ctrls.slice(0,6).forEach(r=>{const cid=(r.control_id||"").trim();const o=(p.evidence||{})[cid];const n=o&&o.files?o.files.length:0;const st=n>0?["格納済","ep-ok","ph-check-circle"]:(o&&o.req_status&&o.req_status!=="未依頼"?[o.req_status==="依頼済"?"依頼中":o.req_status,"ep-warn","ph-clock"]:["未依頼","ep-na","ph-circle-dashed"]);
     evH+=`<div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid #E6ECEA;border-radius:10px;margin-bottom:8px"><span class="mono" style="font-size:11px;font-weight:600;color:var(--c-primary-d);flex:none;width:44px">${esc(cid)}</span><span style="flex:1;font-size:12px;color:#2A3633;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.control_desc||"")}</span><span class="mono" style="font-size:11px;color:var(--c-text-faint);flex:none">${n}件</span><span class="evalpill ${st[1]}"><i class="ph ${st[2]}" style="font-size:12px"></i>${st[0]}</span></div>`;});
   h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px">`
