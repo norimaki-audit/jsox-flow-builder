@@ -1884,6 +1884,7 @@ function genSampleFor(i){
   pushUndo();
   r.oe_n=String(n);if(!(r.oe_method||"").trim())r.oe_method="無作為";
   r.oe_note=((r.oe_note||"").trim()?r.oe_note+"\n":"")+"【乱数抽出 "+today()+"】母集団"+N+"件から"+n+"件を無作為抽出（対象No.）: "+nums.join(", ");
+  _evwOpen.add((r.control_id||"").trim());
   markDirty();renderEvalWork();
   toast("サンプル番号を生成し、運用評価の評価内容に追記しました。");
 }
@@ -2752,64 +2753,90 @@ function gotoDefById(defId){show("def");
       if(tr)tr.scrollIntoView({block:"center",behavior:"smooth"});flashRow("defBody",i);}},60);}
 function gotoEvalWork(cid){cid=(cid||"").trim();show("evalwork");
   setTimeout(()=>{const el=document.getElementById("evw-"+CSS.escape(cid));
-    if(el){el.scrollIntoView({block:"start",behavior:"smooth"});el.classList.remove("card-flash");void el.offsetWidth;el.classList.add("card-flash");}},60);}
+    if(el){el.scrollIntoView({block:"center",behavior:"smooth"});
+      const cls=el.tagName==="TR"?"row-flash":"card-flash";
+      el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);}},60);}
+const _evwOpen=new Set();
+function evwToggle(cid){cid=String(cid);if(_evwOpen.has(cid))_evwOpen.delete(cid);else _evwOpen.add(cid);renderEvalWork();}
 function renderEvalWork(){
-  const p=P();const rows=[];p.rcm.forEach((r,i)=>{if((r.control_id||"").trim())rows.push([r,i]);});rows.sort((a,b)=>{const d=idNum(a[0].control_id)-idNum(b[0].control_id);return d||a[1]-b[1];});
+  const p=P();const rows=[];p.rcm.forEach((r,i)=>{if((r.control_id||"").trim())rows.push([r,i]);});
+  rows.sort((a,b)=>{const d=idNum(a[0].control_id)-idNum(b[0].control_id);return d||a[1]-b[1];});
   const pal=phasePalette(p.steps);
-  let h="";
-  if(!rows.length)h=`<div class="hint">統制ID付きのRCM行がありません。「RCM（リスクと統制）」の編集で統制IDを入力すると、ここに評価カードが表示されます。</div>`;
-  const sel=(i,f,v,opts)=>`<select onfocus="evwPush()" onchange="evwSet(${i},'${f}',this.value)">${opts.map(o=>`<option value="${escAttr(o)}"${o===v?" selected":""}>${esc(o||"（未評価）")}</option>`).join("")}</select>`;
-  const inp2=(i,f,v,w,ph,list)=>`<input style="width:${w}px" value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""}${list?` list="${list}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">`;
+  const el=document.getElementById("evalWorkBody");
+  if(!rows.length){el.innerHTML=`<div class="hint">統制ID付きのRCM行がありません。「RCM（リスクと統制）」の編集で統制IDを入力すると、ここに評価一覧が表示されます。</div>`;return;}
+  const sel=(i,f,v,opts)=>`<select onfocus="evwPush()" onchange="evwSet(${i},'${f}',this.value)">${opts.map(o=>`<option value="${escAttr(o)}"${o===v?" selected":""}>${esc(o||"　")}</option>`).join("")}</select>`;
+  const inp2=(i,f,v,ph,list)=>`<input value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""}${list?` list="${list}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">`;
   const ta=(i,f,v,ph)=>`<textarea class="evw-note" placeholder="${escAttr(ph)}" onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">${esc(v||"")}</textarea>`;
+  const COLS=12;
+  let h=`<div class="gridbox" style="max-height:none"><table class="dr" style="white-space:normal;width:100%;min-width:1120px">
+    <thead>
+      <tr>
+        <th rowspan="2" style="min-width:250px">統制</th>
+        <th class="ctl" colspan="3" style="text-align:center;border-bottom:1px solid #D4E4E0">整備評価（デザイン）</th>
+        <th class="evalc" colspan="6" style="text-align:center;border-bottom:1px solid #CBE3D4">運用評価（オペレーション）</th>
+        <th rowspan="2" style="text-align:center">総合</th>
+        <th rowspan="2" style="text-align:center">詳細</th>
+      </tr>
+      <tr>
+        <th class="ctl">結果</th><th class="ctl">評価者</th><th class="ctl">評価日</th>
+        <th class="evalc">抽出方法</th><th class="evalc">件数</th><th class="evalc">例外</th><th class="evalc">結果</th><th class="evalc">評価者</th><th class="evalc">評価日</th>
+      </tr>
+    </thead><tbody>`;
   rows.forEach(([r,i])=>{
     const cid=(r.control_id||"").trim();
     const ph2=pal[(r.gyomu||"").trim()]||["#7C8B86","#F2F6F5"];
+    const open=_evwOpen.has(cid);
     const showDefLink=(r.de_result==="不備"||r.oe_result==="不備");
-    h+=`<div class="card" id="evw-${escAttr(cid)}" style="margin-bottom:14px">
-      <div style="display:flex;align-items:flex-start;gap:11px;margin-bottom:4px;flex-wrap:wrap">
-        <span style="width:9px;height:9px;border-radius:2px;background:${ph2[0]};flex:none;margin-top:6px"></span>
-        <span class="idchip">${esc(cid)}</span>${r.key?keyTag():""}
-        <span style="flex:1;min-width:220px;font-size:13.5px;font-weight:600;color:#1F2B27;line-height:1.5">${esc(r.control_desc||r.objective||"（統制内容未入力）")}</span>
-        <span id="evw-total-${i}">${evalPill(overallEval(r))}</span>
-        <button class="sm" id="evw-deflink-${i}" style="${showDefLink?"":"display:none"}" onclick="gotoDef('${escAttr(cid)}')" title="不備管理の該当行へ"><i class="ph ph-warning"></i>不備管理へ</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin:0 0 12px 20px;font-size:12px;color:var(--c-text-mid);flex-wrap:wrap">
-        ${r.risk_id?`<span class="rc-mini r">${esc(r.risk_id)}</span>`:""}<span>${esc(r.risk_desc||"")}</span>
-        <span style="color:var(--c-text-faint)">／ 対象工程 No.${esc(String(r.step_no||"—"))} ・ ${esc(r.freq||"頻度未設定")} ・ ${r.man_auto?esc(r.man_auto):"手動/自動未設定"}</span>
-      </div>
-      <div class="evw-grid">
-        <div class="evw-sec">
-          <h4><i class="ph ph-compass" style="font-size:15px;color:var(--c-primary)"></i>整備評価（デザインの適切性）</h4>
-          <div class="evw-row">
-            <label>結果 ${sel(i,"de_result",r.de_result||"",["","有効","不備"])}</label>
-            <label>評価者 ${inp2(i,"de_by",r.de_by,110,"氏名")}</label>
-            <label>評価日 ${inp2(i,"de_date",r.de_date,110,"YYYY-MM-DD")}</label>
-          </div>
-          ${ta(i,"de_note",r.de_note,"何をどのように確かめたか（例：ウォークスルーで注文書→受注入力→承認記録を1件追跡し、統制のデザインが リスクを低減できる設計であることを確認）")}
+    const hasNotes=(r.de_note||"").trim()||(r.oe_note||"").trim()||(r.test||"").trim();
+    h+=`<tr id="evw-${escAttr(cid)}">
+      <td style="padding:9px 11px;vertical-align:top;min-width:250px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap"><span style="width:8px;height:8px;border-radius:2px;background:${ph2[0]};flex:none"></span><span class="idchip">${esc(cid)}</span>${r.key?keyTag():""}</div>
+        <div style="font-size:12.5px;line-height:1.5;color:#2A3633">${esc(r.control_desc||r.objective||"（統制内容未入力）")}</div>
+      </td>
+      <td class="ctl" style="min-width:82px">${sel(i,"de_result",r.de_result||"",["","有効","不備"])}</td>
+      <td class="ctl" style="min-width:88px">${inp2(i,"de_by",r.de_by,"氏名")}</td>
+      <td class="ctl" style="min-width:98px">${inp2(i,"de_date",r.de_date,"YYYY-MM-DD")}</td>
+      <td class="evalc" style="min-width:82px">${inp2(i,"oe_method",r.oe_method,"無作為","dlOeMethod")}</td>
+      <td class="evalc w-sm">${inp2(i,"oe_n",r.oe_n,"25")}</td>
+      <td class="evalc w-sm">${inp2(i,"oe_excns",r.oe_excns,"0")}</td>
+      <td class="evalc" style="min-width:90px">${sel(i,"oe_result",r.oe_result||"",["","有効","不備","対象外"])}</td>
+      <td class="evalc" style="min-width:88px">${inp2(i,"oe_by",r.oe_by,"氏名")}</td>
+      <td class="evalc" style="min-width:98px">${inp2(i,"oe_date",r.oe_date,"YYYY-MM-DD")}</td>
+      <td style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px"><span id="evw-total-${i}">${evalPill(overallEval(r))}</span></td>
+      <td style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px">
+        <button class="detailbtn${hasNotes?" on":""}" onclick="evwToggle('${escAttr(cid)}')" title="評価手続・評価内容を${open?"閉じる":"開く"}"><i class="ph ${open?"ph-caret-up":"ph-note-pencil"}"></i></button>
+        <button class="sm" id="evw-deflink-${i}" style="${showDefLink?"":"display:none"};margin-left:4px;padding:0 7px" onclick="gotoDef('${escAttr(cid)}')" title="不備管理の該当行へ"><i class="ph ph-warning"></i></button>
+      </td>
+    </tr>`;
+    if(open){
+      h+=`<tr class="evw-exp"><td colspan="${COLS}" style="background:#FAFCFB;padding:14px 16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--c-text-mid);flex-wrap:wrap">
+          ${r.risk_id?`<span class="rc-mini r">${esc(r.risk_id)}</span>`:""}<span>${esc(r.risk_desc||"")}</span>
+          <span style="color:var(--c-text-faint)">／ 対象工程 No.${esc(String(r.step_no||"—"))} ・ ${esc(r.freq||"頻度未設定")} ・ ${r.man_auto?esc(r.man_auto):"手動/自動未設定"}</span>
         </div>
-        <div class="evw-sec">
-          <h4><i class="ph ph-list-magnifying-glass" style="font-size:15px;color:var(--c-primary)"></i>運用評価（継続的な運用状況）</h4>
-          <div class="evw-row">
-            <label>テスト手続 ${inp2(i,"test",r.test,260,"例：一定期間の出荷を25件抽出し出荷指図書と突合")}</label>
+        <div class="evw-grid">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;color:#44514E;margin-bottom:6px"><i class="ph ph-compass" style="color:var(--c-primary)"></i> 整備評価の内容（何をどう確かめたか）</div>
+            ${ta(i,"de_note",r.de_note,"例：ウォークスルーで注文書→受注入力→承認記録を1件追跡し、統制のデザインがリスクを低減できる設計であることを確認")}
           </div>
-          <div class="evw-row">
-            <label>抽出方法 ${inp2(i,"oe_method",r.oe_method,90,"無作為","dlOeMethod")}</label>
-            <label>件数 ${inp2(i,"oe_n",r.oe_n,56,"25")}</label>
-            <label>例外 ${inp2(i,"oe_excns",r.oe_excns,56,"0")}</label>
-            <label>結果 ${sel(i,"oe_result",r.oe_result||"",["","有効","不備","対象外"])}</label>
-            <button class="sm" onclick="genSampleFor(${i})" title="母集団件数を入力すると、無作為のサンプル番号を生成して評価内容に追記します"><i class="ph ph-dice-five"></i>乱数でサンプル抽出</button>
+          <div>
+            <div style="font-size:11.5px;font-weight:700;color:#44514E;margin-bottom:6px"><i class="ph ph-list-magnifying-glass" style="color:var(--c-primary)"></i> テスト手続</div>
+            ${ta(i,"test",r.test,"例：一定期間の出荷から25件を無作為抽出し、出荷指図書と照合印の有無を突合")}
           </div>
-          <div class="evw-row">
-            <label>評価者 ${inp2(i,"oe_by",r.oe_by,110,"氏名")}</label>
-            <label>評価日 ${inp2(i,"oe_date",r.oe_date,110,"YYYY-MM-DD")}</label>
-          </div>
-          ${ta(i,"oe_note",r.oe_note,"サンプルの内容・例外の内容と評価結論の根拠（例：25件中、例外3件。繁忙期に照合印の漏れ。追加サンプルの要否と不備評価を記載）")}
         </div>
-      </div>
-    </div>`;
+        <div style="margin-top:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <span style="font-size:11.5px;font-weight:700;color:#44514E"><i class="ph ph-magnifying-glass" style="color:var(--c-primary)"></i> 運用評価の内容（サンプル・例外と結論の根拠）</span>
+            <button class="sm" onclick="genSampleFor(${i})" title="母集団件数を入力すると、無作為のサンプル番号を生成してここに追記します"><i class="ph ph-dice-five"></i>乱数でサンプル抽出</button>
+          </div>
+          ${ta(i,"oe_note",r.oe_note,"例：25件中、例外3件。繁忙期に照合印の漏れ。追加サンプルの要否と不備評価を記載")}
+        </div>
+      </td></tr>`;
+    }
   });
-  if(rows.length)h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>結果が「不備」の統制は、不備管理に登録して是正状況を追跡してください（カード右上の「不備管理へ」からジャンプ）。入力後は上部の［反映］で成果物・一覧に反映されます。</div>`;
-  document.getElementById("evalWorkBody").innerHTML=h;
+  h+=`</tbody></table></div>`;
+  h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>行の 📝 ボタンで評価手続・評価内容（長文）を展開して記入できます。結果が「不備」の統制には ⚠ ボタンが表示され、不備管理の該当行へジャンプします。入力は即時保存、［反映］で成果物・一覧に反映されます。</div>`;
+  el.innerHTML=h;
 }
 function renderEvalDoc(){
   setBanner("evalDocBanner");const p=outProc();
