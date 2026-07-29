@@ -115,8 +115,14 @@
   .appbar .ic{width:15px;height:15px;}
   .side a .ic{width:18px;height:18px;text-align:center;opacity:.95;}
   .side .grp{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#9FABA7;padding:14px 8px 4px;text-transform:uppercase;}
+  /* セクションのグループパネル（同一グループを視覚化） */
+  .nav-group{background:#F8FAF9;border:1px solid #ECF1EF;border-radius:11px;padding:2px 6px 7px;margin:10px 0 0;}
+  .nav-group .grp{padding:9px 6px 5px;}
+  .grp-toggle{display:flex;align-items:center;cursor:pointer;user-select:none;border-radius:7px;}
+  .grp-toggle:hover{color:var(--c-primary-d);}
+  .grp-toggle i{margin-left:auto;font-size:12px;color:#B4C3BF;}
   /* 三点セット作成グループの強調（雰囲気を保った淡tealパネル） */
-  .nav-feature{background:linear-gradient(180deg,#F1F8F5,#F8FBFA);border:1px solid #D9E8E2;border-radius:11px;padding:2px 6px 7px;margin:13px 0 3px;box-shadow:0 1px 2px rgba(14,124,115,.05);}
+  .nav-feature{background:linear-gradient(180deg,#F1F8F5,#F8FBFA);border:1px solid #CFE3DC;border-radius:11px;padding:2px 6px 7px;margin:10px 0 0;box-shadow:0 1px 3px rgba(14,124,115,.08);}
   .nav-feature .grp{color:var(--c-primary-d);padding:10px 6px 5px;}
   .nav-feature a{font-weight:500;color:#3A4742;}
   .nav-feature a i.ph{color:var(--c-primary);}
@@ -534,9 +540,11 @@
 <div class="shell">
   <nav class="side">
     <div class="nav-scroll">
-      <div class="grp">メイン</div>
-      <a class="jsox-only" data-pg="dash" tabindex="0" onclick="show('dash')" onkeydown="if(event.key==='Enter')show('dash')"><i class="ph ph-gauge"></i><span class="nav-lbl">ダッシュボード</span></a>
-      <a data-pg="processes" tabindex="0" onclick="show('processes')" onkeydown="if(event.key==='Enter')show('processes')"><i class="ph ph-squares-four"></i><span class="nav-lbl">プロセス管理</span></a>
+      <div class="nav-group">
+        <div class="grp">メイン</div>
+        <a class="jsox-only" data-pg="dash" tabindex="0" onclick="show('dash')" onkeydown="if(event.key==='Enter')show('dash')"><i class="ph ph-gauge"></i><span class="nav-lbl">ダッシュボード</span></a>
+        <a data-pg="processes" tabindex="0" onclick="show('processes')" onkeydown="if(event.key==='Enter')show('processes')"><i class="ph ph-squares-four"></i><span class="nav-lbl">プロセス管理</span></a>
+      </div>
       <div class="nav-feature">
         <div class="grp" id="navGrpMake">三点セット作成</div>
         <a data-pg="steps" tabindex="0" onclick="navSteps()" onkeydown="if(event.key==='Enter')navSteps()"><i class="ph ph-list-numbers"></i><span class="nav-lbl">業務記述書</span></a>
@@ -544,18 +552,24 @@
         <a data-pg="rcm" tabindex="0" onclick="navRcm()" onkeydown="if(event.key==='Enter')navRcm()"><i class="ph ph-table"></i><span class="nav-lbl">RCM（リスクと統制）</span></a>
         <a class="manual-only" data-pg="manualout" tabindex="0" onclick="show('manualout')" onkeydown="if(event.key==='Enter')show('manualout')"><i class="ph ph-files"></i><span class="nav-lbl">マニュアル出力</span></a>
       </div>
-      <div class="grp jsox-only">評価・点検</div>
-      <a class="jsox-only" data-pg="evalwork" tabindex="0" onclick="show('evalwork')" onkeydown="if(event.key==='Enter')show('evalwork')"><i class="ph ph-list-checks"></i><span class="nav-lbl">整備・運用評価</span></a>
-      <a class="jsox-only" data-pg="evaldoc" tabindex="0" onclick="show('evaldoc')" onkeydown="if(event.key==='Enter')show('evaldoc')"><i class="ph ph-clipboard-text"></i><span class="nav-lbl">評価結果（一覧）</span></a>
-      <a data-pg="gap" tabindex="0" onclick="show('gap')" onkeydown="if(event.key==='Enter')show('gap')"><i class="ph ph-magnifying-glass"></i><span class="nav-lbl">ギャップチェック</span></a>
-      <a data-pg="walk" tabindex="0" onclick="show('walk')" onkeydown="if(event.key==='Enter')show('walk')"><i class="ph ph-pencil-line"></i><span class="nav-lbl">ウォークスルー</span></a>
-      <a class="jsox-only" data-pg="rollf" tabindex="0" onclick="show('rollf')" onkeydown="if(event.key==='Enter')show('rollf')"><i class="ph ph-arrows-clockwise"></i><span class="nav-lbl">ロールフォワード</span></a>
-      <a data-pg="def" tabindex="0" onclick="show('def')" onkeydown="if(event.key==='Enter')show('def')"><i class="ph ph-warning"></i><span class="nav-lbl">不備管理</span></a>
-      <a data-pg="ev" tabindex="0" onclick="show('ev')" onkeydown="if(event.key==='Enter')show('ev')"><i class="ph ph-paperclip"></i><span class="nav-lbl">証憑（格納・依頼）</span></a>
-      <div class="grp">データ</div>
-      <a data-pg="import" tabindex="0" onclick="show('import')" onkeydown="if(event.key==='Enter')show('import')"><i class="ph ph-upload-simple"></i><span class="nav-lbl">取込（Excel / CSV）</span></a>
-      <a data-pg="library" tabindex="0" onclick="show('library')" onkeydown="if(event.key==='Enter')show('library')"><i class="ph ph-folder"></i><span class="nav-lbl">規程・資料</span></a>
-      <a class="jsox-only" data-pg="jnl" tabindex="0" onclick="show('jnl')" onkeydown="if(event.key==='Enter')show('jnl')"><i class="ph ph-receipt"></i><span class="nav-lbl">仕訳 編集</span></a>
+      <div class="nav-group">
+        <div class="grp">データ</div>
+        <a data-pg="import" tabindex="0" onclick="show('import')" onkeydown="if(event.key==='Enter')show('import')"><i class="ph ph-upload-simple"></i><span class="nav-lbl">取込（Excel / CSV）</span></a>
+        <a data-pg="library" tabindex="0" onclick="show('library')" onkeydown="if(event.key==='Enter')show('library')"><i class="ph ph-folder"></i><span class="nav-lbl">規程・資料</span></a>
+        <a class="jsox-only" data-pg="jnl" tabindex="0" onclick="show('jnl')" onkeydown="if(event.key==='Enter')show('jnl')"><i class="ph ph-receipt"></i><span class="nav-lbl">仕訳 編集</span></a>
+      </div>
+      <div class="nav-group jsox-only">
+        <div class="grp grp-toggle" onclick="toggleNavEval()" title="クリックで開閉">評価・点検<i class="ph ph-caret-down" id="navEvalCaret"></i></div>
+        <div id="navEvalItems">
+          <a data-pg="evalwork" tabindex="0" onclick="show('evalwork')" onkeydown="if(event.key==='Enter')show('evalwork')"><i class="ph ph-list-checks"></i><span class="nav-lbl">整備・運用評価</span></a>
+          <a data-pg="evaldoc" tabindex="0" onclick="show('evaldoc')" onkeydown="if(event.key==='Enter')show('evaldoc')"><i class="ph ph-clipboard-text"></i><span class="nav-lbl">評価結果（一覧）</span></a>
+          <a data-pg="gap" tabindex="0" onclick="show('gap')" onkeydown="if(event.key==='Enter')show('gap')"><i class="ph ph-magnifying-glass"></i><span class="nav-lbl">ギャップチェック</span></a>
+          <a data-pg="walk" tabindex="0" onclick="show('walk')" onkeydown="if(event.key==='Enter')show('walk')"><i class="ph ph-pencil-line"></i><span class="nav-lbl">ウォークスルー</span></a>
+          <a data-pg="rollf" tabindex="0" onclick="show('rollf')" onkeydown="if(event.key==='Enter')show('rollf')"><i class="ph ph-arrows-clockwise"></i><span class="nav-lbl">ロールフォワード</span></a>
+          <a data-pg="def" tabindex="0" onclick="show('def')" onkeydown="if(event.key==='Enter')show('def')"><i class="ph ph-warning"></i><span class="nav-lbl">不備管理</span></a>
+          <a data-pg="ev" tabindex="0" onclick="show('ev')" onkeydown="if(event.key==='Enter')show('ev')"><i class="ph ph-paperclip"></i><span class="nav-lbl">証憑（格納・依頼）</span></a>
+        </div>
+      </div>
     </div>
     <div class="nav-bottom">
       <a data-pg="help" tabindex="0" onclick="show('help')" onkeydown="if(event.key==='Enter')show('help')"><i class="ph ph-question"></i><span class="nav-lbl">使い方・基準参照</span></a>
@@ -1972,6 +1986,12 @@ function genSampleFor(i){
   markDirty();renderEvalWork();
   toast("サンプル番号を生成し、運用評価の評価内容に追記しました。");
 }
+/* ===== 評価・点検セクションの折りたたみ ===== */
+const EVAL_PGS=["evalwork","evaldoc","gap","walk","rollf","def","ev"];
+let _navEvalOpen=(function(){try{return localStorage.getItem("navEvalOpen")!=="0";}catch(e){return true;}})();
+function toggleNavEval(){_navEvalOpen=!_navEvalOpen;try{localStorage.setItem("navEvalOpen",_navEvalOpen?"1":"0");}catch(e){}applyNavEval();}
+function applyNavEval(){const it=document.getElementById("navEvalItems");if(it)it.style.display=_navEvalOpen?"":"none";
+  const c=document.getElementById("navEvalCaret");if(c)c.className="ph "+(_navEvalOpen?"ph-caret-down":"ph-caret-right");}
 /* ===== 印刷: 横幅を自動縮小してA4横に収める ===== */
 let _printZoomed=false;
 window.addEventListener("beforeprint",function(){
@@ -2215,6 +2235,8 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById("page-"+pg).classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.dataset.pg===(NAV_ALIAS[pg]||pg)));
   if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
   updateApplyBtn();if(typeof updateXlsMenu==="function")updateXlsMenu();
+  if(EVAL_PGS.includes(pg)&&!_navEvalOpen){_navEvalOpen=true;try{localStorage.setItem("navEvalOpen","1");}catch(e){}}
+  applyNavEval();
   updatePrintHead(pg);}
 function updatePrintHead(pg){
   const t=document.getElementById("phDocTitle");if(!t)return;
@@ -3079,7 +3101,23 @@ function attachEvidence(cid){_evCid=cid;const fi=document.getElementById("evFile
 function onEvFile(e){const cid=_evCid;if(!cid){return;}const files=[...e.target.files];if(!files.length)return;const o=evOf(cid);let pending=files.length;const done=()=>{if(--pending<=0){markDirty();renderEv();}};
   files.forEach(f=>{if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした。`);done();return;}const fr=new FileReader();fr.onload=()=>{o.files.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};fr.onerror=done;fr.readAsDataURL(f);});}
 document.getElementById("evFileInput").addEventListener("change",onEvFile);
-function dlEvidence(cid,idx){const f=evOf(cid).files[idx];if(!f)return;const a=document.createElement("a");a.href=f.data;a.download=f.name;document.body.appendChild(a);a.click();a.remove();}
+/* ===== 添付ファイル: Blob化して開く/ダウンロード（data:URL直リンクはブラウザ制限で失敗するため） ===== */
+function dataUrlToBlob(du){const m=String(du||"").match(/^data:([^;,]+)?(;base64)?,([\s\S]*)$/);if(!m)return null;
+  const mime=m[1]||"application/octet-stream";
+  try{
+    if(m[2]){const bin=atob(m[3]);const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);return new Blob([u8],{type:mime});}
+    return new Blob([decodeURIComponent(m[3])],{type:mime});
+  }catch(e){return null;}}
+function openAttachment(f){if(!f||!f.data){alert("ファイルデータがありません。");return;}
+  const b=dataUrlToBlob(f.data);if(!b){alert("ファイルを開けませんでした。");return;}
+  const u=URL.createObjectURL(b);const w=window.open(u,"_blank");
+  if(!w)alert("ポップアップがブロックされました。ブラウザのアドレスバー付近の許可、または ⤓ ダウンロードをご利用ください。");
+  setTimeout(()=>URL.revokeObjectURL(u),120000);}
+function dlAttachment(f){if(!f||!f.data)return;const b=dataUrlToBlob(f.data);if(!b)return;
+  const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=f.name||"file";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);}
+function openEvidence(cid,idx){openAttachment(evOf(cid).files[idx]);}
+function openLibFile(id,i){const it=libArr().find(x=>x.id===id);if(it)openAttachment((it.files||[])[i]);}
+function dlEvidence(cid,idx){dlAttachment(evOf(cid).files[idx]);}
 function delEvidence(cid,idx){const o=evOf(cid);if(!o.files[idx])return;if(!confirm(`証憑「${o.files[idx].name}」を削除しますか？`))return;o.files.splice(idx,1);markDirty();renderEv();}
 function evTotalBytes(){let n=0;Object.values(P().evidence||{}).forEach(o=>(o.files||[]).forEach(f=>n+=f.size||0));return n;}
 function renderEv(){
@@ -3090,7 +3128,7 @@ function renderEv(){
   let h="";
   if(!ctrls.length)h=`<tr><td colspan="8" style="color:var(--muted);padding:10px">統制ID付きのRCM行がありません。RCM編集で統制IDを入力してください。</td></tr>`;
   ctrls.forEach(r=>{const cid=(r.control_id||"").trim();const o=evOf(cid);
-    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)} <a href="#" onclick="dlEvidence('${escAttr(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escAttr(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">✕</a></span>`).join(" ");
+    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})　クリックで開く"><a href="#" onclick="openEvidence('${escAttr(cid)}',${idx});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlEvidence('${escAttr(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escAttr(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">✕</a></span>`).join(" ");
     h+=`<tr>`
       +`<td class="w-no"><b>${esc(cid)}</b>${r.key?'<span class="tagmini" style="background:'+C_CTRL+'">KC</span>':""}</td>`
       +`<td>${esc(r.gyomu||"")}</td>`
@@ -3209,7 +3247,7 @@ function onLibFile(e){const id=_libId;if(!id)return;const it=libArr().find(x=>x.
   const done=()=>{if(--pending<=0){markDirty();renderLibrary();}};
   files.forEach(f=>{if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした。大容量はリンク登録を推奨します。`);done();return;}
     const fr=new FileReader();fr.onload=()=>{it.files.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};fr.onerror=done;fr.readAsDataURL(f);});}
-function dlLibFile(id,i){const it=libArr().find(x=>x.id===id);if(!it)return;const f=(it.files||[])[i];if(!f)return;const a=document.createElement("a");a.href=f.data;a.download=f.name;document.body.appendChild(a);a.click();a.remove();}
+function dlLibFile(id,i){const it=libArr().find(x=>x.id===id);if(it)dlAttachment((it.files||[])[i]);}
 function delLibFile(id,i){const it=libArr().find(x=>x.id===id);if(!it)return;const f=(it.files||[])[i];if(!f)return;if(!confirm(`添付「${f.name}」を削除しますか？`))return;pushUndo();it.files.splice(i,1);markDirty();renderLibrary();}
 function libTotalBytes(){let n=0;libArr().forEach(it=>(it.files||[]).forEach(f=>n+=f.size||0));return n;}
 function renderLibrary(){
@@ -3224,7 +3262,7 @@ function renderLibrary(){
   if(!rows.length){body.innerHTML=`<tr><td colspan="6" style="color:var(--muted);padding:10px">${all.length?"条件に一致する資料がありません。":"まだ規程・資料が登録されていません。「＋資料を追加」から登録できます。"}</td></tr>`;return;}
   body.innerHTML=rows.map(it=>{
     const links=(it.links||[]).map((u,i)=>`<span class="tagmini" style="background:#56635F"><a href="${escAttr(u)}" target="_blank" rel="noopener" style="color:#cde;text-decoration:none" title="${escAttr(u)}">🔗リンク</a> <a href="#" onclick="delLibLink('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">✕</a></span>`).join(" ");
-    const files=(it.files||[]).map((f,i)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)} <a href="#" onclick="dlLibFile('${escAttr(it.id)}',${i});return false" style="color:#cde;text-decoration:none" title="ダウンロード">⤓</a> <a href="#" onclick="delLibFile('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">✕</a></span>`).join(" ");
+    const files=(it.files||[]).map((f,i)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})　クリックで開く"><a href="#" onclick="openLibFile('${escAttr(it.id)}',${i});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlLibFile('${escAttr(it.id)}',${i});return false" style="color:#cde;text-decoration:none" title="ダウンロード">⤓</a> <a href="#" onclick="delLibFile('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">✕</a></span>`).join(" ");
     return `<tr>`
       +`<td class="w-md"><b>${esc(it.title||"")}</b></td>`
       +`<td class="w-sm">${esc(it.category||"")}</td>`
