@@ -433,7 +433,6 @@
       <a class="jsox-only" data-pg="rollf" tabindex="0" onclick="show('rollf')" onkeydown="if(event.key==='Enter')show('rollf')"><i class="ph ph-arrows-clockwise"></i><span class="nav-lbl">ロールフォワード</span></a>
       <a data-pg="def" tabindex="0" onclick="show('def')" onkeydown="if(event.key==='Enter')show('def')"><i class="ph ph-warning"></i><span class="nav-lbl">不備管理</span></a>
       <a data-pg="ev" tabindex="0" onclick="show('ev')" onkeydown="if(event.key==='Enter')show('ev')"><i class="ph ph-paperclip"></i><span class="nav-lbl">証憑（格納・依頼）</span></a>
-      <a class="jsox-only" data-pg="report" tabindex="0" onclick="show('report')" onkeydown="if(event.key==='Enter')show('report')"><i class="ph ph-file-text"></i><span class="nav-lbl">報告書ドラフト</span></a>
       <div class="grp">データ</div>
       <a data-pg="import" tabindex="0" onclick="show('import')" onkeydown="if(event.key==='Enter')show('import')"><i class="ph ph-upload-simple"></i><span class="nav-lbl">取込（Excel / CSV）</span></a>
       <a data-pg="library" tabindex="0" onclick="show('library')" onkeydown="if(event.key==='Enter')show('library')"><i class="ph ph-folder"></i><span class="nav-lbl">規程・資料</span></a>
@@ -561,12 +560,6 @@
       </tr></thead><tbody id="evBody"></tbody></table></div>
       <input type="file" id="evFileInput" multiple style="display:none">
       <div class="hint">格納したファイルはこのブラウザ内に保持され、プロジェクト保存(.json)に含まれます（外部送信なし）。容量が大きいとjsonが肥大化するため、目安として1ファイル5MBまで・合計は控えめにしてください。</div>
-    </div></section>
-
-    <!-- REPORT (評価結果・報告書ドラフト) -->
-    <section class="page" id="page-report"><div class="pad">
-      <div class="ph"><h2>評価結果・報告書ドラフト</h2><span class="sub">全プロセス統合評価結果と内部統制報告書（社内ドラフト）</span><span class="sp"></span></div>
-      <div id="reportContent"></div>
     </div></section>
 
     <!-- STEPS DOC (成果物) -->
@@ -1457,122 +1450,6 @@ function exportDocXlsx(containerId,fileBase){
   download(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),(fileBase||"export")+".xlsx");
 }
 
-function renderReport(){
-  const agg=aggregate();
-  const r=db.report||{};
-  let html="";
-
-  // Warning banner
-  html+=`<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-weight:600;color:#856404;">
-    &#9888; 社内ドラフト — 経営者の確認・監査人との協議を経て確定すること
-  </div>`;
-
-  // 報告設定 panel
-  html+=`<div class="card" style="margin-bottom:20px"><h3 style="margin:0 0 12px;font-size:14px;font-weight:700">報告設定</h3>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    <label style="font-size:12px;font-weight:600">会社名<br>
-      <input type="text" value="${esc(r.company||"")}" style="width:100%;margin-top:4px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;box-sizing:border-box"
-        onchange="pushUndo();db.report.company=this.value;markDirty()" oninput="db.report.company=this.value;markDirty()"></label>
-    <label style="font-size:12px;font-weight:600">基準日（期末日）<br>
-      <input type="text" value="${esc(r.fiscalEnd||"")}" placeholder="例: 2025年3月31日" style="width:100%;margin-top:4px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;box-sizing:border-box"
-        onchange="pushUndo();db.report.fiscalEnd=this.value;markDirty()" oninput="db.report.fiscalEnd=this.value;markDirty()"></label>
-    <label style="font-size:12px;font-weight:600">評価実施日<br>
-      <input type="text" value="${esc(r.evalDate||"")}" placeholder="例: 2025年6月15日" style="width:100%;margin-top:4px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;box-sizing:border-box"
-        onchange="pushUndo();db.report.evalDate=this.value;markDirty()" oninput="db.report.evalDate=this.value;markDirty()"></label>
-    <label style="font-size:12px;font-weight:600">評価の枠組み<br>
-      <input type="text" value="${esc(r.framework||"財務報告に係る内部統制の評価及び監査の基準並びに実施基準（企業会計審議会）")}" style="width:100%;margin-top:4px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;box-sizing:border-box"
-        onchange="pushUndo();db.report.framework=this.value;markDirty()" oninput="db.report.framework=this.value;markDirty()"></label>
-  </div>
-  <label style="font-size:12px;font-weight:600;display:block;margin-top:12px">範囲メモ（任意）<br>
-    <textarea rows="2" style="width:100%;margin-top:4px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;box-sizing:border-box;resize:vertical"
-      onchange="pushUndo();db.report.scopeNote=this.value;markDirty()" oninput="db.report.scopeNote=this.value;markDirty()">${esc(r.scopeNote||"")}</textarea></label>
-  </div>`;
-
-  // 評価結果サマリ表
-  html+=`<div class="card" style="margin-bottom:20px"><h3 style="margin:0 0 12px;font-size:14px;font-weight:700">評価結果サマリ（対象プロセス別）</h3>
-  <div class="gridbox"><table class="dr"><thead><tr>
-    <th>プロセス名</th><th>統制数</th><th>キー統制</th><th>整備評価済</th><th>運用評価済</th><th>不備件数</th><th>うち開示すべき重要な不備</th><th>例外件数</th><th>総合</th>
-  </tr></thead><tbody>`;
-  agg.procs.forEach(pp=>{
-    const pCtl=pp.rcm.filter(r=>(r.control_id||"").trim()).length;
-    const pKey=pp.rcm.filter(r=>r.key).length;
-    const pDe=pp.rcm.filter(r=>r.de_result).length;
-    const pOe=pp.rcm.filter(r=>r.oe_result).length;
-    const pDefs=(pp.deficiencies||[]).length;
-    const pMat=(pp.deficiencies||[]).filter(d=>d.type==="開示すべき重要な不備"&&d.status!=="是正済").length;
-    const pExc=pp.rcm.reduce((s2,r)=>{const n=parseInt(r.oe_excns,10);return s2+(isNaN(n)?0:n);},0);
-    const pConc=pMat>0?"&#10060;重要な不備あり":(pDefs>0?"&#9651;不備あり":"&#9989;問題なし");
-    html+=`<tr><td>${esc(pp.name)}</td><td style="text-align:center">${pCtl}</td><td style="text-align:center">${pKey}</td><td style="text-align:center">${pDe}</td><td style="text-align:center">${pOe}</td><td style="text-align:center">${pDefs}</td><td style="text-align:center;color:${pMat>0?"#d32f2f":"inherit"};font-weight:${pMat>0?700:400}">${pMat}</td><td style="text-align:center">${pExc}</td><td>${pConc}</td></tr>`;
-  });
-  html+=`<tr style="font-weight:700;background:var(--stripe)"><td>【合計】</td><td style="text-align:center">${agg.ctl}</td><td style="text-align:center">${agg.key}</td><td style="text-align:center">${agg.deOk}</td><td style="text-align:center">${agg.oeOk}</td><td style="text-align:center">${agg.defs.length}</td><td style="text-align:center;color:${agg.material.length>0?"#d32f2f":"inherit"}">${agg.material.length}</td><td style="text-align:center">${agg.exc}</td><td></td></tr>`;
-  html+=`</tbody></table></div></div>`;
-
-  // 全社結論ブロック
-  const isEff=agg.conclusion==="effective";
-  html+=`<div class="card" style="margin-bottom:20px;text-align:center;padding:32px">
-    <div style="font-size:48px;font-weight:900;color:${isEff?"#2e7d32":"#c62828"};margin-bottom:8px">${isEff?"有効":"有効でない"}</div>
-    <div style="font-size:16px;color:${isEff?"#388e3c":"#d32f2f"}">${isEff?"財務報告に係る内部統制は有効であると判断されます（候補）":"開示すべき重要な不備があり、財務報告に係る内部統制は有効でないと判断されます（候補）"}</div>
-  </div>`;
-
-  // 未是正の重要な不備 table (if notEffective)
-  if(!isEff){
-    html+=`<div class="card" style="margin-bottom:20px"><h3 style="margin:0 0 12px;font-size:14px;font-weight:700;color:#c62828">開示すべき重要な不備（未是正）</h3>
-    <div class="gridbox"><table class="dr"><thead><tr><th>プロセス</th><th>不備ID</th><th>不備の内容</th><th>原因</th><th>発見日</th><th>是正状況</th></tr></thead><tbody>`;
-    agg.material.forEach(d=>{
-      html+=`<tr><td>${esc(d._proc||"")}</td><td>${esc(d.def_id||"")}</td><td>${esc(d.desc||"")}</td><td>${esc(d.cause||"")}</td><td>${esc(d.found||"")}</td><td>${esc(d.status||"")}</td></tr>`;
-    });
-    html+=`</tbody></table></div></div>`;
-  }
-
-  // 内部統制報告書ドラフト
-  const company=r.company||"[会社名未設定]";
-  const fiscalEnd=r.fiscalEnd||"[基準日未設定]";
-  const evalDate=r.evalDate||"[評価実施日未設定]";
-  const framework=r.framework||"財務報告に係る内部統制の評価及び監査の基準並びに実施基準（企業会計審議会）";
-  const scopeNote=r.scopeNote||"";
-  const inScopeList=agg.procs.map(p=>"・"+p.name).join("\n");
-  const conclusionText=isEff?"有効である":"有効でない";
-  let defDetail="";
-  if(!isEff){
-    defDetail="\n（開示すべき重要な不備の内容）\n";
-    agg.material.forEach(d=>{defDetail+=`・[${esc(d.def_id||"")}] ${esc(d.desc||"")}（プロセス：${esc(d._proc||"")}）\n`;});
-  }
-  const draftText=`【社内ドラフト — 経営者の確認・監査人との協議を経て確定すること】
-
-内部統制報告書（たたき台）
-
-                                    ${company}
-
-（内部統制に関する基本的枠組みに関する事項）
-当社は、財務報告の信頼性を確保するため、財務報告に係る内部統制の整備及び運営に責任を有しています。内部統制は、どれほど整備・運用されていても、その固有の限界により、財務報告に係る虚偽の記載を完全には防止または発見できない場合があります。
-
-（評価の範囲、基準日及び評価手続に関する事項）
-当社は、${fiscalEnd} を基準日として、当社の財務報告に係る内部統制の有効性について評価を行いました。
-
-評価に当たっては、${framework} に準拠しました。
-
-評価の範囲は以下のプロセスです：
-${inScopeList}
-${scopeNote ? "（範囲メモ: " + scopeNote + "）" : ""}
-（評価結果に関する事項）
-上記の評価手続を実施した結果、${evalDate} 現在において、当社の財務報告に係る内部統制は ${conclusionText} と判断しました。
-${defDetail}
-（付記事項）
-該当事項はありません。
-
-（特記事項）
-該当事項はありません。`;
-
-  html+=`<div class="card"><h3 style="margin:0 0 12px;font-size:14px;font-weight:700">内部統制報告書ドラフト</h3>
-  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-    <button class="sm" onclick="navigator.clipboard.writeText(document.getElementById('reportDraftText').textContent).then(()=>alert('コピーしました'))">クリップボードにコピー</button>
-  </div>
-  <pre id="reportDraftText" style="background:#f8f9fa;border:1px solid var(--line);border-radius:6px;padding:16px;white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:12px;line-height:1.7;overflow:auto;max-height:600px">${esc(draftText)}</pre>
-  </div>`;
-
-  document.getElementById("reportContent").innerHTML=html;
-}
-
 function exportXlsx(){
   if(typeof XLSX==="undefined"){alert("Excelライブラリが見つかりません。");return;}
   const p=outProc();const wb=XLSX.utils.book_new();
@@ -1802,7 +1679,7 @@ const MODE_CONFIG={
     navLabels:{processes:"業務の管理",steps:"手順書",stepsdoc:"手順書",rcm:"業務ルール表 編集",rcmdoc:"業務ルール表",flow:"業務フロー図",gap:"抜け漏れチェック",walk:"業務ヒアリングメモ",def:"改善ポイント",ev:"使用資料",library:"規程・資料",manualout:"マニュアル出力"},
     terms:{process:"業務",risk:"起こりうるミス・問題",control:"チェックポイント",keyControl:"重要チェック",evidence:"使用帳票・関連資料・記録",deficiency:"改善ポイント",evaluation:"実施確認"},
     /* §7: マニュアルモードでは J-SOX 系ページを非表示（手順書・フロー図・取込・規程資料・ヘルプ中心） */
-    hiddenPages:["dash","rcm","rcmdoc","evalwork","evaldoc","gap","walk","rollf","def","ev","report","jnl"],
+    hiddenPages:["dash","rcm","rcmdoc","evalwork","evaldoc","gap","walk","rollf","def","ev","jnl"],
     hiddenFields:["assertion","ipe","itac"],
     templates:["expense_manual","bill_manual","collect_manual","payment_manual","monthly_manual","order_manual","inquiry_manual"]
   },
@@ -2032,7 +1909,7 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   if(pg==="steps"||pg==="stepsdoc")_viewPref.steps=(pg==="steps")?"edit":"preview";
   if(pg==="rcm"||pg==="rcmdoc")_viewPref.rcm=(pg==="rcm")?"edit":"preview";
   document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById("page-"+pg).classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.dataset.pg===(NAV_ALIAS[pg]||pg)));
-  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="report")renderReport();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
+  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
   updateApplyBtn();}
 function fzoom(d){fscale=Math.min(2,Math.max(0.4,fscale+d*0.1));document.getElementById("flowCanvas").style.transform="scale("+fscale+")";document.getElementById("zlabel").textContent=Math.round(fscale*100)+"%";}
 function fzoomReset(){fscale=1;document.getElementById("flowCanvas").style.transform="scale(1)";document.getElementById("zlabel").textContent="100%";}
