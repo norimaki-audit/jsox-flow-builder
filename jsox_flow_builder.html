@@ -115,6 +115,13 @@
   .appbar .ic{width:15px;height:15px;}
   .side a .ic{width:18px;height:18px;text-align:center;opacity:.95;}
   .side .grp{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#9FABA7;padding:14px 8px 4px;text-transform:uppercase;}
+  /* 三点セット作成グループの強調（雰囲気を保った淡tealパネル） */
+  .nav-feature{background:linear-gradient(180deg,#F1F8F5,#F8FBFA);border:1px solid #D9E8E2;border-radius:11px;padding:2px 6px 7px;margin:13px 0 3px;box-shadow:0 1px 2px rgba(14,124,115,.05);}
+  .nav-feature .grp{color:var(--c-primary-d);padding:10px 6px 5px;}
+  .nav-feature a{font-weight:500;color:#3A4742;}
+  .nav-feature a i.ph{color:var(--c-primary);}
+  .nav-feature a:hover{background:#E7F1ED;}
+  .nav-feature a.active{background:#DFEEE9;box-shadow:inset 3px 0 0 var(--c-primary);font-weight:600;color:var(--c-primary-d);}
   .main{flex:1;overflow:auto;padding:0;min-width:0;}
   .page{display:none;}
   .page.active{display:block;}
@@ -465,11 +472,13 @@
       <div class="grp">メイン</div>
       <a class="jsox-only" data-pg="dash" tabindex="0" onclick="show('dash')" onkeydown="if(event.key==='Enter')show('dash')"><i class="ph ph-gauge"></i><span class="nav-lbl">ダッシュボード</span></a>
       <a data-pg="processes" tabindex="0" onclick="show('processes')" onkeydown="if(event.key==='Enter')show('processes')"><i class="ph ph-squares-four"></i><span class="nav-lbl">プロセス管理</span></a>
-      <div class="grp" id="navGrpMake">三点セット作成</div>
-      <a data-pg="steps" tabindex="0" onclick="navSteps()" onkeydown="if(event.key==='Enter')navSteps()"><i class="ph ph-list-numbers"></i><span class="nav-lbl">業務記述書</span></a>
-      <a data-pg="flow" tabindex="0" onclick="show('flow')" onkeydown="if(event.key==='Enter')show('flow')"><i class="ph ph-flow-arrow"></i><span class="nav-lbl">フロー図</span></a>
-      <a data-pg="rcm" tabindex="0" onclick="navRcm()" onkeydown="if(event.key==='Enter')navRcm()"><i class="ph ph-table"></i><span class="nav-lbl">RCM（リスクと統制）</span></a>
-      <a class="manual-only" data-pg="manualout" tabindex="0" onclick="show('manualout')" onkeydown="if(event.key==='Enter')show('manualout')"><i class="ph ph-files"></i><span class="nav-lbl">マニュアル出力</span></a>
+      <div class="nav-feature">
+        <div class="grp" id="navGrpMake">三点セット作成</div>
+        <a data-pg="steps" tabindex="0" onclick="navSteps()" onkeydown="if(event.key==='Enter')navSteps()"><i class="ph ph-list-numbers"></i><span class="nav-lbl">業務記述書</span></a>
+        <a data-pg="flow" tabindex="0" onclick="show('flow')" onkeydown="if(event.key==='Enter')show('flow')"><i class="ph ph-flow-arrow"></i><span class="nav-lbl">フロー図</span></a>
+        <a data-pg="rcm" tabindex="0" onclick="navRcm()" onkeydown="if(event.key==='Enter')navRcm()"><i class="ph ph-table"></i><span class="nav-lbl">RCM（リスクと統制）</span></a>
+        <a class="manual-only" data-pg="manualout" tabindex="0" onclick="show('manualout')" onkeydown="if(event.key==='Enter')show('manualout')"><i class="ph ph-files"></i><span class="nav-lbl">マニュアル出力</span></a>
+      </div>
       <div class="grp jsox-only">評価・点検</div>
       <a class="jsox-only" data-pg="evalwork" tabindex="0" onclick="show('evalwork')" onkeydown="if(event.key==='Enter')show('evalwork')"><i class="ph ph-list-checks"></i><span class="nav-lbl">整備・運用評価</span></a>
       <a class="jsox-only" data-pg="evaldoc" tabindex="0" onclick="show('evaldoc')" onkeydown="if(event.key==='Enter')show('evaldoc')"><i class="ph ph-clipboard-text"></i><span class="nav-lbl">評価結果（一覧）</span></a>
