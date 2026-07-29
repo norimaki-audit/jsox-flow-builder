@@ -439,6 +439,7 @@
     .statuspill{padding:4px 8px;}
     .brand-txt .bt2{display:none;}
     .pa-lbl{display:none;}
+    .ai-lbl{display:none;}
     .seg button{padding:0 9px;}
   }
   /* ===== 印刷専用要素（画面では非表示） ===== */
@@ -510,6 +511,7 @@
   <button id="applyBtn" class="sm applybtn" onclick="applyAll()" title="いまの編集内容を、業務記述書・フロー図・RCM等の成果物に反映します（アクティブプロセス）"><i class="ph ph-check-circle"></i>反映</button>
   <span class="ab-sep"></span>
   <button class="sm" onclick="saveProject()" title="現在のプロジェクトを .json ファイルに保存します"><i class="ph ph-floppy-disk" style="color:#5A6863"></i>保存</button>
+  <button class="sm" onclick="aiOpen()" title="いま見ている画面の内容を、お使いのAIツールに貼り付けられる形で整形コピーします（自動送信はしません）"><i class="ph ph-sparkle" style="color:#0E7C73"></i><span class="ai-lbl">AIに相談</span></button>
   <div class="filemenu-wrap">
     <button class="sm" id="xlsMenuBtn" onclick="toggleXlsMenu(event)" title="Excel出力（いま見ている画面に対応した出力を選べます）"><i class="ph ph-microsoft-excel-logo" style="color:#1D7044"></i>Excel出力<i class="ph ph-caret-down" style="font-size:11px;color:#9AA6A2"></i></button>
     <div class="filemenu" id="xlsMenu" style="width:270px">
@@ -934,6 +936,38 @@
   </div>
 </div>
 
+<!-- AIに相談用としてコピー -->
+<div id="aiModal" class="modal-ovl">
+  <div class="modal-box" style="width:740px">
+    <div class="modal-head">
+      <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,#0E7C73,#0A5E57);display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ph-sparkle" style="font-size:20px;color:#fff"></i></div>
+      <div style="flex:1">
+        <h2 style="margin:0 0 3px;font-size:16px;font-weight:700">AIに相談用としてコピー</h2>
+        <p style="margin:0;font-size:12px;color:#6A756F">いま見ている画面の内容を、お使いのAIツール（ChatGPT / Claude / Copilot 等）へ貼り付けられる形に整形します。<b>このツールがデータを送信することはありません。</b></p>
+      </div>
+      <button class="modal-x" onclick="aiClose()"><i class="ph ph-x" style="font-size:16px"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="evw-row" style="margin-bottom:10px">
+        <label>相談の目的
+          <select id="aiPurpose" onchange="aiBuild()" style="min-width:300px">
+            <option value="review">文書レビュー（不足・不整合・改善点の指摘）</option>
+            <option value="risk">リスクと統制の網羅性チェック（アサーション別）</option>
+            <option value="proc">評価手続・サンプル・結論の妥当性レビュー</option>
+            <option value="write">記述の文章改善（監査に耐える表現へ）</option>
+            <option value="free">コンテキストのみ（質問は自分で書く）</option>
+          </select></label>
+        <span id="aiCount" style="font-size:11px;color:var(--c-text-faint)"></span>
+      </div>
+      <textarea id="aiText" class="evw-note" style="min-height:300px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.6"></textarea>
+      <div class="hint" style="margin-top:10px">⚠ 貼り付け先は<b>会社で承認されたAIツール（入力が学習に使用されない契約のもの）</b>をご利用ください。送信前にプレビューを確認し、機密性の高い固有名詞等は編集・削除してください。AIの回答はあくまで下書き・参考であり、<b>評価判断と結論は評価者自身が行い、調書に記録</b>してください。</div>
+    </div>
+    <div class="modal-foot">
+      <button onclick="aiClose()">閉じる</button>
+      <button class="primary" onclick="aiCopy()"><i class="ph ph-clipboard-text"></i>クリップボードにコピー</button>
+    </div>
+  </div>
+</div>
 <datalist id="dlDept"></datalist>
 <datalist id="dlGyomu"></datalist>
 <datalist id="dlAssert"><option value="実在性"><option value="網羅性"><option value="権利と義務の帰属"><option value="評価の妥当性"><option value="期間配分の適切性"><option value="表示の妥当性"><option value="正確性"><option value="実在性・期間配分"></datalist>
@@ -2067,6 +2101,77 @@ document.addEventListener("mousedown",e=>{
   new MutationObserver(()=>{clearTimeout(t);t=setTimeout(()=>applyColWidths(main),60);}).observe(main,{childList:true,subtree:true});
   applyColWidths(main);
 })();
+/* =================================================================
+   AIに相談用としてコピー（コンテキスト整形・手動貼り付け方式）
+   ================================================================= */
+function _aiSteps(p){
+  const act=p.steps.filter(s=>(s.dept||"").trim()||(s.label||"").trim());
+  let md="### 業務記述書（"+(p.name||"")+"）\n\n|No.|業務|担当部門|担当|種類|業務内容|使用システム|証跡|\n|--|--|--|--|--|--|--|--|\n";
+  act.forEach(s=>{md+=`|${s.no}|${s.gyomu||""}|${s.dept||""}|${s.role||""}|${s.type||""}|${s.label||""}|${s.system||""}|${s.evidence||""}|\n`;});
+  const wd=act.filter(s=>(s.detail||"").trim());
+  if(wd.length){md+="\n#### 各工程の詳細記述\n";wd.forEach(s=>{md+=`\n**No.${s.no} ${s.label}**\n${s.detail}\n`;});}
+  return md;
+}
+function _aiRcm(p){
+  let md="### RCM（リスクと統制）\n\n|リスクID|リスク内容|統制ID|統制内容|アサーション|予防/発見|手動/自動|頻度|キー|\n|--|--|--|--|--|--|--|--|--|\n";
+  rcmSorted(p.rcm).forEach(r=>{md+=`|${r.risk_id||""}|${r.risk_desc||""}|${r.control_id||""}|${r.control_desc||""}|${asrtList(r).join("・")}|${r.prev_det||""}|${r.man_auto||""}|${r.freq||""}|${r.key?"KC":""}|\n`;});
+  return md;
+}
+function _aiEval(p){
+  let md="### 整備・運用評価の状況\n\n|統制ID|統制内容|整備:結果/主体|運用:手続/抽出/件数/例外/結果/主体|総合|\n|--|--|--|--|--|\n";
+  rcmSorted(p.rcm.filter(r=>(r.control_id||"").trim())).forEach(r=>{
+    md+=`|${r.control_id}|${r.control_desc||""}|${r.de_result||"未"}/${r.de_role||"-"}|${r.test||"-"} / ${r.oe_method||"-"} / ${r.oe_n||"-"}件 / 例外${r.oe_excns||"0"} / ${r.oe_result||"未"} / ${r.oe_role||"-"}|${overallEvalText(r)}|\n`;});
+  const noted=p.rcm.filter(r=>(r.de_note||"").trim()||(r.oe_note||"").trim());
+  if(noted.length){md+="\n#### 評価内容\n";noted.forEach(r=>{md+=`\n**${r.control_id}**\n整備: ${r.de_note||"-"}\n運用: ${r.oe_note||"-"}\n`;});}
+  return md;
+}
+function _aiDef(p){
+  const ds=p.deficiencies||[];if(!ds.length)return "### 不備管理\n登録なし\n";
+  let md="### 不備管理\n\n|不備ID|区分|関連統制|内容|原因|状況|\n|--|--|--|--|--|--|\n";
+  ds.forEach(d=>{md+=`|${d.def_id||""}|${d.type||""}|${d.control_id||""}|${d.desc||""}|${d.cause||""}|${d.status||""}|\n`;});
+  return md;
+}
+function _aiGap(p){
+  const items=gapCheck(p);if(!items.length)return "### ギャップチェック\n指摘なし\n";
+  let md="### ギャップチェック（自動検出された指摘）\n\n";
+  items.forEach(it=>{md+=`- [${it.lv==="error"?"要対応":it.lv==="warning"?"警告":"提案"}/${it.cat}] ${it.msg}\n`;});
+  return md;
+}
+function aiContext(){
+  const p=outProc();
+  const head=`# J-SOX 三点セット（プロセス: ${p.name||""} / ${p.id||""}）\n\n`;
+  switch(curPage){
+    case "steps":case "stepsdoc":return head+_aiSteps(p);
+    case "rcm":case "rcmdoc":return head+_aiRcm(p);
+    case "flow":{let md=head+_aiSteps(p);try{md+="\n### フロー図（Mermaid）\n```mermaid\n"+buildMermaid(p)+"\n```\n";}catch(e){}return md;}
+    case "evalwork":case "evaldoc":return head+_aiRcm(p)+"\n"+_aiEval(p);
+    case "gap":return head+_aiGap(p)+"\n"+_aiSteps(p)+"\n"+_aiRcm(p);
+    case "def":return head+_aiDef(p)+"\n"+_aiEval(p);
+    default:return head+_aiSteps(p)+"\n"+_aiRcm(p)+"\n"+_aiEval(p);
+  }
+}
+const AI_TPL={
+  review:"あなたはJ-SOX（内部統制報告制度）に詳しい公認会計士です。以下の三点セット文書をレビューし、(1)記載の不足、(2)文書間の不整合、(3)改善提案を、重要度順に具体的に指摘してください。",
+  risk:"あなたはJ-SOXに詳しい公認会計士です。以下の業務プロセスについて、財務報告リスクの観点で想定すべきリスクと統制に漏れがないか、アサーション（実在性・網羅性・権利義務・評価・期間配分・表示）別に検討し、追加すべきリスク・統制を提案してください。",
+  proc:"あなたは監査基準委員会報告書（監基報230/330/500）に詳しい監査人です。以下の整備・運用評価について、評価手続の種類・サンプル件数・例外への対応・結論の妥当性をレビューし、監査調書として不足している記録要素を指摘してください。",
+  write:"以下の内部統制文書の記述を、監査に耐える明確な表現（主語・タイミング・頻度・証跡が特定できる書き方）に改善してください。変更点がわかるように修正案を提示してください。",
+  free:"",
+};
+function aiOpen(){document.getElementById("aiModal").style.display="flex";aiBuild();}
+function aiClose(){document.getElementById("aiModal").style.display="none";}
+function aiBuild(){
+  const k=document.getElementById("aiPurpose").value;
+  const tpl=AI_TPL[k];
+  const txt=(tpl?tpl+"\n\n---\n\n":"")+aiContext();
+  const ta=document.getElementById("aiText");ta.value=txt;
+  document.getElementById("aiCount").textContent="約 "+txt.length.toLocaleString()+" 文字";
+}
+function aiCopy(){
+  const t=document.getElementById("aiText").value;
+  const done=()=>{toast("コピーしました。お使いのAIツールに貼り付けてください。");aiClose();};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>{document.getElementById("aiText").select();document.execCommand("copy");done();});
+  else{document.getElementById("aiText").select();document.execCommand("copy");done();}
+}
 /* ===== 評価・点検セクションの折りたたみ ===== */
 const EVAL_PGS=["evalwork","evaldoc","gap","walk","rollf","def","ev"];
 let _navEvalOpen=(function(){try{return localStorage.getItem("navEvalOpen")!=="0";}catch(e){return true;}})();
