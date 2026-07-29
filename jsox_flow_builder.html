@@ -1740,7 +1740,7 @@ const STEP_F=["no","gyomu","dept","role","type","label","detail","system","evide
 function exportStepsCSV(){const p=P();let l=["プロセス名,"+csvQuote(p.name),STEP_H.map(csvQuote).join(",")];p.steps.forEach(s=>l.push(STEP_F.map(f=>csvQuote(s[f])).join(",")));download(new Blob(["\ufeff"+l.join("\r\n")],{type:"text/csv"}),fname()+"_業務記述書.csv");}
 const RCM_H=["業務","リスクID","勘定科目","リスク内容","実在性","網羅性","権利と義務の帰属","評価の妥当性","期間配分の適切性","表示の妥当性","統制ID","対象ステップNo","統制目的","統制内容","予防/発見","手動/自動","IT依存","頻度","統制責任者","査閲者","証跡","キー","IPE","IPE網羅正確","テスト手続","不正対応","評価","評価内容"];
 const RCM_F=["gyomu","risk_id","fs","risk_desc","as_exist","as_comp","as_rights","as_val","as_cutoff","as_pres","control_id","step_no","objective","control_desc","prev_det","man_auto","it_dep","freq","owner","reviewer","evidence","key","ipe","ipe_ca","test","fraud","evaluation","eval_note"];
-function exportRcmCSV(){const p=P();let csv=RCM_H.map(csvQuote).join(",")+"\r\n";p.rcm.forEach(r=>{csv+=RCM_F.map(f=>{const v=r[f];if(typeof v==="boolean")return v?"○":"";return csvQuote(v);}).join(",")+"\r\n";});download(new Blob(["\ufeff"+csv],{type:"text/csv"}),fname()+"_RCM.csv");}
+function exportRcmCSV(){const p=P();let csv=RCM_H.map(csvQuote).join(",")+"\r\n";rcmSorted(p.rcm).forEach(r=>{csv+=RCM_F.map(f=>{const v=r[f];if(typeof v==="boolean")return v?"○":"";return csvQuote(v);}).join(",")+"\r\n";});download(new Blob(["\ufeff"+csv],{type:"text/csv"}),fname()+"_RCM.csv");}
 function parseCSV(text){text=text.replace(/^\ufeff/,"").replace(/\r\n/g,"\n").replace(/\r/g,"\n");const out=[];let row=[],cur="",q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}else{if(c==='"')q=true;else if(c===","){row.push(cur);cur="";}else if(c==="\n"){row.push(cur);out.push(row);row=[];cur="";}else cur+=c;}}row.push(cur);out.push(row);if(out.length&&out[out.length-1].length===1&&out[out.length-1][0]==="")out.pop();return out;}
 function importStepsCSV(text){let g=parseCSV(text);if(!g.length)return;if(g[0][0]&&g[0][0].trim()==="プロセス名"){P().name=(g[0][1]||P().name).trim();g=g.slice(1);}let hi=g.findIndex(r=>r[0]&&r[0].trim()==="No");if(hi<0)hi=0;const hdr=g[hi].map(s=>s.trim()),idx={};hdr.forEach((h,j)=>idx[h]=j);const rows=[];for(let k=hi+1;k<g.length;k++){const r=g[k];if(r.every(c=>(c||"").trim()===""))continue;const o=blankStep();STEP_H.forEach((h,c)=>{const j=idx[h];if(j!=null)o[STEP_F[c]]=r[j]||"";});if(!o.type)o.type="手動処理";rows.push(o);}if(rows.length){P().steps=rows;markDirty();syncProcSel();renderSteps();}}
 document.getElementById("fileCsv").addEventListener("change",function(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>importStepsCSV(rd.result);rd.readAsText(f);ev.target.value="";});
@@ -2595,6 +2595,14 @@ function renderManual(p,cc){
   }else{h+=`<p style="color:var(--muted);font-size:12.5px">改訂履歴はまだ登録されていません。</p>`;}
   document.getElementById("stepsDocBody").innerHTML=h;
 }
+/* RCM出力の番号順ソート（R/C IDの数値部で昇順。IDなし行は末尾・入力順維持） */
+function idNum(v){const m=String(v==null?"":v).match(/\d+/);return m?parseInt(m[0],10):Infinity;}
+function rcmSorted(arr){return arr.map((r,i)=>[r,i]).sort((a,b)=>{
+  const ka=Math.min(idNum(a[0].risk_id),idNum(a[0].control_id)),kb=Math.min(idNum(b[0].risk_id),idNum(b[0].control_id));
+  if(ka!==kb)return ka-kb;
+  const ca=idNum(a[0].control_id),cb=idNum(b[0].control_id);
+  if(ca!==cb)return ca-cb;
+  return a[1]-b[1];}).map(x=>x[0]);}
 function renderRcmDoc(){
   setBanner("rcmDocBanner");const p=outProc();
   const fmtEl=document.getElementById("rcmDocFmt");
@@ -2609,7 +2617,7 @@ function renderRcmDoc(){
       +`</tr>`
       +`<tr>`+ASRT_LBL.map(l=>`<th style="writing-mode:vertical-rl;text-orientation:upright;white-space:nowrap;padding:6px 3px">${l}</th>`).join("")+`</tr></thead><tbody>`;
     if(!p.rcm.length)h+=`<tr><td colspan="${11+cc.length}" style="color:var(--muted)">RCM未入力です</td></tr>`;
-    p.rcm.forEach(r=>{
+    rcmSorted(p.rcm).forEach(r=>{
       h+=`<tr class="${r.key?"kc":""}">`
         +`<td>${esc(r.gyomu)}</td>`
         +`<td>${esc(r.risk_desc)}</td>`
@@ -2635,7 +2643,7 @@ function renderRcmDoc(){
       +`</tr>`
       +`<tr>`+ASRT_LBL.map(l=>`<th ${vcol}>${l}</th>`).join("")+`</tr></thead><tbody>`;
     if(!p.rcm.length)h+=`<tr><td colspan="${22+cc.length}" style="color:var(--muted)">RCM未入力です</td></tr>`;
-    p.rcm.forEach(r=>{
+    rcmSorted(p.rcm).forEach(r=>{
       const oeDetail=[r.oe_method,(r.oe_n||"").toString().trim()?`件数:${r.oe_n}`:"",(r.oe_excns||"").toString().trim()?`例外:${r.oe_excns}`:""].filter(Boolean).join(" / ");
       h+=`<tr class="${r.key?"kc":""}">`
         +`<td>${esc(r.gyomu)}</td>`
@@ -2682,7 +2690,7 @@ function gotoEvalWork(cid){cid=(cid||"").trim();show("evalwork");
   setTimeout(()=>{const el=document.getElementById("evw-"+CSS.escape(cid));
     if(el){el.scrollIntoView({block:"start",behavior:"smooth"});el.classList.remove("card-flash");void el.offsetWidth;el.classList.add("card-flash");}},60);}
 function renderEvalWork(){
-  const p=P();const rows=[];p.rcm.forEach((r,i)=>{if((r.control_id||"").trim())rows.push([r,i]);});
+  const p=P();const rows=[];p.rcm.forEach((r,i)=>{if((r.control_id||"").trim())rows.push([r,i]);});rows.sort((a,b)=>{const d=idNum(a[0].control_id)-idNum(b[0].control_id);return d||a[1]-b[1];});
   const pal=phasePalette(p.steps);
   let h="";
   if(!rows.length)h=`<div class="hint">統制ID付きのRCM行がありません。「RCM（リスクと統制）」の編集で統制IDを入力すると、ここに評価カードが表示されます。</div>`;
@@ -2740,7 +2748,7 @@ function renderEvalWork(){
 }
 function renderEvalDoc(){
   setBanner("evalDocBanner");const p=outProc();
-  const ctrls=p.rcm.filter(r=>(r.control_id||"").trim());
+  const ctrls=rcmSorted(p.rcm.filter(r=>(r.control_id||"").trim()));
   const keyCtrls=ctrls.filter(r=>r.key);
   const rows=keyCtrls.length?keyCtrls:ctrls;
   let h=`<h1>${esc(p.name||"")} — 評価結果（評価調書）</h1><div class="meta">プロセスID: ${esc(p.id)}　／　作成日: ${today()}　／　対象統制数: ${rows.length}${keyCtrls.length?`（キー統制。全統制数 ${ctrls.length}）`:""}</div>`;
