@@ -1,0 +1,6 @@
+.thumbnail
+.claude/settings.local.json
+*.log
+Thumbs.db
+Desktop.ini
+uploads/

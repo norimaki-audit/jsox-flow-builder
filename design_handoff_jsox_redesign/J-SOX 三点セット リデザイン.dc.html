@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans JP', sans-serif; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #cdd8d5; border-radius: 6px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: #b4c3bf; background-clip: padding-box; border: 2px solid transparent; }
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column;height:100vh;width:100vw;overflow:hidden;font-family:'IBM Plex Sans JP',sans-serif;color:#14201E;background:#F4F6F6;">
+
+  <header style="flex:none;height:58px;display:flex;align-items:center;gap:16px;padding:0 18px;background:#fff;border-bottom:1px solid #E2E8E7;z-index:20;">
+    <div style="display:flex;align-items:center;gap:11px;">
+      <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,#0E7C73,#0A5E57);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(14,124,115,.28);">
+        <i class="ph ph-shield-check" style="font-size:19px;color:#fff;"></i>
+      </div>
+      <div style="display:flex;flex-direction:column;line-height:1.1;">
+        <span style="font-size:15px;font-weight:700;letter-spacing:-.01em;">IC Studio</span>
+        <span style="font-size:9.5px;font-weight:600;letter-spacing:.14em;color:#94A4A0;">INTERNAL CONTROL</span>
+      </div>
+    </div>
+
+    <div style="width:1px;height:26px;background:#E2E8E7;"></div>
+
+    <div style="flex:none;display:flex;padding:3px;border-radius:9px;background:#EFF2F1;border:1px solid #DCE5E3;">
+      <button onClick="{{ setModeJsox }}" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;{{ mtJsox }}"><i class="ph ph-shield-check" style="font-size:14px;"></i>J-SOX</button>
+      <button onClick="{{ setModeManual }}" style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;{{ mtManual }}"><i class="ph ph-book-open-text" style="font-size:14px;"></i>業務マニュアル</button>
+    </div>
+
+    <div style="width:1px;height:26px;background:#E2E8E7;"></div>
+
+    <button style="flex:0 1 auto;min-width:80px;display:flex;align-items:center;gap:9px;height:36px;padding:0 12px 0 11px;border-radius:8px;border:1px solid #DCE5E3;background:#F7FAF9;cursor:pointer;font-family:inherit;overflow:hidden;" style-hover="border-color:#0E7C73;background:#fff;">
+      <span style="flex:none;width:8px;height:8px;border-radius:50%;background:#0E7C73;"></span>
+      <span style="flex:none;font-size:11px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;">P001</span>
+      <span style="min-width:0;font-size:13px;font-weight:600;color:#27332F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">販売プロセス（受注〜売上計上）</span>
+      <i class="ph ph-caret-down" style="flex:none;font-size:13px;color:#7C8B86;margin-left:2px;"></i>
+    </button>
+    <button onClick="{{ openTmpl }}" title="新規プロセスを追加 / テンプレートから作成" style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;height:36px;padding:0 11px;border-radius:8px;border:1px dashed #C0CCC8;background:#fff;color:#0A5E57;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E7C73;background:#F2F8F6;border-style:solid;">
+      <i class="ph ph-plus" style="font-size:14px;"></i>プロセス追加
+    </button>
+
+    <div style="flex:1;"></div>
+
+    <div style="flex:none;white-space:nowrap;display:flex;align-items:center;gap:8px;padding:5px 11px;border-radius:20px;background:{{ status.bg }};border:1px solid {{ status.bd }};">
+      <span style="flex:none;width:7px;height:7px;border-radius:50%;background:{{ status.dot }};"></span>
+      <span style="font-size:12px;font-weight:600;color:{{ status.fg }};">{{ status.txt }}</span>
+    </div>
+    <button style="flex:none;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 16px;border-radius:8px;border:1px solid #0A5E57;background:#0E7C73;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 1px 2px rgba(10,94,87,.25);" style-hover="background:#0A5E57;">
+      <i class="ph ph-check-circle" style="font-size:16px;"></i>反映
+    </button>
+
+    <div style="width:1px;height:26px;background:#E2E8E7;margin:0 2px;"></div>
+
+    <button style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 13px;border-radius:8px;border:1px solid #DCE5E3;background:#fff;color:#33403C;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:#B4C3BF;background:#F7FAF9;">
+      <i class="ph ph-floppy-disk" style="font-size:16px;color:#5A6863;"></i>保存
+    </button>
+    <button style="flex:none;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 13px;border-radius:8px;border:1px solid #DCE5E3;background:#fff;color:#33403C;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:#B4C3BF;background:#F7FAF9;">
+      <i class="ph ph-microsoft-excel-logo" style="font-size:16px;color:#1D7044;"></i>Excel出力<i class="ph ph-caret-down" style="font-size:12px;color:#9AA6A2;"></i>
+    </button>
+  </header>
+
+  <div style="flex:1;display:flex;min-height:0;">
+
+    <nav style="{{ navStyle }}flex:none;display:flex;flex-direction:column;background:#fff;border-right:1px solid #E2E8E7;height:100%;transition:width .14s ease;">
+      <div style="flex:none;display:flex;align-items:center;justify-content:flex-end;padding:9px 12px 3px;">
+        <button onClick="{{ toggleCol }}" style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;border-radius:7px;cursor:pointer;color:#7C8B86;" style-hover="background:#EEF3F1;color:#0A5E57;">
+          <i class="ph ph-sidebar-simple" style="font-size:18px;"></i>
+        </button>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:2px 12px 16px;">
+        <sc-if value="{{ isJsox }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#9FABA7;padding:10px 8px 5px;{{ labelStyle }}">メイン</div>
+        <button onClick="{{ goFns.dash }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.dash }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-gauge" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">ダッシュボード</span>
+        </button>
+        </sc-if>
+
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#9FABA7;padding:15px 8px 5px;{{ labelStyle }}">{{ sectionLabel }}</div>
+        <button onClick="{{ goFns.steps }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.steps }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-list-numbers" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">{{ stepsNavLabel }}</span>
+        </button>
+        <button onClick="{{ goFns.flow }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.flow }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-flow-arrow" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">フロー図</span>
+        </button>
+        <sc-if value="{{ isJsox }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ goFns.rcm }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.rcm }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-table" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">RCM（リスクと統制）</span>
+        </button>
+        </sc-if>
+
+        <sc-if value="{{ isJsox }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#9FABA7;padding:15px 8px 5px;{{ labelStyle }}">評価・点検</div>
+        <button onClick="{{ goFns.eval }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.eval }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-clipboard-text" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">評価結果</span>
+        </button>
+        <button onClick="{{ goFns.gap }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.gap }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-magnifying-glass" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">ギャップチェック</span>
+        </button>
+        <button onClick="{{ goFns.rollf }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.rollf }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-arrows-clockwise" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">ロールフォワード</span>
+        </button>
+        <button onClick="{{ goFns.def }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.def }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-warning" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">不備管理</span>
+        </button>
+        <button onClick="{{ goFns.ev }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.ev }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-paperclip" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">証憑（格納・依頼）</span>
+        </button>
+        </sc-if>
+
+        <div style="font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#9FABA7;padding:15px 8px 5px;{{ labelStyle }}">データ</div>
+        <button onClick="{{ goFns.import }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.import }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-upload-simple" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">取込（Excel / CSV）</span>
+        </button>
+        <button onClick="{{ goFns.docs }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;margin:1px 0;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.docs }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-folder" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">規程・資料</span>
+        </button>
+      </div>
+
+      <div style="flex:none;border-top:1px solid #EEF2F1;padding:10px 12px;">
+        <button onClick="{{ goFns.help }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:9px 9px;border:none;border-radius:8px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;{{ na.help }}" style-hover="background:#EFF4F2;">
+          <i class="ph ph-question" style="font-size:18px;width:20px;text-align:center;flex:none;"></i><span style="flex:1;white-space:nowrap;overflow:hidden;{{ labelStyle }}">使い方・基準参照</span>
+        </button>
+      </div>
+    </nav>
+
+    <main style="flex:1;min-width:0;overflow:auto;">
+
+      <sc-if value="{{ rationale }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:flex-start;gap:14px;margin:18px 24px 0;padding:14px 16px;background:linear-gradient(100deg,#0E7C73,#0A625B);border-radius:11px;color:#fff;box-shadow:0 4px 14px rgba(14,124,115,.22);">
+          <i class="ph ph-sparkle" style="font-size:20px;margin-top:1px;flex:none;"></i>
+          <div style="flex:1;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:4px;">リデザイン案プレビュー</div>
+            <div style="font-size:12px;line-height:1.6;color:#D6EEEA;">①「編集」と「成果物」を統合し各帳票で<b style="color:#fff;">編集／プレビュー</b>切替　②三点セットを<b style="color:#fff;">1ワークスペース</b>にタブ集約　③ナビは<b style="color:#fff;">固定スクロール＋ヘルプ常時表示</b>。機能はすべて維持しています。</div>
+          </div>
+          <button onClick="{{ closeR }}" style="flex:none;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;background:rgba(255,255,255,.14);border-radius:7px;cursor:pointer;color:#fff;" style-hover="background:rgba(255,255,255,.26);">
+            <i class="ph ph-x" style="font-size:15px;"></i>
+          </button>
+        </div>
+      </sc-if>
+
+      <!-- ============ DASHBOARD ============ -->
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;max-width:1180px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">ダッシュボード</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">販売プロセス（受注〜売上計上）— 評価範囲: 対象 ・ 最終更新 2026-06-18</p>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
+            <sc-for list="{{ dashStats }}" as="d" hint-placeholder-count="6">
+              <div style="flex:1 1 150px;min-width:150px;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:9px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <span style="font-size:12px;font-weight:600;color:#6A756F;">{{ d.label }}</span>
+                  <span style="width:30px;height:30px;border-radius:8px;background:{{ d.tint }};display:flex;align-items:center;justify-content:center;"><i class="ph {{ d.icon }}" style="font-size:16px;color:{{ d.accent }};"></i></span>
+                </div>
+                <div style="font-size:26px;font-weight:700;letter-spacing:-.02em;color:#14201E;font-family:'IBM Plex Mono',monospace;">{{ d.value }}</div>
+                <div style="font-size:11.5px;color:#8A9794;">{{ d.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px;">
+            <!-- 評価進捗 -->
+            <div style="flex:1 1 400px;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <span style="font-size:13.5px;font-weight:700;">整備・運用評価の進捗</span>
+                <span style="font-size:12px;font-weight:600;color:#157F5B;font-family:'IBM Plex Mono',monospace;">67% 有効</span>
+              </div>
+              <div style="display:flex;height:12px;border-radius:7px;overflow:hidden;background:#EEF2F1;margin-bottom:12px;">
+                <sc-for list="{{ evalSegments }}" as="g" hint-placeholder-count="4">
+                  <div style="width:{{ g.w }};background:{{ g.bg }};"></div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+                <sc-for list="{{ evalSegments }}" as="g" hint-placeholder-count="4">
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#56635F;"><span style="width:9px;height:9px;border-radius:2px;background:{{ g.bg }};"></span>{{ g.label }}<b style="color:#27332F;font-family:'IBM Plex Mono',monospace;">{{ g.count }}</b></span>
+                </sc-for>
+              </div>
+              <div style="border-top:1px dashed #E2E8E7;padding-top:12px;display:flex;flex-direction:column;gap:8px;">
+                <sc-for list="{{ ctlEval }}" as="c" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-size:11px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;flex:none;width:42px;">{{ c.id }}</span>
+                    <span style="flex:1;font-size:12.5px;color:#2A3633;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.name }}</span>
+                    <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:13px;font-size:11px;font-weight:600;flex:none;{{ c.evalStyle }}"><span style="font-size:12px;">{{ c.eval }}</span>{{ c.evalLbl }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- アサーション網羅 -->
+            <div style="flex:1 1 400px;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <span style="font-size:13.5px;font-weight:700;">勘定科目 × アサーション 網羅状況</span>
+                <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#B0413B;"><span style="width:9px;height:9px;border-radius:50%;background:#F3D9D5;border:1px solid #E4B3AC;"></span>未カバー</span>
+              </div>
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;font-size:10.5px;font-weight:700;color:#7A867F;padding:0 8px 8px 0;"></th>
+                    <sc-for list="{{ asrShort }}" as="a" hint-placeholder-count="6">
+                      <th style="font-size:10.5px;font-weight:600;color:#7A867F;padding:0 0 8px;text-align:center;">{{ a }}</th>
+                    </sc-for>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ coverage }}" as="r" hint-placeholder-count="4">
+                    <tr>
+                      <td style="font-size:12px;font-weight:600;color:#2A3633;padding:5px 10px 5px 0;white-space:nowrap;">{{ r.acc }}</td>
+                      <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
+                        <td style="padding:4px;text-align:center;">
+                          <sc-if value="{{ c.on }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;width:22px;height:22px;border-radius:6px;background:#E3F1EB;align-items:center;justify-content:center;"><i class="ph ph-check-bold" style="font-size:12px;color:#157F5B;"></i></span></sc-if>
+                          <sc-if value="{{ c.gap }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;width:22px;height:22px;border-radius:6px;background:#FBEAE7;border:1px solid #EDCBC6;align-items:center;justify-content:center;"><i class="ph ph-x-bold" style="font-size:11px;color:#B0413B;"></i></span></sc-if>
+                          <sc-if value="{{ c.na }}" hint-placeholder-val="{{ true }}"><span style="display:inline-block;width:22px;height:22px;line-height:22px;color:#CDD8D4;font-size:12px;">–</span></sc-if>
+                        </td>
+                      </sc-for>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+              <div style="margin-top:10px;font-size:11px;color:#8A9794;">– は当プロセスの評価対象外（別プロセスで評価）。</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px;">
+            <!-- 不備管理 -->
+            <div style="flex:1 1 440px;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+              <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">不備管理</div>
+              <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <sc-for list="{{ defTiers }}" as="t" hint-placeholder-count="3">
+                  <div style="flex:1;padding:12px;border-radius:10px;background:{{ t.bg }};border:1px solid {{ t.bd }};">
+                    <div style="font-size:24px;font-weight:700;color:{{ t.color }};font-family:'IBM Plex Mono',monospace;line-height:1;">{{ t.count }}</div>
+                    <div style="font-size:10.5px;font-weight:600;color:{{ t.color }};margin-top:5px;line-height:1.3;">{{ t.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-for list="{{ defList }}" as="d" hint-placeholder-count="1">
+                <div style="display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #EFD3CE;border-radius:10px;background:#FDF7F6;">
+                  <i class="ph ph-warning-circle" style="font-size:18px;color:#B0413B;flex:none;margin-top:1px;"></i>
+                  <div style="flex:1;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+                      <span style="font-size:11px;font-weight:600;color:#7A1F1A;font-family:'IBM Plex Mono',monospace;">{{ d.id }}</span>
+                      <span style="font-size:10px;font-weight:600;color:#B0413B;padding:1px 7px;border-radius:5px;background:#F7E2DF;">{{ d.type }}</span>
+                      <span style="font-size:11px;color:#8A9794;">統制 {{ d.ctl }}</span>
+                    </div>
+                    <div style="font-size:12.5px;color:#2A3633;line-height:1.5;">{{ d.desc }}</div>
+                    <div style="display:flex;gap:14px;margin-top:6px;font-size:11px;color:#6A756F;"><span>是正期限 <b style="color:#B0413B;font-family:'IBM Plex Mono',monospace;">{{ d.due }}</b></span><span style="display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:11px;background:{{ d.sBg }};color:{{ d.sColor }};border:1px solid {{ d.sBd }};font-weight:600;">{{ d.status }}</span></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- 証憑格納 -->
+            <div style="flex:1 1 340px;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <span style="font-size:13.5px;font-weight:700;">証憑 格納状況</span>
+                <span style="font-size:12px;font-weight:600;color:#56635F;font-family:'IBM Plex Mono',monospace;">2 / 3 格納済</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ evList }}" as="e" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #E6ECEA;border-radius:10px;">
+                    <span style="font-size:11px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;flex:none;width:40px;">{{ e.id }}</span>
+                    <span style="flex:1;font-size:12px;color:#2A3633;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ e.name }}</span>
+                    <span style="font-size:11px;color:#8A9794;font-family:'IBM Plex Mono',monospace;flex:none;">{{ e.n }}</span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600;flex:none;background:{{ e.sBg }};color:{{ e.sColor }};border:1px solid {{ e.sBd }};"><i class="ph {{ e.icon }}" style="font-size:12px;"></i>{{ e.status }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+            <div style="font-size:13.5px;font-weight:700;margin-bottom:14px;">三点セット 作成状況</div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;">
+              <sc-for list="{{ tripletStatus }}" as="t" hint-placeholder-count="3">
+                <div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid #E6ECEA;border-radius:10px;background:#F9FBFA;">
+                  <span style="width:38px;height:38px;border-radius:9px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none;"><i class="ph {{ t.icon }}" style="font-size:19px;color:#0E7C73;"></i></span>
+                  <div style="flex:1;">
+                    <div style="font-size:13px;font-weight:600;">{{ t.name }}</div>
+                    <div style="font-size:11.5px;color:#8A9794;">{{ t.detail }}</div>
+                  </div>
+                  <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:14px;background:#E6F2EC;border:1px solid #C3E2D2;"><i class="ph ph-check" style="font-size:12px;color:#157F5B;"></i><span style="font-size:11px;font-weight:600;color:#157F5B;">作成済</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ WORKSPACE (三点セット) ============ -->
+      <sc-if value="{{ isWorkspace }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:22px 24px 40px;">
+
+          <!-- process heading -->
+          <div style="display:flex;align-items:center;gap:13px;margin-bottom:14px;flex-wrap:wrap;">
+            <h1 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.01em;flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">販売プロセス（受注〜売上計上）</h1>
+            <div style="display:flex;gap:7px;">
+              <sc-for list="{{ processMeta }}" as="m" hint-placeholder-count="3">
+                <span style="font-size:11px;font-weight:500;color:#5A6863;padding:3px 9px;border-radius:13px;background:#EDF2F0;border:1px solid #E0E8E5;font-family:'IBM Plex Mono',monospace;">{{ m }}</span>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- tabs + controls -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap;">
+            <div style="display:flex;gap:8px;">
+              <button onClick="{{ goFns.steps }}" style="display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:1px solid;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;{{ ta.steps }}">
+                <i class="ph ph-list-numbers" style="font-size:16px;"></i>{{ stepsTabLabel }}
+              </button>
+              <button onClick="{{ goFns.flow }}" style="display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:1px solid;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;{{ ta.flow }}">
+                <i class="ph ph-flow-arrow" style="font-size:16px;"></i>フロー図
+              </button>
+              <sc-if value="{{ isJsox }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ goFns.rcm }}" style="display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 16px;border-radius:9px;border:1px solid;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;{{ ta.rcm }}">
+                <i class="ph ph-table" style="font-size:16px;"></i>RCM
+              </button>
+              </sc-if>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;">
+              <sc-if value="{{ showMode }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;padding:3px;border-radius:9px;background:#E9EFED;border:1px solid #DCE5E3;">
+                  <button onClick="{{ setEdit }}" style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 14px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;font-family:inherit;{{ me.edit }}"><i class="ph ph-pencil-simple" style="font-size:14px;"></i>編集</button>
+                  <button onClick="{{ setPrev }}" style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 14px;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;font-family:inherit;{{ me.preview }}"><i class="ph ph-eye" style="font-size:14px;"></i>プレビュー</button>
+                </div>
+              </sc-if>
+              <button style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 13px;border-radius:8px;border:1px solid #DCE5E3;background:#fff;color:#33403C;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;" style-hover="border-color:#B4C3BF;"><i class="ph ph-printer" style="font-size:15px;color:#5A6863;"></i>印刷 / PDF</button>
+            </div>
+          </div>
+
+          <!-- ----- STEPS: EDIT GRID ----- -->
+          <sc-if value="{{ stepsEdit }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:{{ gridCols }};background:#F2F6F5;border-bottom:1px solid #E2E8E7;position:sticky;top:0;z-index:2;">
+                <div style="padding:11px 8px;"></div>
+                <div style="padding:11px 10px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">No.</div>
+                <div style="padding:11px 10px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">担当部門</div>
+                <div style="padding:11px 10px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">担当</div>
+                <div style="padding:11px 10px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">種類</div>
+                <div style="padding:11px 12px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">業務内容</div>
+                <div style="padding:11px 10px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">使用システム</div>
+                <div style="padding:11px 10px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">証跡</div>
+                <sc-if value="{{ isJsox }}" hint-placeholder-val="{{ true }}"><div style="padding:11px 10px;font-size:11px;font-weight:700;color:#7A867F;letter-spacing:.03em;">関連 R/C</div></sc-if>
+              </div>
+
+              <sc-for list="{{ stepGroups }}" as="grp" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:9px;padding:7px 14px;background:{{ grp.tint }};border-bottom:1px solid #EAEFED;">
+                  <span style="width:9px;height:9px;border-radius:2px;background:{{ grp.color }};"></span>
+                  <span style="font-size:12.5px;font-weight:700;color:#2C3A35;">{{ grp.gyomu }}</span>
+                  <span style="font-size:10.5px;font-weight:600;color:#8A9794;font-family:'IBM Plex Mono',monospace;">{{ grp.count }}</span>
+                </div>
+                <sc-for list="{{ grp.rows }}" as="s" hint-placeholder-count="2">
+                  <div style="display:grid;grid-template-columns:{{ gridCols }};align-items:center;border-bottom:1px dashed #D2DCD8;border-left:3px solid {{ grp.color }};" style-hover="background:#F8FBFA;">
+                    <div style="display:flex;align-items:center;justify-content:center;cursor:grab;color:#C4D0CC;border-right:1px solid #F1F4F3;align-self:stretch;" style-hover="color:#0E7C73;background:#EEF4F2;"><i class="ph ph-dots-six-vertical" style="font-size:16px;"></i></div>
+                    <div style="padding:10px;font-size:13px;font-weight:600;color:#3A4742;font-family:'IBM Plex Mono',monospace;border-right:1px solid #F1F4F3;">{{ s.no }}</div>
+                    <div style="margin:4px;padding:4px 6px;font-size:13px;border-radius:5px;cursor:text;" style-hover="box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;"><span style="{{ s.deptStyle }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ s.deptDot }};"></span>{{ s.dept }}</span></div>
+                    <div style="margin:4px;padding:6px;font-size:13px;color:#2A3633;border-radius:5px;cursor:text;" style-hover="box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;">{{ s.role }}</div>
+                    <div style="padding:10px;border-right:1px solid #F1F4F3;"><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:7px;font-size:11.5px;font-weight:600;white-space:nowrap;{{ s.typeStyle }}"><i class="ph {{ s.typeIcon }}" style="font-size:12px;"></i>{{ s.type }}</span></div>
+                    <div style="margin:4px;padding:4px 6px;display:flex;align-items:center;gap:6px;border-radius:5px;">
+                      <span style="flex:1;min-width:0;font-size:13px;color:#1F2B27;line-height:1.5;">{{ s.content }}</span>
+                      <button onClick="{{ s.openDetail }}" title="詳細な手順を入力／閲覧" style="flex:none;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;font-family:inherit;{{ s.detailBtnStyle }}" style-hover="border-color:#0E7C73;color:#0A5E57;"><i class="ph {{ s.detailIcon }}" style="font-size:14px;"></i></button>
+                    </div>
+                    <div style="margin:4px;padding:6px;font-size:12.5px;color:{{ s.systemColor }};border-radius:5px;cursor:text;" style-hover="box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;">{{ s.systemDisp }}</div>
+                    <div style="margin:4px;padding:6px;font-size:12.5px;color:{{ s.evColor }};border-radius:5px;cursor:text;border-right:1px solid #F1F4F3;" style-hover="box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;">{{ s.evDisp }}</div>
+                    <sc-if value="{{ isJsox }}" hint-placeholder-val="{{ true }}">
+                    <div style="padding:10px;display:flex;flex-wrap:wrap;gap:5px;">
+                      <sc-if value="{{ s.hasTags }}" hint-placeholder-val="{{ true }}">
+                        <sc-for list="{{ s.tags }}" as="tg" hint-placeholder-count="2">
+                          <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;{{ tg.style }}"><sc-if value="{{ tg.star }}" hint-placeholder-val="{{ false }}"><i class="ph ph-star-fill" style="font-size:10px;color:#C8901C;"></i></sc-if>{{ tg.label }}</span>
+                        </sc-for>
+                      </sc-if>
+                      <sc-if value="{{ s.noTags }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#C4D0CC;">—</span></sc-if>
+                    </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </sc-for>
+
+              <button style="display:flex;align-items:center;gap:8px;width:100%;padding:12px 16px;border:none;background:#fff;color:#0E7C73;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:#F2F8F6;">
+                <i class="ph ph-plus" style="font-size:15px;"></i>工程を追加
+              </button>
+            </div>
+            <div style="margin-top:11px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8A9794;">
+              <i class="ph ph-info" style="font-size:14px;"></i>工程は業務（受注／承認／出荷／売上計上）ごとに自動グルーピング。行はドラッグで並べ替えできます。
+            </div>
+          </sc-if>
+
+          <!-- ----- STEPS: PREVIEW ----- -->
+          <sc-if value="{{ stepsPreview }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:34px 40px;max-width:1000px;">
+              <h2 style="margin:0 0 6px;font-size:19px;font-weight:700;">{{ prevTitle }}</h2>
+              <div style="display:flex;gap:18px;font-size:12px;color:#6A756F;padding-bottom:16px;margin-bottom:8px;border-bottom:2px solid #0E7C73;">
+                <span>プロセスID: P001</span><span>サブプロセス: 国内売上</span><span>評価範囲: 対象</span><span>作成日: 2026-06-18</span>
+              </div>
+              <h3 style="margin:18px 0 10px;font-size:14px;font-weight:700;color:#0A5E57;">{{ prevH1 }}</h3>
+              <sc-for list="{{ stepGroups }}" as="grp" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:8px;padding:6px 0 5px;margin-top:6px;">
+                  <span style="width:8px;height:8px;border-radius:2px;background:{{ grp.color }};"></span>
+                  <span style="font-size:12.5px;font-weight:700;color:#2C3A35;">{{ grp.gyomu }}</span>
+                </div>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
+                  <sc-for list="{{ grp.rows }}" as="s" hint-placeholder-count="2">
+                    <tr style="border-bottom:1px solid #EEF2F1;">
+                      <td style="padding:7px 10px 7px 0;font-size:12px;font-weight:600;color:#5A6863;font-family:'IBM Plex Mono',monospace;width:44px;vertical-align:top;">{{ s.no }}</td>
+                      <td style="padding:7px 12px;font-size:12px;color:#5A6863;width:96px;vertical-align:top;">{{ s.dept }}</td>
+                      <td style="padding:7px 12px;width:118px;vertical-align:top;"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600;{{ s.typeStyle }}">{{ s.type }}</span></td>
+                      <td style="padding:7px 12px;font-size:12.5px;color:#1F2B27;vertical-align:top;">{{ s.content }}</td>
+                      <td style="padding:7px 0 7px 12px;font-size:11.5px;color:#8A9794;text-align:right;vertical-align:top;width:130px;">{{ s.systemDisp }}</td>
+                    </tr>
+                  </sc-for>
+                </table>
+              </sc-for>
+              <h3 style="margin:24px 0 12px;font-size:14px;font-weight:700;color:#0A5E57;">{{ prevH2 }}</h3>
+              <sc-for list="{{ previewDetails }}" as="d" hint-placeholder-count="3">
+                <div style="margin-bottom:18px;">
+                  <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#27332F;">No.{{ d.no }}　{{ d.title }}</div>
+                  <sc-for list="{{ d.lines }}" as="ln" hint-placeholder-count="2">
+                    <p style="margin:0 0 6px;font-size:12.5px;line-height:1.85;color:#3A4742;text-wrap:pretty;">{{ ln }}</p>
+                  </sc-for>
+                  <sc-if value="{{ d.hasImg }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:10px;width:320px;max-width:100%;">
+                      <div style="height:160px;border-radius:8px;background:repeating-linear-gradient(45deg,#F4F7F6,#F4F7F6 8px,#EDF2F0 8px,#EDF2F0 16px);border:1px solid #E2E8E7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8A9794;">
+                        <i class="ph ph-image" style="font-size:26px;"></i>
+                        <span style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;">{{ d.imgName }}</span>
+                      </div>
+                      <div style="font-size:10.5px;color:#9AA6A2;margin-top:5px;">▲ {{ d.imgName }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- ----- FLOW ----- -->
+          <sc-if value="{{ isFlow }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;overflow:hidden;">
+              <div style="display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid #EEF2F1;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:#5A6863;flex-wrap:wrap;">
+                  <span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;"><span style="width:20px;height:12px;border-radius:7px;background:#E6F2EC;border:1.5px solid #C3E2D2;"></span>端子</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;"><span style="width:16px;height:12px;border-radius:2px;background:#E9F0F8;border:1.2px solid #C9DBEE;"></span>処理</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;"><span style="width:16px;height:12px;background:#EFF3F2;clip-path:polygon(0 0,100% 0,87% 100%,13% 100%);"></span>手作業</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;"><span style="width:16px;height:13px;background:#FBF1E0;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);"></span>判断</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;"><span style="width:16px;height:13px;background:#F5F2EF;clip-path:path('M 0 0 L 16 0 L 16 10 C 13.3 13 10.7 13 8 10 C 5.3 7 2.7 7 0 10 Z');"></span>書類</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;"><i class="ph ph-database" style="font-size:13px;color:#2D5A86;"></i>DB</span>
+                  <sc-if value="{{ isJsox }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap;"><span style="padding:0 5px;border-radius:5px;background:#F7ECEA;border:1px solid #ECCFCA;font-size:9.5px;font-weight:700;color:#A8473F;font-family:'IBM Plex Mono',monospace;">R</span><span style="padding:0 5px;border-radius:5px;background:#E7F1EE;border:1px solid #BBD9D0;font-size:9.5px;font-weight:700;color:#0A5E57;font-family:'IBM Plex Mono',monospace;">C</span>リスク/統制</span></sc-if>
+                </div>
+                <div style="flex:1;"></div>
+                <label onClick="{{ toggleSys }}" style="display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:500;color:#33403C;cursor:pointer;white-space:nowrap;"><span style="width:32px;height:19px;border-radius:11px;background:{{ sysTrack }};position:relative;transition:background .15s;"><span style="position:absolute;top:2px;{{ sysKnob }}width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);"></span></span>システムレーン</label>
+                <div style="width:1px;height:20px;background:#E6ECEA;"></div>
+                <div style="display:flex;align-items:center;gap:3px;">
+                  <button onClick="{{ zoomOut }}" title="縮小" style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #DCE5E3;background:#fff;border-radius:6px;cursor:pointer;color:#44514E;" style-hover="border-color:#0E7C73;color:#0A5E57;"><i class="ph ph-minus" style="font-size:13px;"></i></button>
+                  <button onClick="{{ zoomReset }}" title="100%に戻す" style="min-width:46px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #DCE5E3;background:#fff;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:#44514E;font-family:'IBM Plex Mono',monospace;" style-hover="border-color:#0E7C73;color:#0A5E57;">{{ zoomPct }}</button>
+                  <button onClick="{{ zoomIn }}" title="拡大" style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #DCE5E3;background:#fff;border-radius:6px;cursor:pointer;color:#44514E;" style-hover="border-color:#0E7C73;color:#0A5E57;"><i class="ph ph-plus" style="font-size:13px;"></i></button>
+                </div>
+                <div style="width:1px;height:20px;background:#E6ECEA;"></div>
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <button title="draw.io形式で書き出し" style="display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid #DCE5E3;background:#fff;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:#44514E;font-family:inherit;" style-hover="border-color:#0E7C73;color:#0A5E57;"><i class="ph ph-tree-structure" style="font-size:13px;"></i>draw.io</button>
+                  <button title="Mermaid形式で書き出し" style="display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid #DCE5E3;background:#fff;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:#44514E;font-family:inherit;" style-hover="border-color:#0E7C73;color:#0A5E57;"><i class="ph ph-code" style="font-size:13px;"></i>Mermaid</button>
+                  <button title="PNG画像で書き出し" style="display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid #DCE5E3;background:#fff;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:#44514E;font-family:inherit;" style-hover="border-color:#0E7C73;color:#0A5E57;"><i class="ph ph-image" style="font-size:13px;"></i>PNG</button>
+                </div>
+              </div>
+              <div style="overflow:auto;max-height:72vh;">
+                <div style="zoom:{{ flowZoom }};width:{{ flowW }}px;">
+                  <div style="display:flex;border-bottom:1px solid #E2E8E7;background:#F2F6F5;width:{{ flowW }}px;position:sticky;top:0;z-index:7;">
+                    <div style="width:64px;flex:none;"></div>
+                    <sc-for list="{{ flowLanes }}" as="ln" hint-placeholder-count="5">
+                      <div style="width:{{ ln.w }}px;flex:none;padding:10px 0;text-align:center;font-size:12.5px;font-weight:700;color:#3A4742;border-left:1px solid #E6ECEA;">{{ ln.name }}</div>
+                    </sc-for>
+                  </div>
+                  <div style="position:relative;width:{{ flowW }}px;height:{{ flowH }}px;background-color:#FBFDFC;background-image:radial-gradient(#DEE7E3 1px,transparent 1px);background-size:22px 22px;">
+                <sc-for list="{{ flowPhases }}" as="p" hint-placeholder-count="4">
+                  <div style="position:absolute;left:64px;right:0;top:{{ p.top }}px;height:{{ p.height }}px;background:{{ p.tint }};opacity:.42;"></div>
+                </sc-for>
+                <svg width="{{ flowW }}" height="{{ flowH }}" viewBox="0 0 {{ flowW }} {{ flowH }}" style="position:absolute;inset:0;">
+                  <defs>
+                    <marker id="arw" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#84938E"></path></marker>
+                    <marker id="arwd" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9BB3C9"></path></marker>
+                  </defs>
+                  <sc-for list="{{ laneLinePaths }}" as="d" hint-placeholder-count="6"><path d="{{ d }}" stroke="#EBF0EE" stroke-width="1"></path></sc-for>
+                  <sc-for list="{{ phaseDivPaths }}" as="d" hint-placeholder-count="3"><path d="{{ d }}" stroke="#CFDAD6" stroke-width="1" stroke-dasharray="5 4"></path></sc-for>
+                  <sc-for list="{{ edgePaths }}" as="d" hint-placeholder-count="9"><path d="{{ d }}" fill="none" stroke="#84938E" stroke-width="1.5" marker-end="url(#arw)"></path></sc-for>
+                  <sc-for list="{{ sysPaths }}" as="d" hint-placeholder-count="3"><path d="{{ d }}" fill="none" stroke="#9BB3C9" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#arwd)"></path></sc-for>
+                </svg>
+                <sc-for list="{{ flowPhases }}" as="p" hint-placeholder-count="4">
+                  <div style="position:absolute;left:0;top:{{ p.top }}px;width:64px;height:{{ p.height }}px;background:{{ p.tint }};border-bottom:1px solid #EBF0EE;display:flex;align-items:center;justify-content:center;">
+                    <span style="writing-mode:vertical-rl;font-size:11.5px;font-weight:700;color:{{ p.color }};letter-spacing:.1em;">{{ p.name }}</span>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ flowNodes }}" as="n" hint-placeholder-count="9">
+                  <div onClick="{{ n.open }}" title="クリックで工程の詳細を表示" style="{{ n.style }}" style-hover="transform:translateY(-1.5px) scale(1.012);">
+                    <span style="line-height:1.25;">{{ n.label }}</span>
+                    <sc-if value="{{ n.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:9.5px;font-weight:500;opacity:.72;margin-top:1px;">{{ n.sub }}</span></sc-if>
+                  </div>
+                  <sc-if value="{{ n.showRc }}" hint-placeholder-val="{{ false }}">
+                    <div style="{{ n.rcStyle }}">
+                      <span style="display:inline-flex;align-items:center;gap:2px;padding:1px 5px;border-radius:5px;background:#F7ECEA;border:1px solid #ECCFCA;font-size:9.5px;font-weight:700;color:#A8473F;font-family:'IBM Plex Mono',monospace;"><i class="ph ph-warning" style="font-size:9px;"></i>{{ n.rcRisk }}</span>
+                      <span style="display:inline-flex;align-items:center;gap:2px;padding:1px 5px;border-radius:5px;background:#E7F1EE;border:1px solid #BBD9D0;font-size:9.5px;font-weight:700;color:#0A5E57;font-family:'IBM Plex Mono',monospace;"><i class="ph ph-shield-check" style="font-size:9px;"></i>{{ n.rcCtl }}</span>
+                    </div>
+                  </sc-if>
+                </sc-for>
+                <sc-for list="{{ flowDbs }}" as="d" hint-placeholder-count="3">
+                  <div style="{{ d.style }}"><i class="ph ph-database" style="font-size:14px;"></i><span style="line-height:1.1;">{{ d.label }}</span></div>
+                </sc-for>
+                <sc-for list="{{ edgeLabels }}" as="l" hint-placeholder-count="2">
+                  <div style="position:absolute;left:{{ l.x }}px;top:{{ l.y }}px;transform:translate(-50%,-50%);padding:1px 7px;background:#fff;border:1px solid #E0E8E5;border-radius:10px;font-size:10px;font-weight:600;color:#5A6863;white-space:nowrap;">{{ l.text }}</div>
+                </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:11px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8A9794;">
+              <i class="ph ph-info" style="font-size:14px;"></i>記号は JIS X 0121 準拠。ノードをクリックすると工程の詳細（📝）が開きます。ズーム・書き出し（draw.io / Mermaid / PNG）はツールバーから。
+            </div>
+          </sc-if>
+
+          <!-- ----- RCM ----- -->
+          <sc-if value="{{ isRcm }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;overflow:auto;">
+              <table style="border-collapse:separate;border-spacing:0;min-width:1180px;width:100%;">
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;border-right:1px solid #EAEFED;white-space:nowrap;">業務</th>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;border-right:1px solid #EAEFED;min-width:240px;">リスク</th>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;border-right:1px solid #EAEFED;min-width:260px;">統制</th>
+                    <th colspan="6" style="background:#EAF2F0;padding:7px 8px;text-align:center;font-size:11px;font-weight:700;color:#0A5E57;border-bottom:1px solid #D4E4E0;border-right:1px solid #EAEFED;">アサーション</th>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;border-right:1px solid #EAEFED;">予防/発見</th>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;border-right:1px solid #EAEFED;">手/自</th>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 10px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;border-right:1px solid #EAEFED;white-space:nowrap;">統制実施者</th>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 8px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;border-right:1px solid #EAEFED;">KC</th>
+                    <th rowspan="2" style="position:sticky;top:0;background:#F2F6F5;padding:10px 10px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;">評価</th>
+                  </tr>
+                  <tr>
+                    <sc-for list="{{ asrHeads }}" as="a" hint-placeholder-count="6">
+                      <th style="background:#EAF2F0;padding:6px 4px;text-align:center;font-size:10px;font-weight:600;color:#3E6B63;border-bottom:1px solid #D4E4E0;border-right:1px solid #E0EAE7;width:42px;"><span style="writing-mode:vertical-rl;display:inline-block;letter-spacing:.04em;">{{ a }}</span></th>
+                    </sc-for>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ rcmRows }}" as="r" hint-placeholder-count="3">
+                    <tr style="border-bottom:1px dashed #D2DCD8;" style-hover="background:#F8FBFA;">
+                      <td style="padding:12px;font-size:12.5px;font-weight:600;color:#2C3A35;border-right:1px solid #F0F3F2;vertical-align:top;white-space:nowrap;">
+                        <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:2px;background:{{ r.phaseColor }};"></span>{{ r.gyomu }}</span>
+                      </td>
+                      <td style="padding:12px;border-right:1px solid #F0F3F2;vertical-align:top;">
+                        <div style="font-size:11px;font-weight:600;color:#A8473F;font-family:'IBM Plex Mono',monospace;margin-bottom:3px;">{{ r.riskId }}</div>
+                        <div style="font-size:12.5px;line-height:1.55;color:#2A3633;text-wrap:pretty;">{{ r.risk }}</div>
+                      </td>
+                      <td style="padding:12px;border-right:1px solid #F0F3F2;vertical-align:top;">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+                          <span style="font-size:11px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;">{{ r.ctlId }}</span>
+                          <sc-if value="{{ r.key }}" hint-placeholder-val="{{ true }}"><span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:5px;background:#FBF2DD;border:1px solid #EAD9B0;font-size:9.5px;font-weight:700;color:#9A6614;"><i class="ph ph-star-fill" style="font-size:9px;"></i>キー統制</span></sc-if>
+                        </div>
+                        <div style="font-size:12.5px;line-height:1.55;color:#2A3633;text-wrap:pretty;">{{ r.ctl }}</div>
+                      </td>
+                      <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
+                        <td style="padding:6px;text-align:center;border-right:1px solid #F2F5F4;vertical-align:middle;">
+                          <sc-if value="{{ c.on }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;width:19px;height:19px;border-radius:50%;background:#E3F1EB;align-items:center;justify-content:center;"><i class="ph ph-check-bold" style="font-size:11px;color:#157F5B;"></i></span></sc-if>
+                          <sc-if value="{{ c.off }}" hint-placeholder-val="{{ true }}"><span style="color:#D4DDDA;font-size:12px;">·</span></sc-if>
+                        </td>
+                      </sc-for>
+                      <td style="padding:12px 8px;text-align:center;font-size:12px;color:#3A4742;border-right:1px solid #F0F3F2;vertical-align:top;white-space:nowrap;">{{ r.pd }}</td>
+                      <td style="padding:12px 8px;text-align:center;border-right:1px solid #F0F3F2;vertical-align:top;"><span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600;{{ r.maStyle }}">{{ r.ma }}</span></td>
+                      <td style="padding:12px 10px;font-size:12.5px;color:#3A4742;border-right:1px solid #F0F3F2;vertical-align:top;white-space:nowrap;">{{ r.owner }}</td>
+                      <td style="padding:12px 8px;text-align:center;border-right:1px solid #F0F3F2;vertical-align:middle;"><sc-if value="{{ r.key }}" hint-placeholder-val="{{ true }}"><span style="display:inline-block;width:17px;height:17px;border-radius:50%;border:2px solid #0E7C73;"></span></sc-if></td>
+                      <td style="padding:12px 10px;text-align:center;vertical-align:top;"><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:14px;font-size:11.5px;font-weight:600;{{ r.evalStyle }}"><span style="font-size:13px;">{{ r.eval }}</span>{{ r.evalLbl }}</span></td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+              <button style="display:flex;align-items:center;gap:8px;width:100%;padding:12px 16px;border:none;border-top:1px solid #EFF3F1;background:#fff;color:#0E7C73;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:#F2F8F6;">
+                <i class="ph ph-plus" style="font-size:15px;"></i>リスクと統制を追加
+              </button>
+            </div>
+            <div style="margin-top:11px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8A9794;">
+              <i class="ph ph-info" style="font-size:14px;"></i>アサーション6区分（実在性・網羅性・権利義務・評価・期間配分・表示）。キー統制は KC 列に ○、評価は ○有効／△一部不備／×不備。
+            </div>
+          </sc-if>
+
+        </div>
+      </sc-if>
+
+      <!-- ============ 評価結果 ============ -->
+      <sc-if value="{{ isEval }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">評価結果（評価調書）</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">キー統制ごとに整備評価（デザイン）と運用評価（オペレーション）の結果・サンプル・例外を記録します。</p>
+          </div>
+          <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;overflow:auto;">
+            <table style="border-collapse:separate;border-spacing:0;min-width:1000px;width:100%;">
+              <thead>
+                <tr>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">統制ID</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;min-width:260px;">統制内容</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 8px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;">KC</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 10px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">整備評価</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 10px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">運用評価</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 10px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">サンプル</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 10px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;">例外</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">評価者</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">評価日</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;">総合</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ evalRows }}" as="r" hint-placeholder-count="3">
+                  <tr style="border-bottom:1px dashed #D2DCD8;" style-hover="background:#F8FBFA;">
+                    <td style="padding:13px 12px;font-size:12px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;vertical-align:top;">{{ r.id }}</td>
+                    <td style="padding:13px 12px;font-size:12.5px;color:#2A3633;line-height:1.5;vertical-align:top;">{{ r.ctl }}</td>
+                    <td style="padding:13px 8px;text-align:center;vertical-align:middle;"><sc-if value="{{ r.key }}" hint-placeholder-val="{{ true }}"><span style="display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid #0E7C73;"></span></sc-if></td>
+                    <td style="padding:13px 10px;text-align:center;vertical-align:top;"><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:13px;font-size:11.5px;font-weight:600;{{ r.deM.style }}"><span style="font-size:13px;">{{ r.de }}</span>{{ r.deM.lbl }}</span></td>
+                    <td style="padding:13px 10px;text-align:center;vertical-align:top;"><span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:13px;font-size:11.5px;font-weight:600;{{ r.oeM.style }}"><span style="font-size:13px;">{{ r.oe }}</span>{{ r.oeM.lbl }}</span></td>
+                    <td style="padding:13px 10px;text-align:center;font-size:12.5px;color:#3A4742;font-family:'IBM Plex Mono',monospace;vertical-align:top;">{{ r.n }}件</td>
+                    <td style="padding:13px 10px;text-align:center;font-size:12.5px;font-weight:600;color:#3A4742;font-family:'IBM Plex Mono',monospace;vertical-align:top;">{{ r.exc }}</td>
+                    <td style="padding:13px 12px;font-size:12.5px;color:#3A4742;vertical-align:top;white-space:nowrap;">{{ r.tester }}</td>
+                    <td style="padding:13px 12px;font-size:12px;color:#6A756F;font-family:'IBM Plex Mono',monospace;vertical-align:top;white-space:nowrap;">{{ r.date }}</td>
+                    <td style="padding:13px 12px;text-align:center;vertical-align:top;"><span style="display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;font-size:15px;font-weight:700;{{ r.totalM.style }}">{{ r.total }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:11px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:#8A9794;"><i class="ph ph-info" style="font-size:14px;"></i>整備評価＝統制が適切に設計されているか／運用評価＝統制が継続的に機能しているか。例外件数が基準を超える場合は不備管理へ連携します。</div>
+        </div>
+      </sc-if>
+
+      <!-- ============ ギャップチェック ============ -->
+      <sc-if value="{{ isGap }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;max-width:1000px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">ギャップチェック</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">三点セット・評価・不備のデータから、整合性や網羅性の問題を自動検出します。</p>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:18px;">
+            <sc-for list="{{ gapSummary }}" as="s" hint-placeholder-count="3">
+              <div style="flex:1;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;background:{{ s.bg }};border:1px solid {{ s.bd }};">
+                <i class="ph {{ s.icon }}" style="font-size:24px;color:{{ s.color }};"></i>
+                <div><div style="font-size:24px;font-weight:700;color:{{ s.color }};font-family:'IBM Plex Mono',monospace;line-height:1;">{{ s.count }}</div><div style="font-size:11.5px;font-weight:600;color:{{ s.color }};margin-top:3px;">{{ s.label }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ gapFindings }}" as="f" hint-placeholder-count="5">
+              <div style="display:flex;align-items:flex-start;gap:13px;padding:14px 16px;background:#fff;border:1px solid #E2E8E7;border-left:3px solid {{ f.color }};border-radius:10px;">
+                <i class="ph {{ f.icon }}" style="font-size:19px;color:{{ f.color }};flex:none;margin-top:1px;"></i>
+                <div style="flex:1;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    <span style="font-size:10px;font-weight:700;color:{{ f.color }};padding:2px 8px;border-radius:5px;background:{{ f.bg }};border:1px solid {{ f.bd }};">{{ f.lbl }}</span>
+                    <span style="font-size:11px;font-weight:600;color:#6A756F;">{{ f.cat }}</span>
+                  </div>
+                  <div style="font-size:13px;color:#2A3633;line-height:1.6;text-wrap:pretty;">{{ f.msg }}</div>
+                </div>
+                <button style="flex:none;align-self:center;font-size:12px;font-weight:600;color:#0A5E57;background:#EFF6F4;border:1px solid #C9E0D9;border-radius:7px;padding:6px 11px;cursor:pointer;font-family:inherit;white-space:nowrap;" style-hover="background:#0E7C73;color:#fff;border-color:#0A5E57;">{{ f.to }}</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ 不備管理 ============ -->
+      <sc-if value="{{ isDef }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">不備管理</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">検出した不備を区分（不備／重要な不備／開示すべき重要な不備）で管理し、是正状況を追跡します。</p>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:18px;max-width:620px;">
+            <sc-for list="{{ defTiers }}" as="t" hint-placeholder-count="3">
+              <div style="flex:1;padding:14px 16px;border-radius:12px;background:{{ t.bg }};border:1px solid {{ t.bd }};">
+                <div style="font-size:26px;font-weight:700;color:{{ t.color }};font-family:'IBM Plex Mono',monospace;line-height:1;">{{ t.count }}</div>
+                <div style="font-size:11px;font-weight:600;color:{{ t.color }};margin-top:6px;line-height:1.3;">{{ t.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;overflow:auto;">
+            <table style="border-collapse:separate;border-spacing:0;min-width:1080px;width:100%;">
+              <thead>
+                <tr>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">不備ID</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">区分</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 10px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;">統制</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;min-width:240px;">不備の内容</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;min-width:200px;">原因</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">金額影響</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:left;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;white-space:nowrap;">是正期限</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;">状況</th>
+                  <th style="position:sticky;top:0;background:#F2F6F5;padding:11px 12px;text-align:center;font-size:11px;font-weight:700;color:#7A867F;border-bottom:1px solid #E2E8E7;">再評価</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ defRows }}" as="d" hint-placeholder-count="2">
+                  <tr style="border-bottom:1px dashed #D2DCD8;" style-hover="background:#F8FBFA;">
+                    <td style="padding:13px 12px;font-size:12px;font-weight:600;color:#7A1F1A;font-family:'IBM Plex Mono',monospace;vertical-align:top;">{{ d.id }}</td>
+                    <td style="padding:13px 12px;vertical-align:top;"><span style="display:inline-block;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:600;white-space:nowrap;{{ d.typeStyle }}">{{ d.type }}</span></td>
+                    <td style="padding:13px 10px;text-align:center;font-size:12px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;vertical-align:top;">{{ d.ctl }}</td>
+                    <td style="padding:13px 12px;font-size:12.5px;color:#2A3633;line-height:1.5;vertical-align:top;">{{ d.desc }}</td>
+                    <td style="padding:13px 12px;font-size:12.5px;color:#56635F;line-height:1.5;vertical-align:top;">{{ d.cause }}</td>
+                    <td style="padding:13px 12px;font-size:12.5px;font-weight:600;color:#3A4742;font-family:'IBM Plex Mono',monospace;vertical-align:top;white-space:nowrap;">{{ d.amount }}</td>
+                    <td style="padding:13px 12px;font-size:12px;color:#3A4742;font-family:'IBM Plex Mono',monospace;vertical-align:top;white-space:nowrap;">{{ d.due }}</td>
+                    <td style="padding:13px 12px;text-align:center;vertical-align:top;"><span style="display:inline-block;padding:3px 10px;border-radius:13px;font-size:11.5px;font-weight:600;white-space:nowrap;{{ d.statusStyle }}">{{ d.status }}</span></td>
+                    <td style="padding:13px 12px;text-align:center;font-size:12.5px;color:#3A4742;vertical-align:top;">{{ d.retest }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ 証憑（格納・依頼）============ -->
+      <sc-if value="{{ isEv }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;max-width:1080px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">証憑（格納・依頼）</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">キー統制ごとに証憑の依頼先・期限・状況を管理し、ファイルをローカルに格納します（外部送信なし）。</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <sc-for list="{{ evCards }}" as="c" hint-placeholder-count="3">
+              <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <span style="font-size:12px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;padding:3px 9px;border-radius:7px;background:#EAF4F1;border:1px solid #C9E0D9;flex:none;">{{ c.id }}</span>
+                  <span style="flex:1;font-size:14px;font-weight:600;color:#1F2B27;">{{ c.name }}</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:13px;font-size:11.5px;font-weight:600;flex:none;{{ c.statusStyle }}"><i class="ph {{ c.statusIcon }}" style="font-size:13px;"></i>{{ c.status }}</span>
+                </div>
+                <div style="display:flex;gap:22px;margin-bottom:14px;font-size:12px;color:#56635F;">
+                  <span>依頼先 <b style="color:#27332F;">{{ c.reqTo }}</b></span>
+                  <span>提出期限 <b style="color:#27332F;font-family:'IBM Plex Mono',monospace;">{{ c.due }}</b></span>
+                  <span>格納ファイル <b style="color:#27332F;font-family:'IBM Plex Mono',monospace;">{{ c.fileCount }}</b></span>
+                </div>
+                <sc-if value="{{ c.hasFiles }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:9px;border-top:1px dashed #E2E8E7;padding-top:14px;">
+                    <sc-for list="{{ c.files }}" as="f" hint-placeholder-count="2">
+                      <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid #E2E8E7;border-radius:9px;background:#F9FBFA;">
+                        <i class="ph {{ f.icon }}" style="font-size:18px;color:#5A6863;"></i>
+                        <div style="line-height:1.3;"><div style="font-size:12px;font-weight:500;color:#2A3633;">{{ f.n }}</div><div style="font-size:10.5px;color:#9AA6A2;font-family:'IBM Plex Mono',monospace;">{{ f.s }}</div></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ c.noFiles }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:9px;border-top:1px dashed #E2E8E7;padding-top:14px;font-size:12px;color:#9A6614;"><i class="ph ph-tray" style="font-size:16px;"></i>証憑は未格納です。依頼先からの提出を待っています。</div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ ロールフォワード ============ -->
+      <sc-if value="{{ isRollf }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;max-width:1000px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">ロールフォワード</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">前期に保存したスナップショットと当期を比較し、変更点を洗い出します。当期の確定後に「前期として保存」しておくと、翌期の差分管理に使えます。</p>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:16px 18px;margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="width:34px;height:34px;border-radius:9px;background:#EFF2F1;display:flex;align-items:center;justify-content:center;"><i class="ph ph-clock-counter-clockwise" style="font-size:18px;color:#56635F;"></i></span>
+              <div><div style="font-size:11px;color:#8A9794;">前期スナップショット</div><div style="font-size:13.5px;font-weight:600;font-family:'IBM Plex Mono',monospace;">2025-06-30</div></div>
+            </div>
+            <i class="ph ph-arrow-right" style="font-size:18px;color:#B4C3BF;"></i>
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="width:34px;height:34px;border-radius:9px;background:#EAF4F1;display:flex;align-items:center;justify-content:center;"><i class="ph ph-calendar-check" style="font-size:18px;color:#0E7C73;"></i></span>
+              <div><div style="font-size:11px;color:#8A9794;">当期</div><div style="font-size:13.5px;font-weight:600;font-family:'IBM Plex Mono',monospace;">2026-06-18</div></div>
+            </div>
+            <div style="flex:1;"></div>
+            <button style="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:8px;border:1px solid #DCE5E3;background:#fff;color:#33403C;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E7C73;background:#F2F8F6;"><i class="ph ph-floppy-disk" style="font-size:15px;color:#5A6863;"></i>当期を前期として保存</button>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-bottom:18px;">
+            <sc-for list="{{ rollfSummary }}" as="s" hint-placeholder-count="4">
+              <div style="flex:1;display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:12px;background:{{ s.bg }};border:1px solid {{ s.bd }};">
+                <i class="ph {{ s.icon }}" style="font-size:22px;color:{{ s.color }};"></i>
+                <div><div style="font-size:22px;font-weight:700;color:{{ s.color }};font-family:'IBM Plex Mono',monospace;line-height:1;">{{ s.count }}</div><div style="font-size:11px;font-weight:600;color:{{ s.color }};margin-top:3px;">{{ s.kind }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;overflow:hidden;">
+            <div style="padding:13px 18px;border-bottom:1px solid #EEF2F1;font-size:13px;font-weight:700;">変更点の一覧</div>
+            <sc-for list="{{ rollfItems }}" as="i" hint-placeholder-count="6">
+              <div style="display:flex;align-items:flex-start;gap:13px;padding:14px 18px;border-bottom:1px dashed #D2DCD8;" style-hover="background:#F8FBFA;">
+                <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:13px;font-size:11.5px;font-weight:600;flex:none;width:88px;justify-content:center;background:{{ i.bg }};color:{{ i.color }};border:1px solid {{ i.bd }};"><i class="ph {{ i.icon }}" style="font-size:13px;"></i>{{ i.kind }}</span>
+                <div style="flex:1;">
+                  <div style="display:flex;align-items:center;gap:9px;margin-bottom:3px;">
+                    <span style="font-size:12px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;">{{ i.target }}</span>
+                    <span style="font-size:13px;font-weight:600;color:#1F2B27;">{{ i.label }}</span>
+                  </div>
+                  <div style="font-size:12px;color:#56635F;line-height:1.5;">{{ i.note }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ 取込（Excel / CSV）============ -->
+      <sc-if value="{{ isImport }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;max-width:1000px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">取込（Excel / CSV）</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">既存のExcel/CSVから工程やRCMを取り込みます。列の対応（マッピング）は会社・様式名で保存して再利用できます。</p>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
+            <sc-for list="{{ importSteps }}" as="st" hint-placeholder-count="4">
+              <div style="flex:1;min-width:150px;display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;background:#fff;border:1px solid #E2E8E7;">
+                <span style="width:28px;height:28px;border-radius:50%;background:#EAF4F1;color:#0A5E57;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'IBM Plex Mono',monospace;flex:none;">{{ st.n }}</span>
+                <span style="font-size:12px;font-weight:600;color:#33403C;">{{ st.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+            <div style="flex:2;min-width:320px;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+              <div style="display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:10px;background:#F2F8F6;border:1px solid #C9E0D9;margin-bottom:16px;">
+                <i class="ph ph-microsoft-excel-logo" style="font-size:22px;color:#1D7044;"></i>
+                <div style="flex:1;"><div style="font-size:13px;font-weight:600;">監査サンプル.xlsx</div><div style="font-size:11px;color:#8A9794;font-family:'IBM Plex Mono',monospace;">23 KB ・ シート「業務記述書」・ ヘッダ行 1</div></div>
+                <button style="font-size:12px;font-weight:600;color:#0A5E57;background:#fff;border:1px solid #C9E0D9;border-radius:7px;padding:6px 11px;cursor:pointer;font-family:inherit;" style-hover="background:#EAF4F1;">変更</button>
+              </div>
+              <div style="font-size:12px;font-weight:700;color:#44514E;margin-bottom:9px;">列マッピング（取込先項目 ← Excel列）</div>
+              <div style="display:flex;flex-direction:column;gap:7px;">
+                <sc-for list="{{ mapRows }}" as="m" hint-placeholder-count="8">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="flex:none;width:104px;font-size:12.5px;font-weight:600;color:#2A3633;">{{ m.field }}</span>
+                    <i class="ph ph-arrow-left" style="font-size:14px;color:#B4C3BF;flex:none;"></i>
+                    <span style="flex:1;display:flex;align-items:center;justify-content:space-between;height:34px;padding:0 11px;border-radius:7px;border:1px solid;background:#fff;font-size:12.5px;{{ m.selStyle }}">{{ m.header }}<i class="ph ph-caret-down" style="font-size:12px;opacity:.5;"></i></span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="flex:1;min-width:240px;background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+              <div style="font-size:12px;font-weight:700;color:#44514E;margin-bottom:10px;">マッピングプロファイル</div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+                <sc-for list="{{ importProfiles }}" as="p" hint-placeholder-count="3">
+                  <button style="display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:8px;border:1px solid #E2E8E7;background:#fff;cursor:pointer;font-family:inherit;text-align:left;" style-hover="border-color:#0E7C73;background:#F2F8F6;">
+                    <i class="ph ph-bookmark-simple" style="font-size:15px;color:#0A5E57;"></i><span style="flex:1;font-size:12px;color:#2A3633;">{{ p }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <button style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:34px;border-radius:8px;border:1px dashed #C0CCC8;background:#fff;color:#0A5E57;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E7C73;background:#F2F8F6;"><i class="ph ph-plus" style="font-size:14px;"></i>現在の対応を保存</button>
+            </div>
+          </div>
+          <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+            <div style="padding:12px 16px;border-bottom:1px solid #EEF2F1;font-size:12.5px;font-weight:700;">取込プレビュー（先頭3行）</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr style="background:#F7FAF9;"><th style="text-align:left;padding:9px 14px;font-size:11px;font-weight:700;color:#7A867F;">No.</th><th style="text-align:left;padding:9px 14px;font-size:11px;font-weight:700;color:#7A867F;">業務</th><th style="text-align:left;padding:9px 14px;font-size:11px;font-weight:700;color:#7A867F;">担当部門</th><th style="text-align:left;padding:9px 14px;font-size:11px;font-weight:700;color:#7A867F;">業務内容</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ importPreview }}" as="r" hint-placeholder-count="3">
+                  <tr style="border-top:1px dashed #D2DCD8;"><td style="padding:9px 14px;font-size:12.5px;font-family:'IBM Plex Mono',monospace;color:#3A4742;">{{ r.no }}</td><td style="padding:9px 14px;font-size:12.5px;color:#2A3633;">{{ r.gyomu }}</td><td style="padding:9px 14px;font-size:12.5px;color:#2A3633;">{{ r.dept }}</td><td style="padding:9px 14px;font-size:12.5px;color:#2A3633;">{{ r.content }}</td></tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;">
+            <div style="flex:1;display:flex;align-items:center;gap:7px;font-size:11.5px;color:#9A6614;"><i class="ph ph-warning" style="font-size:14px;"></i>「証跡」列が未割当です。割り当てるか、取込後に編集できます。</div>
+            <button style="height:38px;padding:0 16px;border-radius:8px;border:1px solid #DCE5E3;background:#fff;color:#33403C;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="border-color:#B4C3BF;">取消</button>
+            <button style="height:38px;padding:0 18px;border-radius:8px;border:1px solid #0A5E57;background:#0E7C73;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;" style-hover="background:#0A5E57;"><i class="ph ph-download-simple" style="font-size:15px;"></i>取込を実行</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ 規程・資料 ============ -->
+      <sc-if value="{{ isDocs }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;max-width:1000px;">
+          <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px;">
+            <div style="flex:1;">
+              <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">規程・資料</h1>
+              <p style="margin:0;font-size:13px;color:#6A756F;">業務記述やRCMの根拠となる社内規程・マニュアルを保管します（ローカル保存・外部送信なし）。</p>
+            </div>
+            <button style="flex:none;display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px;border-radius:8px;border:1px solid #0A5E57;background:#0E7C73;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="background:#0A5E57;"><i class="ph ph-upload-simple" style="font-size:16px;"></i>資料を追加</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <sc-for list="{{ docList }}" as="d" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:13px;padding:14px 16px;background:#fff;border:1px solid #E2E8E7;border-radius:11px;" style-hover="border-color:#B4C3BF;">
+                <span style="width:42px;height:42px;border-radius:9px;background:#F4F7F6;display:flex;align-items:center;justify-content:center;flex:none;"><i class="ph {{ d.icon }}" style="font-size:22px;color:{{ d.c }};"></i></span>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:600;color:#1F2B27;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ d.name }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:3px;"><span style="font-size:10.5px;color:#9AA6A2;font-family:'IBM Plex Mono',monospace;">{{ d.size }} ・ {{ d.date }}</span></div>
+                </div>
+                <span style="flex:none;font-size:10.5px;font-weight:600;color:#0A5E57;padding:2px 8px;border-radius:11px;background:#EAF4F1;border:1px solid #C9E0D9;">{{ d.tag }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ 使い方・基準参照 ============ -->
+      <sc-if value="{{ isHelp }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:24px;max-width:1000px;">
+          <div style="margin-bottom:18px;">
+            <h1 style="margin:0 0 3px;font-size:21px;font-weight:700;letter-spacing:-.01em;">使い方・基準参照</h1>
+            <p style="margin:0;font-size:13px;color:#6A756F;">操作のヒントと、内部統制の評価・監査に関する基準へのリンクです。</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;height:42px;padding:0 14px;background:#fff;border:1px solid #E2E8E7;border-radius:10px;margin-bottom:18px;max-width:480px;">
+            <i class="ph ph-magnifying-glass" style="font-size:17px;color:#9AA6A2;"></i>
+            <span style="font-size:13px;color:#9AA6A2;">使い方を検索（例：キー統制、アサーション）</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px;">
+            <sc-for list="{{ helpArticles }}" as="a" hint-placeholder-count="6">
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:15px 16px;background:#fff;border:1px solid #E2E8E7;border-radius:11px;cursor:pointer;" style-hover="border-color:#0E7C73;background:#FAFCFB;">
+                <span style="width:38px;height:38px;border-radius:9px;background:#EAF4F1;display:flex;align-items:center;justify-content:center;flex:none;"><i class="ph {{ a.icon }}" style="font-size:19px;color:#0E7C73;"></i></span>
+                <div style="flex:1;"><div style="font-size:13.5px;font-weight:700;color:#1F2B27;margin-bottom:3px;">{{ a.title }}</div><div style="font-size:12px;color:#6A756F;line-height:1.55;text-wrap:pretty;">{{ a.desc }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #E2E8E7;border-radius:12px;padding:18px 20px;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:13px;display:flex;align-items:center;gap:8px;"><i class="ph ph-scales" style="font-size:17px;color:#0E7C73;"></i>基準参照</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <sc-for list="{{ helpRefs }}" as="r" hint-placeholder-count="3">
+                <a href="#" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #E6ECEA;border-radius:10px;text-decoration:none;" style-hover="border-color:#0E7C73;background:#F2F8F6;">
+                  <i class="ph ph-link-simple" style="font-size:16px;color:#0A5E57;flex:none;"></i>
+                  <div style="flex:1;"><div style="font-size:12.5px;font-weight:600;color:#1F2B27;">{{ r.label }}</div><div style="font-size:11px;color:#8A9794;margin-top:2px;">{{ r.sub }}</div></div>
+                  <i class="ph ph-arrow-up-right" style="font-size:14px;color:#9AA6A2;flex:none;"></i>
+                </a>
+              </sc-for>
+            </div>
+            <div style="margin-top:12px;font-size:11px;color:#9AA6A2;line-height:1.6;">※ 三点セットの作成は監査上の義務ではなく、評価・監査を効率化するための文書化手段です。</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ OTHER (placeholder) ============ -->
+      <sc-if value="{{ isOther }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:680px;margin:64px auto;text-align:center;padding:52px 48px;background:#fff;border:1px solid #E2E8E7;border-radius:14px;">
+          <div style="width:64px;height:64px;border-radius:16px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><i class="ph {{ otherIcon }}" style="font-size:30px;color:#0E7C73;"></i></div>
+          <h2 style="margin:0 0 9px;font-size:19px;font-weight:700;">{{ otherTitle }}</h2>
+          <p style="margin:0;font-size:13px;line-height:1.75;color:#6A756F;">この画面はリデザイン第2フェーズで再設計予定です。<br>現行ツールの機能はそのままご利用いただけます。</p>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+
+  <sc-if value="{{ tmplModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(20,32,30,.46);display:flex;align-items:center;justify-content:center;z-index:60;padding:24px;">
+      <div style="width:760px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden;">
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:22px 24px 16px;border-bottom:1px solid #EEF2F1;">
+          <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,#0E7C73,#0A5E57);display:flex;align-items:center;justify-content:center;flex:none;"><i class="ph ph-files" style="font-size:21px;color:#fff;"></i></div>
+          <div style="flex:1;">
+            <h2 style="margin:0 0 3px;font-size:17px;font-weight:700;">新規プロセスを作成</h2>
+            <p style="margin:0;font-size:12.5px;color:#6A756F;">業種・取引別のひな形から始めると、標準的な工程・リスク・統制があらかじめ用意されます。</p>
+          </div>
+          <button onClick="{{ closeTmpl }}" style="flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:#F0F3F2;border-radius:8px;cursor:pointer;color:#6A756F;" style-hover="background:#E2E8E6;"><i class="ph ph-x" style="font-size:16px;"></i></button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:18px 24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <sc-for list="{{ templates }}" as="t" hint-placeholder-count="6">
+              <button onClick="{{ selTmplFns[t.id] }}" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:11px;cursor:pointer;text-align:left;font-family:inherit;{{ t.cardStyle }}">
+                <span style="width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;{{ t.iconStyle }}"><i class="ph {{ t.icon }}" style="font-size:20px;"></i></span>
+                <span style="flex:1;">
+                  <span style="display:block;font-size:13.5px;font-weight:700;color:#1F2B27;margin-bottom:3px;">{{ t.name }}</span>
+                  <span style="display:block;font-size:11.5px;color:#6A756F;line-height:1.5;margin-bottom:7px;">{{ t.desc }}</span>
+                  <span style="display:flex;gap:6px;">
+                    <span style="font-size:10.5px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;padding:1px 7px;border-radius:5px;background:#EAF4F1;border:1px solid #C9E0D9;">工程 {{ t.steps }}</span>
+                    <span style="font-size:10.5px;font-weight:600;color:#0A5E57;font-family:'IBM Plex Mono',monospace;padding:1px 7px;border-radius:5px;background:#EAF4F1;border:1px solid #C9E0D9;">RCM {{ t.rcm }}</span>
+                  </span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 24px;border-top:1px solid #EEF2F1;background:#F9FBFA;">
+          <span style="font-size:12px;color:#6A756F;">選択中： <b style="color:#0A5E57;">{{ selTmplName }}</b></span>
+          <div style="display:flex;gap:9px;">
+            <button onClick="{{ closeTmpl }}" style="height:38px;padding:0 16px;border-radius:8px;border:1px solid #DCE5E3;background:#fff;color:#33403C;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="border-color:#B4C3BF;">キャンセル</button>
+            <button onClick="{{ closeTmpl }}" style="height:38px;padding:0 18px;border-radius:8px;border:1px solid #0A5E57;background:#0E7C73;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;" style-hover="background:#0A5E57;"><i class="ph ph-check" style="font-size:15px;"></i>このテンプレートで作成</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDetailOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(20,32,30,.46);display:flex;align-items:center;justify-content:center;z-index:60;padding:24px;">
+      <div style="width:680px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden;">
+        <div style="display:flex;align-items:flex-start;gap:13px;padding:20px 24px 16px;border-bottom:1px solid #EEF2F1;">
+          <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+            <div style="display:flex;align-items:center;gap:9px;">
+              <span style="font-size:12px;font-weight:700;color:#0A5E57;font-family:'IBM Plex Mono',monospace;padding:2px 9px;border-radius:6px;background:#EAF4F1;border:1px solid #C9E0D9;">{{ detailData.unit }} No.{{ detailData.no }}</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:7px;font-size:11.5px;font-weight:600;{{ detailData.typeStyle }}"><i class="ph {{ detailData.typeIcon }}" style="font-size:12px;"></i>{{ detailData.type }}</span>
+            </div>
+            <h2 style="margin:0;font-size:17px;font-weight:700;">{{ detailData.content }}</h2>
+            <span style="font-size:12px;color:#6A756F;">{{ detailData.dept }} ・ {{ detailData.role }}</span>
+          </div>
+          <button onClick="{{ closeDetail }}" style="flex:none;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:none;background:#F0F3F2;border-radius:8px;cursor:pointer;color:#6A756F;" style-hover="background:#E2E8E6;"><i class="ph ph-x" style="font-size:16px;"></i></button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:18px 24px;">
+          <div style="font-size:12px;font-weight:700;color:#44514E;margin-bottom:8px;display:flex;align-items:center;gap:7px;"><i class="ph ph-article" style="font-size:15px;color:#0E7C73;"></i>詳細な手順・記述</div>
+          <div style="border:1px solid #E2E8E7;border-radius:10px;padding:16px;background:#FAFCFB;min-height:120px;">
+            <sc-if value="{{ detailData.hasText }}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{ detailData.lines }}" as="ln" hint-placeholder-count="2">
+                <p style="margin:0 0 9px;font-size:13px;line-height:1.85;color:#2A3633;text-wrap:pretty;">{{ ln }}</p>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ detailData.noText }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;color:#9AA6A2;font-size:12.5px;"><i class="ph ph-pencil-simple-line" style="font-size:16px;"></i>詳細な手順はまだ入力されていません。クリックして記入できます。</div>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ isManual }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12px;font-weight:700;color:#44514E;margin:18px 0 8px;display:flex;align-items:center;gap:7px;"><i class="ph ph-image-square" style="font-size:15px;color:#0E7C73;"></i>添付画像（操作画面・帳票など）</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div style="width:200px;height:128px;border-radius:10px;background:repeating-linear-gradient(45deg,#F4F7F6,#F4F7F6 8px,#EDF2F0 8px,#EDF2F0 16px);border:1px solid #E2E8E7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8A9794;">
+                <i class="ph ph-image" style="font-size:26px;"></i>
+                <span style="font-size:10.5px;font-family:'IBM Plex Mono',monospace;">受注入力画面.png</span>
+              </div>
+              <button style="width:200px;height:128px;border-radius:10px;border:1.5px dashed #C0CCC8;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:#0A5E57;cursor:pointer;font-family:inherit;" style-hover="border-color:#0E7C73;background:#F2F8F6;">
+                <i class="ph ph-upload-simple" style="font-size:24px;"></i>
+                <span style="font-size:11.5px;font-weight:600;">画像をドラッグ / クリックで添付</span>
+                <span style="font-size:10px;color:#9AA6A2;font-family:'IBM Plex Mono',monospace;">PNG / JPG ・ ローカル保存</span>
+              </button>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:14px 24px;border-top:1px solid #EEF2F1;background:#F9FBFA;">
+          <button onClick="{{ closeDetail }}" style="height:38px;padding:0 16px;border-radius:8px;border:1px solid #DCE5E3;background:#fff;color:#33403C;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" style-hover="border-color:#B4C3BF;">閉じる</button>
+          <button onClick="{{ closeDetail }}" style="height:38px;padding:0 18px;border-radius:8px;border:1px solid #0A5E57;background:#0E7C73;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;" style-hover="background:#0A5E57;"><i class="ph ph-check" style="font-size:15px;"></i>保存</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { nav: 'steps', mode: 'edit', collapsed: false, rationale: true, appMode: 'jsox', tmplModal: false, tmplSel: 'sales', openDetailNo: null, flowZoom: 1, sysLane: true };
+
+  renderVals() {
+    const { nav, mode, collapsed, rationale, appMode } = this.state;
+    const { tmplModal, tmplSel, openDetailNo } = this.state;
+    const isManual = appMode === 'manual';
+    const isJsox = !isManual;
+    // マニュアルモードで表示するページ
+    const manualPages = ['steps','flow','import','docs','help'];
+    const setAppMode = (m) => {
+      this.setState(s => {
+        const nx = { appMode: m };
+        if (m === 'manual' && !manualPages.includes(s.nav)) nx.nav = 'steps';
+        return nx;
+      });
+    };
+
+    const go = (id) => this.setState({ nav: id });
+    const navIds = ['dash','steps','flow','rcm','eval','gap','rollf','def','ev','import','docs','help'];
+    const goFns = {};
+    navIds.forEach(id => goFns[id] = () => go(id));
+
+    const na = {};
+    navIds.forEach(id => {
+      na[id] = (id === nav)
+        ? 'background:#E9F1EF;color:#0A5E57;font-weight:600;box-shadow:inset 3px 0 0 #0E7C73;'
+        : 'background:transparent;color:#54615C;font-weight:500;';
+    });
+    const ta = {};
+    ['steps','flow','rcm'].forEach(id => {
+      ta[id] = (id === nav)
+        ? 'background:#0E7C73;color:#fff;border-color:#0A5E57;box-shadow:0 1px 3px rgba(10,94,87,.22);'
+        : 'background:#fff;color:#44514E;border-color:#DCE5E3;';
+    });
+    const me = {
+      edit: mode === 'edit' ? 'background:#fff;color:#14201E;box-shadow:0 1px 2px rgba(0,0,0,.1);font-weight:600;' : 'background:transparent;color:#6A756F;font-weight:500;',
+      preview: mode === 'preview' ? 'background:#fff;color:#14201E;box-shadow:0 1px 2px rgba(0,0,0,.1);font-weight:600;' : 'background:transparent;color:#6A756F;font-weight:500;'
+    };
+
+    const isDash = nav === 'dash';
+    const isSteps = nav === 'steps', isFlow = nav === 'flow', isRcm = nav === 'rcm';
+    const isWorkspace = isSteps || isFlow || isRcm;
+    const showMode = isSteps || isRcm;
+    const stepsEdit = isSteps && mode === 'edit';
+    const stepsPreview = isSteps && mode === 'preview';
+    const isEval = nav === 'eval', isGap = nav === 'gap', isDef = nav === 'def', isEv = nav === 'ev', isRollf = nav === 'rollf';
+    const isImport = nav === 'import', isDocs = nav === 'docs', isHelp = nav === 'help';
+    const otherIds = [];
+    const isOther = otherIds.includes(nav);
+    const otherMap = {
+      eval:{t:'評価結果（評価調書）',i:'ph-clipboard-text'},
+      gap:{t:'ギャップチェック',i:'ph-magnifying-glass'},
+      rollf:{t:'ロールフォワード',i:'ph-arrows-clockwise'},
+      def:{t:'不備管理',i:'ph-warning'},
+      ev:{t:'証憑（格納・依頼）',i:'ph-paperclip'},
+      import:{t:'取込（Excel / CSV）',i:'ph-upload-simple'},
+      docs:{t:'規程・資料',i:'ph-folder'},
+      help:{t:'使い方・基準参照',i:'ph-question'},
+    };
+    const om = otherMap[nav] || { t:'', i:'ph-circle' };
+
+    const status = mode === 'edit'
+      ? { txt:'未反映の編集 3件', bg:'#FBF2DD', fg:'#9A6614', bd:'#EAD9B0', dot:'#C8901C' }
+      : { txt:'反映済み', bg:'#E6F2EC', fg:'#157F5B', bd:'#C3E2D2', dot:'#1F9E6A' };
+
+    const phaseMeta = {
+      '受注':{c:'#3E8E86',t:'#ECF4F2'},
+      '承認':{c:'#5E84C0',t:'#EEF2F9'},
+      '出荷':{c:'#4E9466',t:'#ECF4EF'},
+      '売上計上':{c:'#9E833F',t:'#F6F2E9'},
+    };
+    const typeMeta = {
+      '開始':{bg:'#E6F2EC',fg:'#157F5B',bd:'#C3E2D2',ic:'ph-play-circle'},
+      '終了':{bg:'#F3EDE8',fg:'#7A5C44',bd:'#E2D4C8',ic:'ph-stop-circle'},
+      '手動処理':{bg:'#EFF3F2',fg:'#46534E',bd:'#DAE3E0',ic:'ph-hand'},
+      'システム処理':{bg:'#E9F0F8',fg:'#2D5A86',bd:'#C9DBEE',ic:'ph-monitor'},
+      '判断':{bg:'#FBF1E0',fg:'#8A5A12',bd:'#EBD9B4',ic:'ph-diamonds-four'},
+      '書類':{bg:'#F5F2EF',fg:'#6A5C4F',bd:'#E6DDD2',ic:'ph-file-text'},
+    };
+    const evalMeta = {
+      '○':{bg:'#E6F2EC',fg:'#157F5B',bd:'#C3E2D2',lbl:'有効'},
+      '△':{bg:'#FBF1E0',fg:'#9A6614',bd:'#EBD9B4',lbl:'一部不備'},
+      '×':{bg:'#F7E9E7',fg:'#B0413B',bd:'#EDCBC6',lbl:'不備'},
+      '－':{bg:'#EFF3F2',fg:'#8A9794',bd:'#DAE3E0',lbl:'未評価'},
+    };
+    const Rstyle = 'background:#F7ECEA;color:#A8473F;border:1px solid #ECCFCA;';
+    const Cstyle = 'background:#E7F1EE;color:#0A5E57;border:1px solid #BBD9D0;';
+    const deptMeta = {
+      '得意先':{bg:'#EEF1F0',fg:'#56635F',bd:'#DDE5E2',dot:'#8A9794'},
+      '営業部':{bg:'#EEF2F9',fg:'#3A5C92',bd:'#CFDCEF',dot:'#5E84C0'},
+      '倉庫':{bg:'#ECF4EF',fg:'#2F6B47',bd:'#C8E0D2',dot:'#4E9466'},
+      '経理部':{bg:'#F6F2E9',fg:'#7A6320',bd:'#E6DBBE',dot:'#9E833F'},
+      _:{bg:'#EEF1F0',fg:'#56635F',bd:'#DDE5E2',dot:'#8A9794'},
+    };
+
+    const rawSteps = [
+      {no:'10',gyomu:'受注',dept:'得意先',role:'得意先',type:'開始',content:'注文',system:'',ev:'',rc:[],detail:''},
+      {no:'20',gyomu:'受注',dept:'営業部',role:'営業担当',type:'システム処理',content:'受注入力',system:'販売管理システム',ev:'注文書',rc:[],detail:'営業担当者は得意先から受領した注文書（FAX又はEDI）に基づき、販売管理システムの受注入力画面に得意先コード・商品コード・数量・単価・希望納期を入力する。\n入力後、画面表示と注文書の記載内容を目視で照合し、相違がないことを確認のうえ確定する。EDI受信分は取込結果リストと受信データを突合する。'},
+      {no:'30',gyomu:'承認',dept:'営業部',role:'与信管理',type:'判断',content:'与信限度内か',system:'販売管理システム',ev:'',rc:[{r:'R001',c:'C001',key:true}],detail:'与信管理担当者は受注金額を取引先別の与信限度額と照合する。\n限度内であればシステムが自動承認し、限度を超過する場合は承認ワークフローが起動して営業部長の承認を必須とする。承認なしには後続の出荷指図を作成できない。'},
+      {no:'40',gyomu:'承認',dept:'営業部',role:'営業部長',type:'手動処理',content:'与信超過分を承認',system:'',ev:'与信承認記録',rc:[],detail:'営業部長は与信超過アラートを受け、取引先の直近の入金状況・滞留債権・受注の妥当性を確認のうえ、承認可否を判断し承認記録に記名する。'},
+      {no:'50',gyomu:'出荷',dept:'倉庫',role:'出荷担当',type:'手動処理',content:'出荷指図に基づき出荷',system:'',ev:'出荷指図書',rc:[{r:'R002',c:'C002',key:true}],detail:'出荷担当者は出荷指図書を出力し、現品（商品・数量・ロット）と照合する。\n相違がないことを確認のうえ出荷し、出荷指図書に検品者の署名を記載する。'},
+      {no:'60',gyomu:'出荷',dept:'倉庫',role:'出荷担当',type:'書類',content:'出荷報告書／納品書控',system:'',ev:'納品書',rc:[],detail:''},
+      {no:'70',gyomu:'売上計上',dept:'経理部',role:'経理担当',type:'システム処理',content:'売上計上（三者照合）',system:'会計システム',ev:'',rc:[{r:'R003',c:'C003',key:true}],detail:'会計システムは受注データ・出荷実績・請求情報の三者照合を日次で実行し、三者が一致した取引のみを売上として自動計上する。\n差異が検出された取引はエラーリストに出力され、経理担当者が原因を調査・解消したうえで再処理する。'},
+      {no:'80',gyomu:'売上計上',dept:'経理部',role:'経理担当',type:'書類',content:'請求書発行',system:'販売管理システム',ev:'請求書',rc:[],detail:''},
+      {no:'90',gyomu:'売上計上',dept:'得意先',role:'得意先',type:'終了',content:'商品・請求書受領',system:'',ev:'',rc:[],detail:''},
+    ];
+    rawSteps.forEach(s => {
+      const tm = typeMeta[s.type];
+      s.typeStyle = `background:${tm.bg};color:${tm.fg};border:1px solid ${tm.bd};`;
+      s.hasDetail = !!s.detail;
+      s.detailIcon = s.detail ? 'ph-note' : 'ph-note-pencil';
+      s.detailBtnStyle = s.detail ? 'background:#EAF4F1;border:1px solid #C9E0D9;color:#0A5E57;' : 'background:#fff;border:1px solid #E2E8E7;color:#9AA6A2;';
+      s.openDetail = () => this.setState({ openDetailNo: s.no });
+      s.typeIcon = tm.ic;
+      const dm = deptMeta[s.dept] || deptMeta._;
+      s.deptStyle = `display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:13px;background:${dm.bg};color:${dm.fg};border:1px solid ${dm.bd};font-size:12px;font-weight:600;`;
+      s.deptDot = dm.dot;
+      s.systemDisp = s.system || '—';
+      s.systemColor = s.system ? '#3A4742' : '#C4D0CC';
+      s.evDisp = s.ev || '—';
+      s.evColor = s.ev ? '#3A4742' : '#C4D0CC';
+      s.tags = [];
+      s.rc.forEach(x => {
+        s.tags.push({ label:x.r, style:Rstyle, star:false });
+        s.tags.push({ label:x.c, style:Cstyle, star:!!x.key });
+      });
+      s.hasTags = s.tags.length > 0;
+      s.noTags = s.tags.length === 0;
+    });
+
+    const order = ['受注','承認','出荷','売上計上'];
+    const stepGroups = order.map(g => {
+      const rows = rawSteps.filter(s => s.gyomu === g);
+      return { gyomu:g, color:phaseMeta[g].c, tint:phaseMeta[g].t, rows, count: rows.length + (isManual ? '手順' : '工程') };
+    }).filter(x => x.rows.length);
+
+    const imgMap = { '20':'受注入力画面.png', '50':'出荷検品画面.png', '70':'三者照合エラーリスト.png' };
+    const previewDetails = rawSteps.filter(s => s.detail).map(s => ({
+      no: s.no,
+      title: `${s.content}（${s.dept} / ${s.role}）`,
+      lines: s.detail.split('\n'),
+      hasImg: isManual && !!imgMap[s.no],
+      imgName: imgMap[s.no] || '',
+    }));
+    const prevH1 = isManual ? '1. 手順の流れ' : '1. 業務の流れ';
+    const prevH2 = isManual ? '2. 各手順の詳細・操作画面' : '2. 各工程の詳細記述';
+    const prevTitle = isManual ? '販売プロセス 業務マニュアル' : '販売プロセス（受注〜売上計上）';
+
+
+    // RCM
+    const maStyle = (v) => v === '自動'
+      ? 'background:#E9F0F8;color:#2D5A86;border:1px solid #C9DBEE;'
+      : 'background:#EFF3F2;color:#46534E;border:1px solid #DAE3E0;';
+    const rcmRaw = [
+      {gyomu:'承認',riskId:'R001',risk:'与信限度を超える受注を受け付け、回収不能（貸倒れ）が生じる。',ctlId:'C001',ctl:'与信限度超過時はシステムが自動で受注確定をブロックし、与信管理者及び営業部長の承認を必須とする。',asr:[true,false,true,true,false,false],pd:'予防',ma:'自動',owner:'与信管理者',key:true,eval:'○'},
+      {gyomu:'出荷',riskId:'R002',risk:'出荷指図と異なる商品・数量が出荷され、売上・在庫が実態と相違する。',ctlId:'C002',ctl:'出荷担当は出荷指図書と現品（商品・数量）を照合し、相違がないことを確認のうえ出荷する。',asr:[true,true,false,false,true,false],pd:'予防',ma:'手動',owner:'出荷担当',key:true,eval:'△'},
+      {gyomu:'売上計上',riskId:'R003',risk:'実在しない売上、又は期間帰属を誤った売上が計上される。',ctlId:'C003',ctl:'会計システムが受注・出荷・請求の三者照合を行い、一致した取引のみを自動で売上計上する。',asr:[true,true,false,true,true,false],pd:'発見',ma:'自動',owner:'経理担当',key:true,eval:'○'},
+    ];
+    const rcmRows = rcmRaw.map(r => {
+      const em = evalMeta[r.eval];
+      return {
+        ...r,
+        phaseColor: (phaseMeta[r.gyomu] || {c:'#7C8B86'}).c,
+        cells: r.asr.map(v => ({ on: v, off: !v })),
+        maStyle: maStyle(r.ma),
+        evalStyle: `background:${em.bg};color:${em.fg};border:1px solid ${em.bd};`,
+        evalLbl: em.lbl,
+      };
+    });
+    const asrHeads = ['実在','網羅','権利','評価','期間','表示'];
+
+    // ---- FLOW LAYOUT ----
+    const { flowZoom, sysLane } = this.state;
+    const zLv = [0.5, 0.65, 0.8, 1, 1.2, 1.5];
+    const PB = 64, LW = 170, NW = 132, NH = 50, Y0 = 22, RH = 70;
+    const lanes = sysLane ? ['得意先','営業部','倉庫','経理部','システム'] : ['得意先','営業部','倉庫','経理部'];
+    const cx = (l) => PB + l * LW + LW / 2;
+    const cy = (row) => Y0 + row * RH + NH / 2;
+
+    const fnodesRaw = [
+      {id:'n10',lane:0,row:0,type:'開始',label:'注文',sub:'得意先'},
+      {id:'n20',lane:1,row:1,type:'システム処理',label:'受注入力',sub:'販売管理システム'},
+      {id:'n30',lane:1,row:2,type:'判断',label:'与信限度内か',sub:'',rc:{r:'R001',c:'C001'}},
+      {id:'n40',lane:1,row:3,type:'手動処理',label:'与信超過を承認',sub:''},
+      {id:'n50',lane:2,row:4,type:'手動処理',label:'出荷指図に基づき出荷',sub:'',rc:{r:'R002',c:'C002'}},
+      {id:'n60',lane:2,row:5,type:'書類',label:'納品書控',sub:''},
+      {id:'n70',lane:3,row:6,type:'システム処理',label:'売上計上（三者照合）',sub:'会計システム',rc:{r:'R003',c:'C003'}},
+      {id:'n80',lane:3,row:7,type:'書類',label:'請求書発行',sub:''},
+      {id:'n90',lane:0,row:8,type:'終了',label:'商品・請求書受領',sub:''},
+    ];
+    // 標準フローチャート記号：端子=角丸/処理=長方形/手作業=台形/判断=ひし形/書類=波形下辺
+    const shapeOf = (type, m) => {
+      if (type === '開始' || type === '終了') return `border-radius:26px;background:${m.bg};border:1.5px solid ${m.bd};`;
+      if (type === 'システム処理') return `border-radius:4px;background:${m.bg};border:1.4px solid ${m.bd};`;
+      if (type === '手動処理') return `clip-path:polygon(0 0,100% 0,87% 100%,13% 100%);background:${m.bg};filter:drop-shadow(0 0 .6px ${m.bd}) drop-shadow(0 1px 1.2px rgba(20,40,35,.14));`;
+      if (type === '判断') return `clip-path:polygon(50% 1%,99% 50%,50% 99%,1% 50%);background:${m.bg};filter:drop-shadow(0 0 .6px ${m.bd}) drop-shadow(0 1px 1.2px rgba(20,40,35,.14));`;
+      if (type === '書類') return `clip-path:path('M 0 0 L 132 0 L 132 42 C 110 50 88 50 66 42 C 44 34 22 34 0 42 Z');background:${m.bg};filter:drop-shadow(0 0 .6px ${m.bd}) drop-shadow(0 1px 1.2px rgba(20,40,35,.14));`;
+      return `border-radius:4px;background:${m.bg};border:1.4px solid ${m.bd};`;
+    };
+    const flowNodes = fnodesRaw.map(n => {
+      const m = typeMeta[n.type];
+      const isDec = n.type === '判断';
+      const isDoc = n.type === '書類';
+      const W = isDec ? 150 : NW;
+      const H = isDec ? 62 : NH;
+      const x = cx(n.lane) - W / 2, y = cy(n.row) - H / 2;
+      const padT = isDec ? '4px 14px' : (isDoc ? '4px 8px 9px' : '4px 8px');
+      const hasRc = !!n.rc;
+      return {
+        label: n.label, sub: n.sub, hasSub: !!n.sub,
+        open: () => this.setState({ openDetailNo: n.id.slice(1) }),
+        hasRc, showRc: hasRc && isJsox, rcRisk: hasRc ? n.rc.r : '', rcCtl: hasRc ? n.rc.c : '',
+        rcStyle: `position:absolute;left:${x + W - 8}px;top:${y - 11}px;display:flex;gap:3px;z-index:5;`,
+        style: `position:absolute;left:${x}px;top:${y}px;width:${W}px;height:${H}px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:${padT};box-sizing:border-box;font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:transform .12s;z-index:2;color:${m.fg};${shapeOf(n.type, m)}`,
+      };
+    });
+
+    const dbRaw = [
+      {row:1,label:'販売管理'},
+      {row:6,label:'会計システム'},
+      {row:7,label:'販売管理'},
+    ];
+    const flowDbs = !sysLane ? [] : dbRaw.map(d => {
+      const x = cx(4) - 46, y = cy(d.row) - 22;
+      return { label:d.label, style:`position:absolute;left:${x}px;top:${y}px;width:92px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:50% / 13px;background:#EEF6FF;border:1.4px solid #C9DBEE;color:#2D5A86;font-size:10.5px;font-weight:600;box-shadow:0 1px 3px rgba(20,40,35,.07);` };
+    });
+
+    const N = {};
+    fnodesRaw.forEach(n => N[n.id] = n);
+    // 直交エッジ＋角丸コーナー
+    const roundPath = (pts, r = 9) => {
+      if (pts.length < 3) return 'M ' + pts.map(p => p.join(' ')).join(' L ');
+      let d = `M ${pts[0][0]} ${pts[0][1]}`;
+      for (let i = 1; i < pts.length - 1; i++) {
+        const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], [x2, y2] = pts[i + 1];
+        const v1 = [Math.sign(x1 - x0), Math.sign(y1 - y0)], v2 = [Math.sign(x2 - x1), Math.sign(y2 - y1)];
+        const rr = Math.min(r, Math.hypot(x1 - x0, y1 - y0) / 2, Math.hypot(x2 - x1, y2 - y1) / 2);
+        d += ` L ${x1 - v1[0] * rr} ${y1 - v1[1] * rr} Q ${x1} ${y1} ${x1 + v2[0] * rr} ${y1 + v2[1] * rr}`;
+      }
+      d += ` L ${pts[pts.length - 1][0]} ${pts[pts.length - 1][1]}`;
+      return d;
+    };
+    const ep = (a, b) => {
+      const ax = cx(a.lane), bx = cx(b.lane);
+      const aby = cy(a.row) + NH / 2, bty = cy(b.row) - NH / 2;
+      if (a.lane === b.lane) return `M ${ax} ${aby} L ${bx} ${bty}`;
+      const my = bty - 16;
+      return roundPath([[ax, aby], [ax, my], [bx, my], [bx, bty]]);
+    };
+    const edgePaths = [];
+    const edgeLabels = [];
+    // 判断ノードの分岐：右頂点＝はい（限度内）→出荷、下頂点＝いいえ（超過）→承認
+    const DHALF = 31;
+    const decY = cy(N['n30'].row);
+    const decTop = decY - DHALF, decBot = decY + DHALF, decRight = cx(1) + 75;
+    edgePaths.push(ep(N['n10'], N['n20']));
+    edgePaths.push(`M ${cx(1)} ${cy(1) + NH / 2} L ${cx(1)} ${decTop}`);
+    edgePaths.push(roundPath([[decRight, decY], [cx(2), decY], [cx(2), cy(4) - NH / 2]]));
+    edgeLabels.push({ text: 'はい・限度内', x: (decRight + cx(2)) / 2 + 6, y: decY - 11 });
+    edgePaths.push(`M ${cx(1)} ${decBot} L ${cx(1)} ${cy(3) - NH / 2}`);
+    edgeLabels.push({ text: 'いいえ・超過', x: cx(1) + 48, y: (decBot + cy(3) - NH / 2) / 2 });
+    [['n40','n50'],['n50','n60'],['n60','n70'],['n70','n80'],['n80','n90']].forEach(([f,t]) => edgePaths.push(ep(N[f], N[t])));
+
+    const sysPaths = !sysLane ? [] : [['n20',1],['n70',6],['n80',7]].map(([f,row]) => {
+      const a = N[f];
+      const ay = cy(row);
+      const ax = cx(a.lane) + NW / 2;
+      const bx = cx(4) - 46;
+      return `M ${ax} ${ay} L ${bx} ${ay}`;
+    });
+
+    const flowW = PB + lanes.length * LW;
+    const flowH = Y0 + 9 * RH + 14;
+    const laneLinePaths = [];
+    for (let i = 0; i <= lanes.length; i++) {
+      const x = PB + i * LW;
+      laneLinePaths.push(`M ${x} 0 L ${x} ${flowH}`);
+    }
+    const flowLanes = lanes.map(name => ({ name, w: LW }));
+    const phaseDivPaths = [2, 4, 6].map(r => { const y = Y0 + r * RH; return `M 0 ${y} L ${flowW} ${y}`; });
+    const pbDefs = [['受注',0,2],['承認',2,2],['出荷',4,2],['売上計上',6,3]];
+    const flowPhases = pbDefs.map(([name,r,span]) => ({
+      name, color: phaseMeta[name].c, tint: phaseMeta[name].t,
+      top: Y0 + r * RH - 4, height: span * RH,
+    }));
+
+    const dashStats = [
+      {icon:'ph-shield-check',label:'統制数',value:'3',sub:'評価対象プロセス',accent:'#0E7C73',tint:'#E8F3F1'},
+      {icon:'ph-star',label:'キー統制',value:'3',sub:'全統制の100%',accent:'#B7791F',tint:'#FBF2DD'},
+      {icon:'ph-chart-pie-slice',label:'整備・運用評価',value:'67%',sub:'有効 ○2 / 一部 △1',accent:'#157F5B',tint:'#E6F2EC'},
+      {icon:'ph-grid-four',label:'アサーション網羅',value:'10 / 13',sub:'勘定科目 × アサーション',accent:'#2D5A86',tint:'#E9F0F8'},
+      {icon:'ph-warning',label:'不備',value:'2件',sub:'うち重要な不備 1',accent:'#B0413B',tint:'#F7E9E7'},
+      {icon:'ph-paperclip',label:'証憑格納',value:'2 / 3',sub:'キー統制ベース',accent:'#6A5C4F',tint:'#F3EFEA'},
+    ];
+    const tripletStatus = [
+      {icon:'ph-list-numbers',name:'業務記述書',detail:'9工程 ・ 詳細記述 3件'},
+      {icon:'ph-flow-arrow',name:'フロー図',detail:'5レーン ・ システム3'},
+      {icon:'ph-table',name:'RCM',detail:'リスク3 ・ 統制3（全てキー）'},
+    ];
+
+    // ダッシュボード詳細データ
+    const evalSegments = [
+      {label:'有効 ○', count:2, w:'67%', color:'#157F5B', bg:'#23A06B'},
+      {label:'一部不備 △', count:1, w:'33%', color:'#9A6614', bg:'#D89A2A'},
+      {label:'不備 ×', count:0, w:'0%', color:'#B0413B', bg:'#C75C54'},
+      {label:'未評価', count:0, w:'0%', color:'#8A9794', bg:'#C4D0CC'},
+    ];
+    const ctlEval = [
+      {id:'C001', name:'与信限度超過の自動ブロック＋承認', eval:'○'},
+      {id:'C002', name:'出荷指図書と現品の照合', eval:'△'},
+      {id:'C003', name:'受注・出荷・請求の三者照合', eval:'○'},
+    ].map(c => { const em = evalMeta[c.eval]; return { ...c, evalStyle:`background:${em.bg};color:${em.fg};border:1px solid ${em.bd};`, evalLbl:em.lbl }; });
+
+    const covMark = (s) => s === 'ok'
+      ? { on:true, gap:false, na:false }
+      : s === 'gap' ? { on:false, gap:true, na:false } : { on:false, gap:false, na:true };
+    const covRaw = [
+      {acc:'売上高',    cells:['ok','ok','na','ok','ok','gap']},
+      {acc:'売掛金',    cells:['ok','gap','ok','ok','na','gap']},
+      {acc:'棚卸資産',  cells:['ok','ok','na','na','ok','na']},
+      {acc:'現金及び預金', cells:['na','na','na','na','na','na']},
+    ];
+    const coverage = covRaw.map(r => ({ acc:r.acc, cells:r.cells.map(covMark) }));
+
+    const defTiers = [
+      {label:'不備', count:1, color:'#9A6614', bg:'#FBF7EE', bd:'#EBDFC4'},
+      {label:'重要な不備', count:1, color:'#B0413B', bg:'#FBEEEC', bd:'#EFD3CE'},
+      {label:'開示すべき重要な不備', count:0, color:'#7A1F1A', bg:'#F7EEED', bd:'#E6CBC6'},
+    ];
+    const defList = [
+      {id:'D001', ctl:'C002', type:'重要な不備', desc:'出荷照合の例外が四半期で3件発生、是正未完', due:'2026-07-31', status:'対応中', sColor:'#9A6614', sBg:'#FBF1E0', sBd:'#EBD9B4'},
+    ];
+    const evList = [
+      {id:'C001', name:'与信限度超過の自動ブロック', status:'格納済', n:'3件', sColor:'#157F5B', sBg:'#E6F2EC', sBd:'#C3E2D2', icon:'ph-check-circle'},
+      {id:'C002', name:'出荷指図書と現品の照合', status:'依頼中', n:'0件', sColor:'#9A6614', sBg:'#FBF1E0', sBd:'#EBD9B4', icon:'ph-clock'},
+      {id:'C003', name:'三者照合の証跡', status:'格納済', n:'2件', sColor:'#157F5B', sBg:'#E6F2EC', sBd:'#C3E2D2', icon:'ph-check-circle'},
+    ];
+    const asrShort = ['実在','網羅','権利','評価','期間','表示'];
+
+    // 評価結果（評価調書）
+    const mk2 = (v) => { const em = evalMeta[v] || evalMeta['－']; return { v, style:`background:${em.bg};color:${em.fg};border:1px solid ${em.bd};`, lbl:em.lbl }; };
+    const evalRows = [
+      {id:'C001', ctl:'与信限度超過の自動ブロック＋承認', key:true, de:'○', oe:'○', n:'25', exc:'0', tester:'監査 太郎', date:'2026-05-20', total:'○'},
+      {id:'C002', ctl:'出荷指図書と現品の照合', key:true, de:'○', oe:'△', n:'25', exc:'3', tester:'監査 花子', date:'2026-05-22', total:'△'},
+      {id:'C003', ctl:'受注・出荷・請求の三者照合', key:true, de:'○', oe:'○', n:'40', exc:'0', tester:'監査 太郎', date:'2026-05-25', total:'○'},
+    ].map(r => ({ ...r, deM:mk2(r.de), oeM:mk2(r.oe), totalM:mk2(r.total) }));
+
+    // ギャップチェック
+    const sevMeta = {
+      error:{lbl:'要対応', icon:'ph-x-circle', color:'#B0413B', bg:'#FBEEEC', bd:'#EFD3CE'},
+      warning:{lbl:'警告', icon:'ph-warning', color:'#9A6614', bg:'#FBF4E6', bd:'#EBDDBE'},
+      suggestion:{lbl:'提案', icon:'ph-lightbulb', color:'#2D5A86', bg:'#EAF1F8', bd:'#CCDDEF'},
+    };
+    const gapSummary = [
+      {label:'要対応', count:1, sev:'error'},
+      {label:'警告', count:3, sev:'warning'},
+      {label:'提案', count:1, sev:'suggestion'},
+    ].map(s => ({ ...s, ...sevMeta[s.sev] }));
+    const gapFindings = [
+      {sev:'error', cat:'不備管理', msg:'不備 D001（重要な不備）の是正期限が近接しています。期限超過前に是正を完了してください。', to:'不備管理 →'},
+      {sev:'warning', cat:'運用評価', msg:'統制 C002 は運用評価で例外が3件。サンプル拡大または追加手続の要否を検討してください。', to:'評価結果 →'},
+      {sev:'warning', cat:'網羅性', msg:'勘定科目「売上高」のアサーション「表示」が、いずれの統制でもカバーされていません。', to:'RCM →'},
+      {sev:'warning', cat:'網羅性', msg:'勘定科目「売掛金」のアサーション「網羅性」が未カバーです。', to:'RCM →'},
+      {sev:'suggestion', cat:'文書化', msg:'工程 No.40（与信超過の承認）に紐づくRCMがありません。リスク評価の要否を確認してください。', to:'RCM →'},
+    ].map(f => ({ ...f, ...sevMeta[f.sev] }));
+
+    // 不備管理
+    const defStatusMeta = {
+      '対応中':{color:'#9A6614', bg:'#FBF1E0', bd:'#EBD9B4'},
+      '是正済':{color:'#157F5B', bg:'#E6F2EC', bd:'#C3E2D2'},
+      '未対応':{color:'#B0413B', bg:'#F7E9E7', bd:'#EDCBC6'},
+    };
+    const defTypeMeta = {
+      '不備':{color:'#9A6614', bg:'#FBF4E6', bd:'#EBDDBE'},
+      '重要な不備':{color:'#B0413B', bg:'#FBEEEC', bd:'#EFD3CE'},
+      '開示すべき重要な不備':{color:'#7A1F1A', bg:'#F4E3E1', bd:'#E3BDB8'},
+    };
+    const defRows = [
+      {id:'D001', ctl:'C002', type:'重要な不備', desc:'出荷照合の例外が四半期で3件発生し、是正が未完了。', cause:'繁忙期に照合手続の一部が省略された。', amount:'12百万円', due:'2026-07-31', status:'対応中', retest:'—'},
+      {id:'D002', ctl:'C001', type:'不備', desc:'与信限度額の年次見直しが一部取引先で未実施。', cause:'更新プロセスの運用漏れ。', amount:'—', due:'2026-08-15', status:'是正済', retest:'有効'},
+    ].map(d => ({ ...d, typeStyle:`background:${defTypeMeta[d.type].bg};color:${defTypeMeta[d.type].color};border:1px solid ${defTypeMeta[d.type].bd};`, statusStyle:`background:${defStatusMeta[d.status].bg};color:${defStatusMeta[d.status].color};border:1px solid ${defStatusMeta[d.status].bd};` }));
+
+    // 証憑（格納・依頼）
+    const evStatusMeta = {
+      '格納済':{color:'#157F5B', bg:'#E6F2EC', bd:'#C3E2D2', icon:'ph-check-circle'},
+      '依頼中':{color:'#9A6614', bg:'#FBF1E0', bd:'#EBD9B4', icon:'ph-clock'},
+      '未依頼':{color:'#8A9794', bg:'#EFF2F1', bd:'#DCE5E2', icon:'ph-circle-dashed'},
+    };
+    const fileIcon = (n) => n.endsWith('.csv')||n.endsWith('.xlsx') ? 'ph-microsoft-excel-logo' : (n.endsWith('.pdf') ? 'ph-file-pdf' : (n.endsWith('.png')||n.endsWith('.jpg') ? 'ph-image' : 'ph-file'));
+    const evCards = [
+      {id:'C001', name:'与信限度超過の自動ブロック＋承認', reqTo:'情報システム部', due:'2026-05-15', status:'格納済', files:[{n:'与信設定画面_2026Q1.png',s:'1.2 MB'},{n:'承認ログ抽出.csv',s:'340 KB'},{n:'設定変更申請書.pdf',s:'0.8 MB'}]},
+      {id:'C002', name:'出荷指図書と現品の照合', reqTo:'物流部', due:'2026-05-31', status:'依頼中', files:[]},
+      {id:'C003', name:'受注・出荷・請求の三者照合', reqTo:'経理部', due:'2026-05-20', status:'格納済', files:[{n:'三者照合結果_5月.xlsx',s:'2.1 MB'},{n:'差異リスト_5月.pdf',s:'0.5 MB'}]},
+    ].map(c => ({ ...c, hasFiles:c.files.length>0, noFiles:c.files.length===0, fileCount:c.files.length+'件', statusStyle:`background:${evStatusMeta[c.status].bg};color:${evStatusMeta[c.status].color};border:1px solid ${evStatusMeta[c.status].bd};`, statusIcon:evStatusMeta[c.status].icon, files:c.files.map(f => ({ ...f, icon:fileIcon(f.n) })) }));
+
+    const processMeta = ['P001','国内売上','評価範囲: 対象','作成日 2026-06-18'];
+
+    // 取込（Excel/CSV マッピング）
+    const importSteps = [
+      {n:'1', label:'ファイル選択', icon:'ph-file-arrow-up', done:true},
+      {n:'2', label:'シート・ヘッダ指定', icon:'ph-table', done:true},
+      {n:'3', label:'列マッピング', icon:'ph-arrows-left-right', active:true},
+      {n:'4', label:'プレビュー・取込', icon:'ph-check-circle', done:false},
+    ];
+    const mapRows = [
+      {field:'No.', header:'No', ok:true}, {field:'業務', header:'業務区分', ok:true},
+      {field:'担当部門', header:'部門', ok:true}, {field:'担当', header:'担当者', ok:true},
+      {field:'種類', header:'処理種別', ok:true}, {field:'業務内容', header:'作業内容', ok:true},
+      {field:'使用システム', header:'システム', ok:true}, {field:'証跡', header:'（未割当）', ok:false},
+    ].map(m => ({ ...m, selStyle: m.ok ? 'border-color:#C9E0D9;color:#1F2B27;' : 'border-color:#EBD9B4;color:#9A6614;background:#FBF7EE;' }));
+    const importPreview = [
+      {no:'10', gyomu:'受注', dept:'得意先', content:'注文'},
+      {no:'20', gyomu:'受注', dept:'営業部', content:'受注入力'},
+      {no:'30', gyomu:'承認', dept:'営業部', content:'与信限度内か'},
+    ];
+    const importProfiles = ['A社 販売様式 v2', '標準テンプレ（記述書）', '監査法人共通フォーマット'];
+
+    // 規程・資料
+    const docExt = (n) => n.endsWith('.pdf') ? {icon:'ph-file-pdf', c:'#B0413B'} : (n.endsWith('.xlsx')||n.endsWith('.csv') ? {icon:'ph-microsoft-excel-logo', c:'#1D7044'} : (n.endsWith('.docx') ? {icon:'ph-file-doc', c:'#2D5A86'} : {icon:'ph-file', c:'#5A6863'}));
+    const docList = [
+      {name:'販売管理規程.pdf', size:'1.4 MB', date:'2025-10-01', tag:'販売プロセス'},
+      {name:'与信管理規程.pdf', size:'0.9 MB', date:'2025-10-01', tag:'承認'},
+      {name:'出荷業務マニュアル.docx', size:'2.2 MB', date:'2026-03-15', tag:'出荷'},
+      {name:'経理規程.pdf', size:'1.1 MB', date:'2025-04-01', tag:'売上計上'},
+      {name:'職務権限規程.xlsx', size:'0.3 MB', date:'2025-04-01', tag:'全社'},
+      {name:'IT全般統制概要.pdf', size:'0.8 MB', date:'2026-02-20', tag:'ITGC'},
+    ].map(d => ({ ...d, ...docExt(d.name) }));
+
+    // ヘルプ
+    const helpArticles = [
+      {icon:'ph-stack', title:'三点セットとは', desc:'業務記述書・フロー図・RCMの役割と関係。作成は義務ではなく評価を効率化する文書化手段です。'},
+      {icon:'ph-check-square-offset', title:'6つのアサーション', desc:'実在性・網羅性・権利と義務の帰属・評価の妥当性・期間配分・表示の妥当性の考え方。'},
+      {icon:'ph-star', title:'キー統制の選定', desc:'財務報告リスクを低減する要となる統制をどう特定し、評価対象とするか。'},
+      {icon:'ph-arrows-clockwise', title:'ロールフォワードの進め方', desc:'前期スナップショットとの差分管理で、毎期の再評価を効率化する方法。'},
+      {icon:'ph-target', title:'評価範囲の決定', desc:'重要な事業拠点・勘定科目を量的/質的にスコーピングする考え方。'},
+      {icon:'ph-warning', title:'不備の評価と集約', desc:'不備／重要な不備／開示すべき重要な不備の3区分と判定の流れ。'},
+    ];
+    const helpRefs = [
+      {label:'財務報告に係る内部統制の評価及び監査の基準（金融庁）', sub:'2023-04-07 最終改正 ・ 2024-04-01以後開始事業年度から適用'},
+      {label:'同 実施基準（金融庁）', sub:'内部統制の評価・監査の実務指針'},
+      {label:'JICPA 監査・保証実務委員会 関連報告', sub:'実務上の取扱い'},
+    ];
+
+    // ロールフォワード（前期 → 当期 差分）
+    const rfKindMeta = {
+      '新規':{color:'#157F5B', bg:'#E6F2EC', bd:'#C3E2D2', icon:'ph-plus-circle'},
+      '変更':{color:'#9A6614', bg:'#FBF1E0', bd:'#EBD9B4', icon:'ph-pencil-simple'},
+      '削除':{color:'#B0413B', bg:'#F7E9E7', bd:'#EDCBC6', icon:'ph-minus-circle'},
+      '変更なし':{color:'#56635F', bg:'#EFF2F1', bd:'#DCE5E2', icon:'ph-check'},
+    };
+    const rollfSummary = [
+      {kind:'新規', count:2}, {kind:'変更', count:3}, {kind:'削除', count:1}, {kind:'変更なし', count:6},
+    ].map(s => ({ ...s, ...rfKindMeta[s.kind] }));
+    const rollfItems = [
+      {kind:'新規', target:'工程 No.45', label:'EDI受信エラーの再送・突合手順', note:'当期に新設（前期スナップショットに該当なし）'},
+      {kind:'新規', target:'統制 C004', label:'マスタ変更の二重承認', note:'当期に新規統制を追加'},
+      {kind:'変更', target:'統制 C002', label:'出荷指図書と現品の照合', note:'実施頻度を「都度」→「日次」に変更、サンプル件数を見直し'},
+      {kind:'変更', target:'工程 No.30', label:'与信限度内かの判断', note:'与信限度額の改定（規程改定 2025-10）を反映'},
+      {kind:'変更', target:'統制 C003', label:'三者照合', note:'対象システムを基幹更改に伴い変更'},
+      {kind:'削除', target:'工程 No.85', label:'紙の受領印プロセス', note:'電子化により当期で廃止'},
+    ].map(i => ({ ...i, ...rfKindMeta[i.kind] }));
+
+    // テンプレート（業種別ひな形）
+    const tmplRaw = [
+      {id:'sales', icon:'ph-shopping-cart', name:'販売プロセス', desc:'受注〜出荷〜売上計上。売上高・売掛金の実在性／期間帰属を中心に。', steps:9, rcm:3, acc:'売上高・売掛金'},
+      {id:'purchase', icon:'ph-package', name:'購買・支払プロセス', desc:'発注〜検収〜買掛計上〜支払。仕入・買掛金の網羅性を中心に。', steps:8, rcm:4, acc:'仕入・買掛金'},
+      {id:'inventory', icon:'ph-stack', name:'在庫・棚卸プロセス', desc:'入出庫〜実地棚卸〜評価。棚卸資産の実在性／評価を中心に。', steps:7, rcm:3, acc:'棚卸資産'},
+      {id:'fixed', icon:'ph-buildings', name:'固定資産プロセス', desc:'取得〜減価償却〜除却。固定資産の実在性／評価を中心に。', steps:6, rcm:3, acc:'有形固定資産'},
+      {id:'expense', icon:'ph-receipt', name:'経費精算プロセス', desc:'申請〜承認〜支払。費用の実在性／期間帰属を中心に。', steps:6, rcm:2, acc:'販管費'},
+      {id:'blank', icon:'ph-plus-circle', name:'空のテンプレート', desc:'工程・RCMなしで一から作成します。', steps:0, rcm:0, acc:'—'},
+    ];
+    const templates = tmplRaw.map(t => {
+      const sel = t.id === tmplSel;
+      return { ...t, sel, isBlank: t.steps === 0,
+        cardStyle: sel
+          ? 'border:2px solid #0E7C73;background:#F1F8F6;box-shadow:0 2px 10px rgba(14,124,115,.14);'
+          : 'border:1px solid #E2E8E7;background:#fff;',
+        iconStyle: sel ? 'background:#0E7C73;color:#fff;' : 'background:#ECF3F1;color:#0E7C73;' };
+    });
+    const selTmpl = tmplRaw.find(t => t.id === tmplSel) || tmplRaw[0];
+    const selTmplName = selTmpl.name;
+
+    // 工程の詳細パネル
+    const dstep = openDetailNo ? rawSteps.find(s => s.no === openDetailNo) : null;
+    const isDetailOpen = !!dstep;
+    const detailLines = (dstep && dstep.detail) ? dstep.detail.split('\n') : [];
+    const detailData = dstep ? {
+      no: dstep.no, content: dstep.content, dept: dstep.dept, role: dstep.role,
+      typeStyle: dstep.typeStyle, typeIcon: dstep.typeIcon, type: dstep.type,
+      hasText: !!dstep.detail, noText: !dstep.detail, lines: detailLines,
+      unit: isManual ? '手順' : '工程',
+    } : { no:'', content:'', dept:'', role:'', typeStyle:'', typeIcon:'ph-circle', type:'', hasText:false, noText:true, lines:[], unit:'工程' };
+
+    return {
+      navStyle: collapsed ? 'width:64px;' : 'width:248px;',
+      labelStyle: collapsed ? 'display:none;' : '',
+      toggleCol: () => this.setState(s => ({ collapsed: !s.collapsed })),
+      closeR: () => this.setState({ rationale: false }),
+      setEdit: () => this.setState({ mode: 'edit' }),
+      setPrev: () => this.setState({ mode: 'preview' }),
+      goFns, na, ta, me,
+      isDash, isWorkspace, isSteps, isFlow, isRcm, showMode, stepsEdit, stepsPreview, isOther,
+      isManual, isJsox,
+      setAppMode,
+      openTmpl: () => this.setState({ tmplModal: true }),
+      closeTmpl: () => this.setState({ tmplModal: false }),
+      closeDetail: () => this.setState({ openDetailNo: null }),
+      isDetailOpen, detailData,
+      selTmplFns: Object.fromEntries(tmplRaw.map(t => [t.id, () => this.setState({ tmplSel: t.id })])),
+      tmplModal, templates, selTmplName,
+      setModeJsox: () => setAppMode('jsox'),
+      setModeManual: () => setAppMode('manual'),
+      mtJsox: isJsox ? 'background:#0E7C73;color:#fff;' : 'background:transparent;color:#56635F;',
+      mtManual: isManual ? 'background:#0E7C73;color:#fff;' : 'background:transparent;color:#56635F;',
+      gridCols: isManual ? '36px 54px 108px 104px 132px minmax(240px,1fr) 154px 134px' : '36px 54px 108px 104px 132px minmax(240px,1fr) 154px 134px 132px',
+      stepsTabLabel: isManual ? '手順書' : '業務記述書',
+      stepsNavLabel: isManual ? '手順書' : '業務記述書',
+      stepsTitle: isManual ? '業務マニュアル（手順書）' : '業務記述書',
+      sectionLabel: isManual ? 'マニュアル作成' : '三点セット作成',
+      modeBadge: isManual ? '業務マニュアル' : 'J-SOX（内部統制）',
+      isEval, isGap, isDef, isEv,
+      isRollf, rollfSummary, rollfItems,
+      isImport, isDocs, isHelp,
+      importSteps, mapRows, importPreview, importProfiles, docList, helpArticles, helpRefs,
+      evalRows, gapSummary, gapFindings, defRows, evCards,
+      otherTitle: om.t, otherIcon: om.i,
+      rationale, status,
+      stepGroups, previewDetails, prevH1, prevH2, prevTitle, rcmRows, asrHeads,
+      flowNodes, flowDbs, edgePaths, sysPaths, edgeLabels, laneLinePaths, phaseDivPaths,
+      flowLanes, flowPhases, flowW, flowH, flowZoom,
+      zoomPct: Math.round(flowZoom * 100) + '%',
+      zoomIn: () => this.setState(s => ({ flowZoom: zLv[Math.min(zLv.length - 1, zLv.indexOf(s.flowZoom) + 1)] })),
+      zoomOut: () => this.setState(s => ({ flowZoom: zLv[Math.max(0, zLv.indexOf(s.flowZoom) - 1)] })),
+      zoomReset: () => this.setState({ flowZoom: 1 }),
+      toggleSys: () => this.setState(s => ({ sysLane: !s.sysLane })),
+      sysTrack: sysLane ? '#0E7C73' : '#C4D0CC',
+      sysKnob: sysLane ? 'right:2px;' : 'left:2px;',
+      dashStats, tripletStatus, processMeta,
+      evalSegments, ctlEval, coverage, asrShort, defTiers, defList, evList,
+    };
+  }
+}
+</script>
+</body>
+</html>
