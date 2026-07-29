@@ -366,6 +366,9 @@
     .pa-lbl{display:none;}
     .seg button{padding:0 9px;}
   }
+  /* ===== トースト通知 ===== */
+  #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
+  #toastBox.on{opacity:1;transform:translate(-50%,0);}
   /* ===== ファイルメニュー（アプリバー集約） ===== */
   .filemenu-wrap{position:relative;flex:none;}
   .filemenu{display:none;position:absolute;top:36px;right:0;z-index:80;width:250px;background:#fff;border:1px solid var(--c-border);border-radius:12px;box-shadow:0 10px 32px rgba(20,40,35,.16);padding:8px;}
@@ -446,6 +449,10 @@
       <button onclick="closeFileMenu();exportXlsx()"><i class="ph ph-microsoft-excel-logo"></i>データ出力<span class="fm-sub">.xlsx 値のみ</span></button>
       <div class="fm-sep"></div>
       <button onclick="closeFileMenu();loadExampleConfirmed()"><i class="ph ph-flask"></i>サンプル読込<span class="fm-sub">現在の内容は破棄</span></button>
+      <div class="fm-sep"></div>
+      <div class="fm-row" style="padding-bottom:2px"><label id="asInfo">自動保存: なし</label></div>
+      <button onclick="closeFileMenu();restoreAutosave()"><i class="ph ph-clock-counter-clockwise"></i>自動保存から復元<span class="fm-sub">直近</span></button>
+      <button onclick="closeFileMenu();restoreAutosave(true)"><i class="ph ph-arrow-counter-clockwise"></i>1つ前の自動保存<span class="fm-sub">世代2</span></button>
     </div>
   </div>
   <input type="file" id="fileProj" accept=".json" style="display:none">
@@ -925,7 +932,7 @@ function blankDef(){return {def_id:"",gyomu:"",control_id:"",type:"不備",desc:
 let db=null, dirty=false;
 
 function P(){return db.processes.find(p=>p.id===db.activeProcessId)||db.processes[0];}
-function markDirty(){dirty=true;document.getElementById("dirty").classList.add("on");window.onbeforeunload=()=>true;if(typeof updateApplyBtn==="function")updateApplyBtn();}
+function markDirty(){dirty=true;document.getElementById("dirty").classList.add("on");window.onbeforeunload=()=>true;if(typeof updateApplyBtn==="function")updateApplyBtn();if(typeof scheduleAutosave==="function")scheduleAutosave();}
 function clearDirty(){dirty=false;document.getElementById("dirty").classList.remove("on");window.onbeforeunload=null;}
 function nextPid(){let m=0;db.processes.forEach(p=>{const n=parseInt((p.id||"").replace(/\D/g,""));if(!isNaN(n))m=Math.max(m,n);});return "P"+String(m+1).padStart(3,"0");}
 
@@ -1823,8 +1830,65 @@ function applyMode(){
   const sdh2=document.getElementById("stepsDocPageH2");if(sdh2)sdh2.textContent=m==="manual"?"手順書（プレビュー）":"業務記述書";
   if(typeof updateTmplSel==="function")updateTmplSel();
 }
+/* =================================================================
+   データ保全: 自動保存（localStorage・2世代・容量超過フォールバック）
+   ================================================================= */
+const AS_KEY="jsoxfb_autosave_v1",AS_PREV="jsoxfb_autosave_prev_v1";
+let _asTimer=null,_asWarned=false,_asDisabled=false;
+function scheduleAutosave(){if(_asDisabled)return;clearTimeout(_asTimer);_asTimer=setTimeout(autosaveNow,1500);}
+function _stripHeavy(o){const d=JSON.parse(JSON.stringify(o));
+  (d.processes||[]).forEach(pp=>{Object.values(pp.evidence||{}).forEach(e=>{(e.files||[]).forEach(f=>{delete f.data;f._dropped=true;});});
+    (pp.steps||[]).forEach(s=>{s.img="";s.images=[];});});
+  (d.library||[]).forEach(it=>{(it.files||[]).forEach(f=>{delete f.data;f._dropped=true;});});
+  return d;}
+function autosaveNow(){
+  if(_asDisabled||!db)return;
+  try{
+    const cur=localStorage.getItem(AS_KEY);
+    let rec={ts:Date.now(),projectName:db.projectName||"",partial:false,json:JSON.stringify(db)};
+    try{localStorage.setItem(AS_KEY,JSON.stringify(rec));}
+    catch(qe){
+      rec={ts:Date.now(),projectName:db.projectName||"",partial:true,json:JSON.stringify(_stripHeavy(db))};
+      localStorage.setItem(AS_KEY,JSON.stringify(rec));
+      if(!_asWarned){_asWarned=true;toast("ブラウザ保存の容量を超えたため、添付ファイルを除いて自動保存しています。完全な保全には［保存(.json)］をご利用ください。",7000);}
+    }
+    if(cur){try{localStorage.setItem(AS_PREV,cur);}catch(e){try{localStorage.removeItem(AS_PREV);}catch(_e){}}}
+    updateAsInfo();
+  }catch(e){_asDisabled=true;console.warn("自動保存を無効化しました:",e);}
+}
+window.addEventListener("beforeunload",function(){try{if(dirty)autosaveNow();}catch(e){}});
+function fmtTs(t){const d=new Date(t);const z=n=>String(n).padStart(2,"0");return (d.getMonth()+1)+"/"+d.getDate()+" "+z(d.getHours())+":"+z(d.getMinutes());}
+function getAutosave(prev){try{const s=localStorage.getItem(prev?AS_PREV:AS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function updateAsInfo(){const el=document.getElementById("asInfo");if(!el)return;const a=getAutosave();el.textContent=a?("自動保存: "+fmtTs(a.ts)+(a.partial?"（添付除く）":"")+(a.projectName?" ・ "+a.projectName:"")):"自動保存: なし";}
+function restoreAutosave(prev){
+  const rec=getAutosave(prev);
+  if(!rec||!rec.json){alert("自動保存データがありません。");return;}
+  if(!confirm(fmtTs(rec.ts)+" 時点の自動保存"+(rec.partial?"（添付ファイル除く）":"")+"を復元します。\n現在の内容は置き換えられます。よろしいですか？"))return;
+  pushUndo();
+  db=JSON.parse(rec.json);normalize();applyMode();updateTopBar();_applied={};applyAll();clearDirty();
+  show(isPageHidden("dash")?"steps":"dash");
+  toast("自動保存（"+fmtTs(rec.ts)+"）を復元しました。");
+}
+function toast(msg,ms){let t=document.getElementById("toastBox");if(!t){t=document.createElement("div");t.id="toastBox";document.body.appendChild(t);}t.textContent=msg;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("on");},ms||4000);}
+/* ===== サンプリング支援: 乱数抽出（運用評価） ===== */
+function genSampleFor(i){
+  const r=P().rcm[i];if(!r)return;
+  const Ns=prompt("母集団の件数を入力してください（例: 対象期間の取引件数 250）","250");if(Ns==null)return;
+  const N=parseInt(Ns,10);if(!N||N<1){alert("件数が不正です。");return;}
+  let n=parseInt(r.oe_n,10);
+  if(!n||n<1){const ns=prompt("サンプル件数","25");if(ns==null)return;n=parseInt(ns,10);if(!n||n<1){alert("件数が不正です。");return;}}
+  if(n>N){alert("サンプル件数が母集団を超えています。");return;}
+  const set=new Set();const buf=new Uint32Array(1);
+  while(set.size<n){crypto.getRandomValues(buf);set.add(1+(buf[0]%N));}
+  const nums=[...set].sort((a,b)=>a-b);
+  pushUndo();
+  r.oe_n=String(n);if(!(r.oe_method||"").trim())r.oe_method="無作為";
+  r.oe_note=((r.oe_note||"").trim()?r.oe_note+"\n":"")+"【乱数抽出 "+today()+"】母集団"+N+"件から"+n+"件を無作為抽出（対象No.）: "+nums.join(", ");
+  markDirty();renderEvalWork();
+  toast("サンプル番号を生成し、運用評価の評価内容に追記しました。");
+}
 /* ===== ファイル / Excel出力メニュー開閉 ===== */
-function toggleFileMenu(e){e.stopPropagation();closeXlsMenu();document.getElementById("fileMenu").classList.toggle("open");}
+function toggleFileMenu(e){e.stopPropagation();closeXlsMenu();updateAsInfo();document.getElementById("fileMenu").classList.toggle("open");}
 function closeFileMenu(){const m=document.getElementById("fileMenu");if(m)m.classList.remove("open");}
 function toggleXlsMenu(e){e.stopPropagation();closeFileMenu();updateXlsMenu();document.getElementById("xlsMenu").classList.toggle("open");}
 function closeXlsMenu(){const m=document.getElementById("xlsMenu");if(m)m.classList.remove("open");}
@@ -2733,6 +2797,7 @@ function renderEvalWork(){
             <label>件数 ${inp2(i,"oe_n",r.oe_n,56,"25")}</label>
             <label>例外 ${inp2(i,"oe_excns",r.oe_excns,56,"0")}</label>
             <label>結果 ${sel(i,"oe_result",r.oe_result||"",["","有効","不備","対象外"])}</label>
+            <button class="sm" onclick="genSampleFor(${i})" title="母集団件数を入力すると、無作為のサンプル番号を生成して評価内容に追記します"><i class="ph ph-dice-five"></i>乱数でサンプル抽出</button>
           </div>
           <div class="evw-row">
             <label>評価者 ${inp2(i,"oe_by",r.oe_by,110,"氏名")}</label>
@@ -3384,8 +3449,22 @@ document.addEventListener("keydown",e=>{
   }
 });
 
-// 起動
-loadExample();
+// 起動（自動保存があれば復元・なければサンプル読込）
+(function boot(){
+  const a=getAutosave();
+  if(a&&a.json){
+    try{
+      db=JSON.parse(a.json);normalize();applyMode();
+      const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
+      syncProcSel();_applied={};applyAll();clearDirty();
+      show(isPageHidden("dash")?"steps":"dash");
+      toast("前回の自動保存（"+fmtTs(a.ts)+"）を復元しました。最初からやり直す場合は ファイル → サンプル読込 / 新規作成。",6500);
+      updateAsInfo();
+      return;
+    }catch(e){console.warn("自動保存の復元に失敗:",e);}
+  }
+  loadExample();updateAsInfo();
+})();
 </script>
 </body>
 </html>
