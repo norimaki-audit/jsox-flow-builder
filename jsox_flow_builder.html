@@ -323,7 +323,54 @@
   .doc .doc-img img{max-width:100%;border:1px solid var(--c-border);border-radius:8px;}
   .doc .doc-img .cap{font-size:10.5px;color:var(--c-text-faint);margin-top:4px;}
   .tagmini{display:inline-block;font-size:10px;font-weight:600;color:#fff;border-radius:var(--r-pill);padding:1px 7px;margin:0 2px 2px 0;letter-spacing:.02em;}
-  @media print{ .appbar,.side,.ph button,.ph .seg,.pend-banner,.zoom,.no-print,.flow-toolbar,.pagehint{display:none !important;} .shell{display:block;} .main{overflow:visible;} .pad{padding:0;} .page:not(.active){display:none;} .doc{border:none;max-width:none;padding:0;} body{background:#fff;} .canvas-scroll{border:none;background:#fff;background-image:none;max-height:none;overflow:visible;} .gridbox{max-height:none;} }
+  @media print{
+    @page{size:A4 landscape;margin:11mm 10mm 15mm;}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    html,body{height:auto;}
+    body{background:#fff;color:#111;font-size:10px;display:block;}
+    /* 画面用UIを非表示 */
+    .appbar,.side,.ph,.pend-banner,.zoom,.no-print,.flow-toolbar,.pagehint,.hint,.toolrow,.dirty,.statuspill,.filemenu,#toastBox,.modal-ovl,button,.grip i,.detailbtn,.opbtn{display:none !important;}
+    .shell{display:block;}
+    .main{overflow:visible;padding:0 0 8mm;min-width:0;}
+    .pad{padding:0;}
+    .page:not(.active){display:none;}
+    /* ===== 調書ヘッダ・フッタ ===== */
+    .print-only{display:block !important;}
+    #printHead{margin-bottom:5mm;}
+    #printHead .ph-bar{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #222;padding-bottom:2mm;}
+    #phDocTitle{font-size:15pt;font-weight:700;letter-spacing:.02em;}
+    #phDocMeta{font-size:8.5pt;color:#444;margin-top:1mm;}
+    #printFoot{display:flex !important;position:fixed;bottom:-11mm;left:0;right:0;justify-content:space-between;font-size:7.5pt;color:#666;background:#fff;border-top:0.5pt solid #999;padding:1mm 0 0;}
+    /* ===== 表を調書罫線に ===== */
+    .card{border:0.5pt solid #999;border-radius:0;box-shadow:none;break-inside:avoid;}
+    .gridbox{max-height:none;overflow:visible;border:none;border-radius:0;}
+    table.dr{white-space:normal;font-size:8pt;width:100%;min-width:0 !important;}
+    table.dr th{position:static;background:#F0F2F0 !important;color:#333;border:0.5pt solid #888;padding:4px 5px;}
+    table.dr td{border:0.5pt solid #999;border-bottom:0.5pt solid #999;padding:2px 3px;}
+    table.dr td.rn{background:#F7F7F5;}
+    tr.grp-row td{border:0.5pt solid #888;}
+    /* 入力欄は値だけを印字（枠・矢印を消す） */
+    input,select,textarea{border:none !important;background:transparent !important;appearance:none;-webkit-appearance:none;box-shadow:none !important;font:inherit;color:#111;padding:1px 2px;}
+    textarea{overflow:visible;resize:none;}
+    .evw-sec{border:0.5pt solid #999;border-radius:0;background:#fff;}
+    .evw-note{min-height:0;}
+    /* 成果物文書 */
+    .doc{border:none;max-width:none;padding:0;}
+    .doc .meta{border-bottom:1.5pt solid #222;}
+    .doc th{background:#F0F2F0 !important;color:#333;border:0.5pt solid #888;}
+    .doc td{border:0.5pt solid #999;}
+    .doc h2{color:#111;}
+    .doc .narr{break-inside:avoid;}
+    /* フロー図 */
+    .flowcard{border:none;border-radius:0;}
+    .canvas-scroll{border:none;background:#fff;background-image:none;max-height:none;overflow:visible;padding:0;}
+    #flowCanvas{transform:none !important;}
+    #flowCanvas svg{box-shadow:none;}
+    /* KPI等のカード段組は維持しつつ改ページ配慮 */
+    .kpi,.gap-item,.evw-exp td,.manual-step-block,tr{break-inside:avoid;}
+    thead{display:table-header-group;}
+  }
+
   /* ===== モード出し分け ===== */
   body.mode-manual .jsox-only{display:none!important}
   body:not(.mode-manual) .manual-only{display:none!important}
@@ -373,6 +420,12 @@
     .pa-lbl{display:none;}
     .seg button{padding:0 9px;}
   }
+  /* ===== 印刷専用要素（画面では非表示） ===== */
+  .print-only{display:none;}
+  #printFoot{display:none;}
+  table.signbox{border-collapse:collapse;}
+  table.signbox th{border:1px solid #555;font-size:8pt;font-weight:600;padding:2px 0;width:20mm;text-align:center;background:#F2F2EE;color:#333;}
+  table.signbox td{border:1px solid #555;height:15mm;}
   /* ===== トースト通知 ===== */
   #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
   #toastBox.on{opacity:1;transform:translate(-50%,0);}
@@ -498,6 +551,16 @@
   </nav>
 
   <div class="main">
+    <div id="printHead" class="print-only">
+      <div class="ph-bar">
+        <div>
+          <div id="phDocTitle"></div>
+          <div id="phDocMeta"></div>
+        </div>
+        <table class="signbox"><tr><th>作成</th><th>査閲</th><th>承認</th></tr><tr><td></td><td></td><td></td></tr></table>
+      </div>
+    </div>
+    <div id="printFoot"></div>
     <!-- PROCESSES -->
     <section class="page" id="page-processes"><div class="pad">
       <div class="ph"><h2>プロセス</h2><span class="sub">評価対象の業務プロセスを管理します</span><span class="sp"></span>
@@ -2119,7 +2182,18 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   if(pg==="rcm"||pg==="rcmdoc")_viewPref.rcm=(pg==="rcm")?"edit":"preview";
   document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById("page-"+pg).classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.dataset.pg===(NAV_ALIAS[pg]||pg)));
   if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
-  updateApplyBtn();if(typeof updateXlsMenu==="function")updateXlsMenu();}
+  updateApplyBtn();if(typeof updateXlsMenu==="function")updateXlsMenu();
+  updatePrintHead(pg);}
+function updatePrintHead(pg){
+  const t=document.getElementById("phDocTitle");if(!t)return;
+  const h2=document.querySelector("#page-"+pg+" .ph h2");
+  t.textContent=(h2?h2.textContent.trim():document.title);
+  const proc=(typeof P==="function"&&db)?P():null;
+  const meta=document.getElementById("phDocMeta");
+  if(meta)meta.textContent=(proc?proc.id+"　"+(proc.name||""):"")+"　／　基準日: "+today()+((db&&db.projectName)?"　／　プロジェクト: "+db.projectName:"");
+  const pf=document.getElementById("printFoot");
+  if(pf)pf.innerHTML="<span>"+esc((modeCfg()||{}).brand||"")+"</span><span>"+esc(proc?proc.id+" "+(proc.name||""):"")+"</span><span>印刷日 "+today()+"</span>";
+}
 function fzoom(d){fscale=Math.min(2,Math.max(0.4,fscale+d*0.1));document.getElementById("flowCanvas").style.transform="scale("+fscale+")";document.getElementById("zlabel").textContent=Math.round(fscale*100)+"%";}
 function fzoomReset(){fscale=1;document.getElementById("flowCanvas").style.transform="scale(1)";document.getElementById("zlabel").textContent="100%";}
 
