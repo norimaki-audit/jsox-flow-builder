@@ -483,6 +483,18 @@
   .kz-risk{background:var(--c-err-bg);color:var(--c-err);border:1px solid var(--c-err-bd);}
   .kz-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed #D2DCD8;font-size:12.5px;line-height:1.6;}
   .kz-item:last-child{border-bottom:none;}
+  /* ===== ヘルプ: おすすめ・記事本文 ===== */
+  .help-picks{display:flex;flex-direction:column;gap:8px;max-width:640px;}
+  .help-pick{display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1px solid var(--c-primary-bd);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:#1F2B27;transition:background var(--ease),border-color var(--ease);}
+  .help-pick:hover{background:#F2F8F6;border-color:var(--c-primary);}
+  .help-pick .hp-n{width:24px;height:24px;border-radius:50%;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
+  .doc.help-article{line-height:1.85;}
+  .doc.help-article h1{border-bottom:2px solid var(--c-primary);padding-bottom:10px;margin-bottom:14px;}
+  .doc.help-article h2{margin-top:20px;}
+  .doc.help-article ul,.doc.help-article ol{padding-left:22px;}
+  .doc.help-article li{margin-bottom:7px;}
+  .doc.help-article p{margin:8px 0;}
+  .doc.help-article b{color:var(--c-primary-d);}
   /* ===== トースト通知 ===== */
   #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
   #toastBox.on{opacity:1;transform:translate(-50%,0);}
@@ -813,7 +825,7 @@
 
     <!-- HELP -->
     <section class="page" id="page-help"><div class="pad">
-      <div class="ph"><h2>ヘルプセンター</h2><span class="sub">使い方ガイドとFAQをカテゴリ別・キーワード検索で確認できます</span></div>
+      <div class="ph"><h2>ヘルプセンター</h2><span class="sub">使い方・つまずきポイント・更新履歴。キーワード検索もできます</span></div>
       <div class="card">
         <input type="text" id="helpSearch" class="help-search" placeholder="キーワードで検索（例: 反映、Undo、マッピング、レーン）" oninput="renderHelp()" aria-label="ヘルプを検索">
       </div>
@@ -4213,10 +4225,154 @@ const HELP=[
 <p>フロー図のスイムレーン（部門ごとの縦のレーン）は、業務記述書の各工程の「担当部門」欄から決まります。担当部門が未入力の工程しかない場合、レーンは表示されません。</p>
 <p>「プロセス」ページの部門レーンのプレビューで、レーンの並び順をドラッグで調整できます。</p>`}
 ];
+HELP.push(
+{cat:"はじめに",title:"まず押さえる3つの考え方（編集・反映・プレビュー）",keywords:["反映","プレビュー","編集","仕組み","基本"],html:`
+<p>このツールで迷子にならないための、たった3つの考え方です。</p>
+<ol>
+<li><b>編集</b> — 業務記述書やRCMの表に入力する場所。入力は即座に「作業中データ」に保存されます（自動保存あり）。</li>
+<li><b>反映</b> — 上部の緑の<b>［反映］ボタン</b>を押すと、作業中データが「成果物」に写されます。<b>押すまで成果物・フロー図・ダッシュボードは変わりません。</b>これは「作りかけの状態が成果物に混ざらないようにする」ための仕様です。</li>
+<li><b>プレビュー</b> — 各画面右上の<b>編集｜プレビュー</b>トグルで、入力用の表と、印刷・提出用の体裁を切り替えます。</li>
+</ol>
+<p>「編集したのに変わらない！」と思ったら、まず上部の反映ステータス（<b>未反映の編集あり</b>）を確認してください。9割はこれです。</p>`,mode:null},
+{cat:"つまずきポイント",title:"開発者が通しで操作して感じた難所 10選",keywords:["つまずき","難しい","わからない","初心者","コツ","注意"],html:`
+<p>このツールを実際に最初から最後まで操作してみて、「ここは初めての人には分かりにくい」と感じた箇所を正直に書きます。</p>
+<h2>1. 編集しても成果物が変わらない</h2>
+<p>最大のつまずきポイント。<b>［反映］ボタンを押すまで、成果物（プレビュー・フロー図・ダッシュボード・一覧）は更新されません。</b>上部に「未反映の編集あり」と出ていたら押してください。</p>
+<h2>2. いま「編集」と「プレビュー」のどちらを見ているか分からなくなる</h2>
+<p>画面右上のトグルで確認できます。<b>白く浮いている方が現在の表示</b>です。入力したいのに書き込めない→プレビューを見ています。</p>
+<h2>3. フロー図にR（リスク）/C（統制）のタグが出ない</h2>
+<p>RCMの<b>「対象ステップNo.」</b>に、業務記述書の工程<b>No.と完全に同じ値</b>を入れる必要があります（例: 工程No.30 ↔ RCMのステップNo.30）。ここが空欄・不一致だとタグは出ません。</p>
+<h2>4. 判断（ひし形）の分岐がつながらない</h2>
+<p>種類を「判断」にした行だけ、<b>Yes先／No先に飛び先の工程No.</b>を入れます。工程No.が10・20・30…と10刻みなのは、あとから25のように<b>間に挿入できるようにするため</b>です（振り直し不要）。</p>
+<h2>5. 評価調書・サンプリング調書に統制が出てこない</h2>
+<p>RCMで<b>統制IDが入力されている行</b>だけが評価の対象になります。またサンプリング調書は<b>「キー」チェックを付けた統制</b>が優先表示されます（キーが1つもなければ全統制）。</p>
+<h2>6. 「保存」が3種類あって混乱する</h2>
+<ul>
+<li><b>自動保存</b>（ブラウザ内）— 編集の数秒後に自動。ブラウザを閉じても復元されます。ただし<b>そのPC・そのブラウザ限り</b>。</li>
+<li><b>プロジェクトを保存（.json）</b> — これが<b>正本</b>。PCに残り、別PCへの引っ越し・バックアップ・共有はこれで行います。</li>
+<li><b>Excel出力</b> — 提出・配布用。ここから読み戻すことはできません。</li>
+</ul>
+<h2>7. 証憑のフォルダ格納の制約</h2>
+<p>「保存先フォルダ…」でのフォルダ直接保存は<b>Chrome / Edge限定</b>です。またフォルダ格納したファイルは<b>.jsonに含まれない</b>ため、別PCではフォルダごと移動が必要です。一覧から削除しても実ファイルは消えません。</p>
+<h2>8. 印刷したら画面と違う見た目になった</h2>
+<p>仕様です。印刷は<b>押印欄付きの監査調書スタイル</b>に自動で切り替わります。横に長い表は自動縮小されますが、<b>RCMは編集画面ではなくプレビュー側から印刷</b>する方がきれいに出ます。</p>
+<h2>9. モードを切り替えたらページが消えた</h2>
+<p>業務マニュアルモードでは評価系のページ（RCM・評価・不備など）が<b>非表示になるだけ</b>で、データは消えていません。J-SOXモードに戻せば全部あります。</p>
+<h2>10. 評価結果の「不備」をクリックしても飛ばない</h2>
+<p>不備管理へのジャンプは、不備管理側の<b>「関連統制」列に統制ID</b>（例: C002）が入力されていることで紐づきます。未登録の場合は案内が表示されます。</p>
+<h2>おまけ: 知らないと損する小技</h2>
+<ul>
+<li>表の<b>ヘッダ右端をドラッグ</b>すると列幅を変えられます（記憶されます）</li>
+<li>グループ見出しの<b>［＋工程］</b>でそのグループ内に行を追加できます</li>
+<li><b>Ctrl+Z / Ctrl+Y</b> でほぼ全ての操作を元に戻せます（最大50手）</li>
+<li>行は<b>⠿をドラッグ</b>で並べ替え、⧉で複製できます</li>
+</ul>`,mode:null},
+{cat:"点検・評価・管理",title:"整備・運用評価とサンプリング調書の使い方",keywords:["整備評価","運用評価","サンプリング","調書","監査","母集団","抽出"],html:`
+<p>評価・点検グループの2つのページで、経営者評価・内部監査・外部監査いずれの立場でも使える評価記録を作れます。</p>
+<h2>整備・運用評価（一覧表）</h2>
+<ol>
+<li>各統制の行で、整備評価（結果・主体・評価者・評価日）と運用評価（抽出方法・件数・例外・結果・主体・評価者・評価日）を入力</li>
+<li>行の📝ボタンを開くと、手続種類（質問・観察・閲覧・再実施）・対象期間・母集団・評価内容（長文）・調書番号・査閲欄を記入できます</li>
+<li>結果を「不備」にすると⚠ボタンが現れ、不備管理へジャンプできます</li>
+</ol>
+<h2>サンプリング調書（1統制＝1葉）</h2>
+<ol>
+<li>「件数分の行を作成」でサンプル別の結果表を作成</li>
+<li>各サンプルの日付・証憑番号・摘要を記録し、結果を○/×で入力 — <b>×は例外件数へ自動集計</b>されます</li>
+<li>結果（有効/不備）を選ぶと結論文が自動生成。印刷すると1統制1ページの調書になります</li>
+</ol>
+<p>サンプル件数の目安（一般的な実務水準）: 都度25件／日次15件／週次5件／月次2件／四半期・年次1件。頻度を入力すると調書上に目安が表示されます。「乱数でサンプル抽出」で無作為のサンプル番号も生成できます。</p>
+<p>様式は実施基準および監基報230（監査調書）・330（運用評価手続）・500（監査証拠）の記録要素を参考に構成しています。</p>`,mode:"jsox"},
+{cat:"点検・評価・管理",title:"証憑をPCのフォルダに保存する（フォルダ格納）",keywords:["証憑","フォルダ","保存先","添付","容量"],html:`
+<p>証憑の格納方式は2つあります。</p>
+<ul>
+<li><b>ブラウザ内</b>（既定） — .jsonに含まれて持ち運べる。1ファイル5MB目安</li>
+<li><b>フォルダ</b> — 「保存先フォルダ…」で選んだPCのフォルダに「プロセスID/統制ID/ファイル名」で直接保存。<b>容量制限なし・.jsonが肥大化しない</b></li>
+</ul>
+<p>「一括書き出し」でブラウザ内の証憑をフォルダへ移行できます。ファイル名クリックで別タブで開けます。フォルダ方式はChrome/Edge限定です。</p>`,mode:"jsox"},
+{cat:"基本操作（反映・保存・ドラッグ・Undo）",title:"自動保存とデータ保全のしくみ",keywords:["自動保存","復元","消えた","バックアップ","localStorage"],html:`
+<p>編集の約1.5秒後に、ブラウザ内へ自動保存されます（2世代）。ブラウザを閉じたり、PCを再起動しても、次回起動時に自動で復元されます。</p>
+<ul>
+<li>ファイルメニューの「自動保存から復元（直近／1つ前）」で手動復元もできます</li>
+<li>自動保存は<b>そのPC・そのブラウザ限り</b>です。恒久保存・共有は「プロジェクトを保存(.json)」で行ってください</li>
+<li>容量超過時は添付ファイルを除いて本体データの保全を継続します（通知が出ます）</li>
+</ul>`,mode:null},
+{cat:"はじめに",title:"AIに相談（コピー＆回答の取り込み）",keywords:["AI","ChatGPT","Claude","相談","レビュー","取り込み"],html:`
+<p>上部の「✨AIに相談」で、お使いのAIツールと連携できます。<b>このツールがデータを外部送信することはありません</b>（コピー＆貼り付け方式）。</p>
+<h2>コピーして相談</h2>
+<p>いま見ている画面の内容（記述書・RCM・評価状況など）と相談目的のプロンプトを整形してコピー → 会社で承認されたAIに貼り付けます。</p>
+<h2>回答を取り込む</h2>
+<p>「網羅性チェック」「文章改善」で相談すると、AIがツールで取り込める形式（JSON）で回答するよう指示が含まれます。回答をそのまま「回答を取り込む」タブに貼ると、追加・更新内容のプレビューが出て、ワンクリックで反映できます（Ctrl+Zで取り消し可能）。</p>
+<p>注意: AIの回答は下書きです。評価判断・結論は評価者自身が行い、内容を確認してから反映してください。</p>`,mode:null},
+{cat:"はじめに",title:"業務の棚卸・改善ページの見方",keywords:["棚卸","改善","効率化","属人化","ボトルネック"],html:`
+<p>メニュー「業務の棚卸・改善」では、全プロセスを横断して業務の全体像を俯瞰できます。</p>
+<ul>
+<li><b>KPI</b>: プロセス数・総工程数・手作業比率・システム化率・文書化率・改善ポイント数</li>
+<li><b>棚卸表</b>: プロセスごとの工程内訳・文書化率・統制数・属人化リスク・最終改訂</li>
+<li><b>改善ポイント自動検出</b>: 手作業比率が高い／紙書類が多い／詳細・ノウハウ未記載／担当の集中／判断分岐の欠如／所要時間のボトルネック等を、効率化・標準化・文書化・リスクの4分類で提示</li>
+</ul>
+<p>詳細手順・所要時間・ポイントの記載が充実しているほど検出精度が上がります。</p>`,mode:null},
+{cat:"更新履歴",title:"更新履歴（2026年7月 大型アップデート）",keywords:["更新","変更","履歴","新機能","バージョン"],html:`
+<p>2026年7月に実施した主なアップデートです。</p>
+<h2>デザイン・操作性</h2>
+<ul>
+<li>UI全面リデザイン（teal基調・IBM Plex/Interフォント・Phosphorアイコン）</li>
+<li>左メニュー再編: 編集と成果物を統合し、各画面に「編集｜プレビュー」トグルを設置。セクションをパネル化し、三点セット作成を強調。評価・点検は折りたたみ可能に</li>
+<li>フロー図をJIS X 0121準拠の記号に刷新（手作業=台形・判断=ひし形・書類=波形）。はい/いいえ分岐・R/Cタグ・フェーズ帯・ズーム・書き出しツールバー</li>
+<li>業務記述書グリッド: 業務グルーピング（色帯）・種類バッジ・部署チップ・📝詳細パネル・［＋業務グループ］［＋工程］ボタン</li>
+<li>全テーブルの列幅をドラッグで調整可能に（記憶されます）</li>
+<li>Excel出力を画面対応のメニュー化＋UI準拠の装飾付き（色・罫線・結合・Yu Gothic）に</li>
+<li>印刷を監査調書スタイルに（押印欄・A4横・自動縮小・長文注記の分離）</li>
+</ul>
+<h2>評価・監査対応</h2>
+<ul>
+<li>「整備・運用評価」ページ新設（評価主体・手続種類・対象期間・母集団・調書番号・査閲欄）</li>
+<li>「サンプリング調書」新設（1統制1葉・サンプル別結果表・例外自動集計・推奨サンプル件数）</li>
+<li>評価結果一覧から不備管理・評価詳細へワンクリックでジャンプ</li>
+<li>RCM関連の出力をリスク/統制番号順にソート</li>
+</ul>
+<h2>データ保全・連携</h2>
+<ul>
+<li>自動保存（2世代・自動復元・容量超過フォールバック）</li>
+<li>証憑のフォルダ格納（PCの任意フォルダへ直接保存・一括書き出し）と添付を開く機能の修正</li>
+<li>「AIに相談」: コンテキスト整形コピー＆回答のワンクリック取り込み</li>
+<li>「業務の棚卸・改善」ページ新設（プロセス横断の棚卸と改善ポイント自動検出）</li>
+</ul>`,mode:null}
+);
 let _help={view:"home",cat:null,idx:-1};
 function helpVisible(a){const m=(db&&db.mode)||"jsox";return a.mode==null||a.mode===m;}
 function helpCats(){const order=[];HELP.forEach(a=>{if(helpVisible(a)&&!order.includes(a.cat))order.push(a.cat);});return order;}
 function helpMatches(a,q){return helpVisible(a)&&(a.title+" "+(a.keywords||[]).join(" ")+" "+a.html).toLowerCase().includes(q);}
+const HELP_CAT_META={
+  "はじめに":["ph-rocket-launch","ツールの考え方と基本の流れ"],
+  "つまずきポイント":["ph-warning-circle","初めての人が迷いやすい箇所と解決策"],
+  "業務マニュアル":["ph-book-open-text","マニュアルモードの使い方"],
+  "基本操作（反映・保存・ドラッグ・Undo）":["ph-cursor-click","反映・保存・並べ替え・元に戻す"],
+  "入力：業務記述書":["ph-list-numbers","工程の入力とグルーピング"],
+  "入力：RCM（アサーション様式）":["ph-table","リスクと統制・アサーション"],
+  "取込とマッピング表":["ph-upload-simple","既存Excel/CSVの取り込み"],
+  "成果物と出力":["ph-files","三点セットと出力形式"],
+  "点検・評価・管理":["ph-clipboard-text","評価・調書・不備・証憑"],
+  "基準・参照":["ph-scales","準拠基準と用語集"],
+  "よくある質問":["ph-question","FAQ"],
+  "更新履歴":["ph-clock-counter-clockwise","新機能とアップデート"]
+};
+const HELP_PICKS=["まず押さえる3つの考え方（編集・反映・プレビュー）","開発者が通しで操作して感じた難所 10選","更新履歴（2026年7月 大型アップデート）"];
+function helpRefsHtml(){
+  const refs=[
+    ["財務報告に係る内部統制の評価及び監査の基準・実施基準","金融庁（2023年4月改訂）— 金融庁サイト内で検索","https://www.fsa.go.jp/"],
+    ["監査基準委員会報告書 230（監査調書）・330・500","日本公認会計士協会 — サイト内で検索","https://jicpa.or.jp/"],
+    ["JIS X 0121（情報処理用流れ図記号）","フロー図の記号はこの規格に準拠しています","https://www.jisc.go.jp/"]
+  ];
+  return `<div class="card" style="margin-top:16px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px"><i class="ph ph-scales" style="font-size:17px;color:var(--c-primary)"></i>基準参照</div>
+    <div style="display:flex;flex-direction:column;gap:9px">`+refs.map(r=>`
+    <a href="${r[2]}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid #E6ECEA;border-radius:10px;text-decoration:none">
+      <i class="ph ph-link-simple" style="font-size:16px;color:var(--c-primary-d);flex:none"></i>
+      <span style="flex:1"><span style="display:block;font-size:12.5px;font-weight:600;color:#1F2B27">${esc(r[0])}</span><span style="display:block;font-size:11px;color:var(--c-text-faint);margin-top:2px">${esc(r[1])}</span></span>
+      <i class="ph ph-arrow-up-right" style="font-size:14px;color:#9AA6A2;flex:none"></i>
+    </a>`).join("")+`</div>
+    <div style="margin-top:12px;font-size:11px;color:var(--c-text-faint);line-height:1.6">※ 三点セットの作成は監査上の義務ではなく、評価・監査を効率化するための文書化手段です。本ツールは特定の様式・監査対応を保証しません。</div></div>`;
+}
 function renderHelp(){
   const root=document.getElementById("helpRoot");if(!root)return;
   const qEl=document.getElementById("helpSearch");const q=(qEl?qEl.value:"").trim().toLowerCase();
@@ -4228,17 +4384,38 @@ function renderHelp(){
     else html+=`<div class="help-list">`+results.map(({a,i})=>`<div class="help-item" onclick="helpShow(${i})"><div class="help-item-cat">${esc(a.cat)}</div><div class="help-item-title">${esc(a.title)}</div></div>`).join("")+`</div>`;
   }else if(_help.view==="article"&&_help.idx>=0&&HELP[_help.idx]){
     const a=HELP[_help.idx];
-    html+=`<div class="breadcrumb"><a href="#" onclick="helpHome();return false;">ヘルプ</a> › <a href="#" onclick="helpCat('${a.cat}');return false;">${esc(a.cat)}</a> › ${esc(a.title)}</div>`;
-    html+=`<div class="doc"><h1>${esc(a.title)}</h1>${a.html}</div>`;
+    html+=`<div class="breadcrumb"><a href="#" onclick="helpHome();return false;"><i class="ph ph-house" style="font-size:12px"></i> ヘルプ</a> › <a href="#" onclick="helpCat('${escAttr(a.cat)}');return false;">${esc(a.cat)}</a> › ${esc(a.title)}</div>`;
+    html+=`<div class="doc help-article"><h1>${esc(a.title)}</h1>${a.html}</div>`;
+    const rel=HELP.map((x,i)=>({x,i})).filter(({x,i})=>helpVisible(x)&&x.cat===a.cat&&i!==_help.idx);
+    if(rel.length){
+      html+=`<div style="max-width:1040px;margin-top:14px"><div style="font-size:12px;font-weight:700;color:var(--c-text-mid);margin-bottom:8px">同じカテゴリの記事</div><div class="help-list">`
+        +rel.map(({x,i})=>`<div class="help-item" onclick="helpShow(${i})"><div class="help-item-title">${esc(x.title)}</div></div>`).join("")+`</div></div>`;
+    }
+    html+=`<div style="margin-top:14px"><button class="sm" onclick="helpHome()"><i class="ph ph-arrow-left"></i>ヘルプの一覧へ戻る</button></div>`;
   }else if(_help.view==="cat"&&_help.cat){
+    const meta=HELP_CAT_META[_help.cat]||["ph-folder",""];
     const arts=HELP.map((a,i)=>({a,i})).filter(({a})=>helpVisible(a)&&a.cat===_help.cat);
-    html+=`<div class="breadcrumb"><a href="#" onclick="helpHome();return false;">ヘルプ</a> › ${esc(_help.cat)}</div>`;
+    html+=`<div class="breadcrumb"><a href="#" onclick="helpHome();return false;"><i class="ph ph-house" style="font-size:12px"></i> ヘルプ</a> › ${esc(_help.cat)}</div>`;
+    html+=`<div style="display:flex;align-items:center;gap:11px;margin:4px 0 12px"><span style="width:38px;height:38px;border-radius:9px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center"><i class="ph ${meta[0]}" style="font-size:19px;color:var(--c-primary)"></i></span><div><div style="font-size:15px;font-weight:700">${esc(_help.cat)}</div><div style="font-size:12px;color:var(--c-text-mid)">${esc(meta[1])}</div></div></div>`;
     html+=`<div class="help-list">`+arts.map(({a,i})=>`<div class="help-item" onclick="helpShow(${i})"><div class="help-item-title">${esc(a.title)}</div></div>`).join("")+`</div>`;
   }else{
+    /* おすすめ（まず読む3本） */
+    const picks=HELP_PICKS.map(t=>{const i=HELP.findIndex(a=>a.title===t&&helpVisible(a));return i>=0?{a:HELP[i],i}:null;}).filter(Boolean);
+    if(picks.length){
+      html+=`<div style="font-size:12px;font-weight:700;color:var(--c-text-mid);margin:2px 0 8px">まず読む</div><div class="help-picks">`
+        +picks.map(({a,i},k)=>`<div class="help-pick" onclick="helpShow(${i})"><span class="hp-n num">${k+1}</span><span style="flex:1">${esc(a.title)}</span><i class="ph ph-caret-right" style="color:#B4C3BF"></i></div>`).join("")+`</div>`;
+    }
+    html+=`<div style="font-size:12px;font-weight:700;color:var(--c-text-mid);margin:16px 0 8px">カテゴリ</div>`;
     html+=`<div class="help-cats">`+helpCats().map(c=>{
       const n=HELP.filter(a=>helpVisible(a)&&a.cat===c).length;
-      return `<div class="help-cat-card" onclick="helpCat('${c}')"><div class="help-cat-title">${esc(c)}</div><div class="help-cat-count">${n}件の記事</div></div>`;
+      const meta=HELP_CAT_META[c]||["ph-folder",""];
+      return `<div class="help-cat-card" onclick="helpCat('${escAttr(c)}')">
+        <div style="display:flex;align-items:flex-start;gap:11px">
+          <span style="width:36px;height:36px;border-radius:9px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${meta[0]}" style="font-size:18px;color:var(--c-primary)"></i></span>
+          <div style="flex:1;min-width:0"><div class="help-cat-title">${esc(c)}</div><div style="font-size:11.5px;color:var(--c-text-mid);line-height:1.5;margin:2px 0 4px">${esc(meta[1])}</div><div class="help-cat-count num">${n}件の記事</div></div>
+        </div></div>`;
     }).join("")+`</div>`;
+    html+=helpRefsHtml();
   }
   root.innerHTML=html;
 }
