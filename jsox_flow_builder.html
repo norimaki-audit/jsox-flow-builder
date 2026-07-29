@@ -1466,32 +1466,59 @@ function tableToWS(tableEl){
     r++;}
   const ws=XLSX.utils.aoa_to_sheet(grid);ws["!merges"]=Object.values(merges);return ws;
 }
-function exportDocXlsx(containerId,fileBase){
-  if(typeof XLSX==="undefined"){alert("Excelライブラリが見つかりません。");return;}
+async function exportDocXlsx(containerId,fileBase){
+  if(typeof ExcelJS==="undefined"){alert("Excelライブラリが見つかりません。");return;}
   const cont=document.getElementById(containerId);if(!cont)return;
   const tables=[...cont.querySelectorAll("table")];
   if(!tables.length){alert("出力できる表がありません。");return;}
-  const wb=XLSX.utils.book_new();
-  tables.forEach((t,i)=>XLSX.utils.book_append_sheet(wb,tableToWS(t),("Sheet"+(i+1)).slice(0,31)));
-  // 評価結果サマリ
-  const agg=aggregate();
-  const sumH=[["プロセス","統制数","キー統制","整備評価済","運用評価済","不備件数","うち開示すべき重要な不備","例外件数"]];
-  agg.procs.forEach(pp=>{
-    const pCtl=pp.rcm.filter(r=>(r.control_id||"").trim()).length;
-    const pKey=pp.rcm.filter(r=>r.key).length;
-    const pDe=pp.rcm.filter(r=>r.de_result).length;
-    const pOe=pp.rcm.filter(r=>r.oe_result).length;
-    const pDefs=(pp.deficiencies||[]).length;
-    const pMat=(pp.deficiencies||[]).filter(d=>d.type==="開示すべき重要な不備").length;
-    const pExc=pp.rcm.reduce((s,r)=>{const n=parseInt(r.oe_excns,10);return s+(isNaN(n)?0:n);},0);
-    sumH.push([pp.name,pCtl,pKey,pDe,pOe,pDefs,pMat,pExc]);
-  });
-  sumH.push(["【合計】",agg.ctl,agg.key,agg.deOk,agg.oeOk,agg.defs.length,agg.material.length,agg.exc]);
-  sumH.push([]);
-  sumH.push(["全社結論",agg.conclusion==="effective"?"財務報告に係る内部統制は有効である（候補）":"開示すべき重要な不備があり、財務報告に係る内部統制は有効でない（候補）"]);
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sumH),"評価結果サマリ");
-  const buf=XLSX.write(wb,{type:"array",bookType:"xlsx"});
-  download(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),(fileBase||"export")+".xlsx");
+  const loadingEl=document.createElement("div");
+  loadingEl.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--c-border);border-radius:10px;padding:18px 30px;box-shadow:0 8px 30px rgba(20,40,35,.18);z-index:9999;font-size:13.5px;font-weight:600;";
+  loadingEl.textContent="Excelを生成中…";
+  document.body.appendChild(loadingEl);
+  try{
+    const wb=new ExcelJS.Workbook();wb.creator=APP_NAME;wb.created=new Date();
+    const baseName=String(fileBase||"export").split("_").pop().replace(/[\\\/*?:\[\]]/g,"")||"Sheet";
+    for(let i=0;i<tables.length;i++){
+      const ws=wb.addWorksheet((baseName+(tables.length>1?"_"+(i+1):"")).slice(0,31));
+      await tableToExcel(ws,tables[i]);
+    }
+    /* 評価結果サマリ（UI配色のヘッダ付き） */
+    if(((db&&db.mode)||"jsox")!=="manual"){
+      const agg=aggregate();
+      const ws=wb.addWorksheet("評価結果サマリ");
+      const thin={style:"thin",color:{argb:"FFE2E8E7"}};
+      const head=["プロセス","統制数","キー統制","整備評価済","運用評価済","不備件数","うち開示すべき重要な不備","例外件数"];
+      const rows=[];
+      agg.procs.forEach(pp=>{
+        rows.push([pp.name,
+          pp.rcm.filter(r=>(r.control_id||"").trim()).length,
+          pp.rcm.filter(r=>r.key).length,
+          pp.rcm.filter(r=>r.de_result).length,
+          pp.rcm.filter(r=>r.oe_result).length,
+          (pp.deficiencies||[]).length,
+          (pp.deficiencies||[]).filter(d=>d.type==="開示すべき重要な不備").length,
+          pp.rcm.reduce((s,r)=>{const n=parseInt(r.oe_excns,10);return s+(isNaN(n)?0:n);},0)]);
+      });
+      rows.push(["【合計】",agg.ctl,agg.key,agg.deOk,agg.oeOk,agg.defs.length,agg.material.length,agg.exc]);
+      const hr=ws.addRow(head);
+      hr.eachCell(x=>{x.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0E7C73"}};x.font={name:XL_FONT,bold:true,color:{argb:"FFFFFFFF"},size:10};x.alignment={vertical:"middle",horizontal:"center",wrapText:true};x.border={top:thin,left:thin,bottom:thin,right:thin};});
+      rows.forEach((rw,ri)=>{
+        const xr=ws.addRow(rw);
+        xr.eachCell((x,ci)=>{x.font={name:XL_FONT,size:10,bold:ri===rows.length-1};x.alignment={vertical:"middle",horizontal:ci===1?"left":"center"};x.border={top:thin,left:thin,bottom:thin,right:thin};if(ri===rows.length-1)x.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFEAF4F1"}};});
+      });
+      ws.addRow([]);
+      const okC=agg.conclusion==="effective";
+      const cr=ws.addRow(["全社結論",okC?"財務報告に係る内部統制は有効である（候補）":"開示すべき重要な不備があり、財務報告に係る内部統制は有効でない（候補）"]);
+      cr.getCell(1).font={name:XL_FONT,bold:true,size:10};
+      cr.getCell(2).font={name:XL_FONT,bold:true,size:10,color:{argb:okC?"FF157F5B":"FFB0413B"}};
+      ws.columns=[{width:26},{width:10},{width:10},{width:11},{width:11},{width:10},{width:22},{width:10}];
+      ws.views=[{state:"frozen",ySplit:1}];
+    }
+    const buf=await wb.xlsx.writeBuffer();
+    download(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),(fileBase||"export")+".xlsx");
+  }catch(e){alert("Excel生成エラー: "+e.message);console.error(e);}finally{
+    document.body.removeChild(loadingEl);
+  }
 }
 
 function exportXlsx(){
@@ -1539,12 +1566,16 @@ function rgbToARGB(s){
   const argb="FF"+hex(m[1])+hex(m[2])+hex(m[3]);
   return argb==="FFFFFFFF"?null:argb;
 }
+function argbLuma(a){if(!a||a.length<8)return 255;const r=parseInt(a.slice(2,4),16),g=parseInt(a.slice(4,6),16),b=parseInt(a.slice(6,8),16);return 0.299*r+0.587*g+0.114*b;}
+const XL_FONT="Yu Gothic";
 async function tableToExcel(ws,tableEl){
   const used={};let r=1;
-  const thin={style:"thin",color:{argb:"FFD0D5DD"}};
+  const thin={style:"thin",color:{argb:"FFE2E8E7"}};
+  const hair={style:"hair",color:{argb:"FFD2DCD8"}};
   const widths=[];
   for(const tr of tableEl.rows){
     let c=1;
+    const isHead=tr.parentElement&&tr.parentElement.tagName==="THEAD";
     for(const cell of tr.cells){
       while(used[r+"_"+c])c++;
       const rs=cell.rowSpan||1,cs=cell.colSpan||1;
@@ -1552,11 +1583,15 @@ async function tableToExcel(ws,tableEl){
       const x=ws.getCell(r,c);
       x.value=(cell.innerText||cell.textContent||"").trim();
       x.alignment={vertical:"middle",horizontal:(cs0.textAlign==="center"?"center":cs0.textAlign==="right"?"right":"left"),wrapText:true};
-      const bg=rgbToARGB(cs0.backgroundColor);if(bg)x.fill={type:"pattern",pattern:"solid",fgColor:{argb:bg}};
-      const bold=(parseInt(cs0.fontWeight,10)>=600)||cs0.fontWeight==="bold";
+      let bg=rgbToARGB(cs0.backgroundColor);
+      if(!bg&&(cell.tagName==="TH"||isHead))bg="FFF2F6F5";/* UIヘッダ色 */
+      if(bg)x.fill={type:"pattern",pattern:"solid",fgColor:{argb:bg}};
+      const bold=(parseInt(cs0.fontWeight,10)>=600)||cs0.fontWeight==="bold"||cell.tagName==="TH";
       const fg=rgbToARGB(cs0.color);
-      x.font={bold:bold,color:{argb:(cell.tagName==="TH"&&bg&&bg!=="FFFFFFFF")?"FFFFFFFF":(fg||"FF161B22")},size:10};
-      x.border={top:thin,left:thin,bottom:thin,right:thin};
+      /* 背景が暗い場合のみ白文字（新パレットのライトヘッダで白飛びしないように） */
+      const fontColor=(bg&&argbLuma(bg)<140)?"FFFFFFFF":(fg||"FF14201E");
+      x.font={name:XL_FONT,bold:bold,color:{argb:fontColor},size:10};
+      x.border={top:isHead?thin:hair,left:thin,bottom:isHead?thin:hair,right:thin};
       if(rs>1||cs>1){ws.mergeCells(r,c,r+rs-1,c+cs-1);for(let i=0;i<rs;i++)for(let j=0;j<cs;j++)if(i||j)used[(r+i)+"_"+(c+j)]=true;}
       const w=Math.min(40,Math.max(6,(x.value.length||2)+2));
       widths[c-1]=Math.max(widths[c-1]||0,w);
@@ -1565,6 +1600,8 @@ async function tableToExcel(ws,tableEl){
     r++;
   }
   ws.columns=widths.map(w=>({width:w}));
+  const hrows=tableEl.tHead?tableEl.tHead.rows.length:0;
+  if(hrows)ws.views=[{state:"frozen",ySplit:hrows}];
 }
 function svgToPngDataURL(){
   return new Promise((resolve)=>{
