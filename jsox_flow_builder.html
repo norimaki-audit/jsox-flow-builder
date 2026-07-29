@@ -701,6 +701,8 @@
     <!-- EVIDENCE -->
     <section class="page" id="page-ev"><div class="pad">
       <div class="ph"><h2>証憑（格納・依頼）</h2><span class="sub">統制ごとの証憑依頼状況の管理と、証憑ファイルのローカル格納</span><span class="sp"></span>
+        <button class="sm" onclick="evSetFolder()" title="証憑の保存先をPCの任意フォルダに設定します（Chrome / Edge）"><i class="ph ph-folder-open"></i>保存先フォルダ…</button>
+        <button class="sm" onclick="evExportAll()" title="ブラウザ内に格納済みの証憑を、設定したフォルダへ統制ID別に一括書き出します"><i class="ph ph-export"></i>一括書き出し</button>
         <button class="sm" onclick="exportXlsx()">データ(.xlsx)</button>
         <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="evSummary" style="margin-bottom:8px"></div>
@@ -708,7 +710,7 @@
         <th>統制ID</th><th>業務</th><th>統制内容</th><th>必要証憑</th><th>依頼先</th><th>期限</th><th>状況</th><th>格納証憑（ローカル）</th>
       </tr></thead><tbody id="evBody"></tbody></table></div>
       <input type="file" id="evFileInput" multiple style="display:none">
-      <div class="hint">格納したファイルはこのブラウザ内に保持され、プロジェクト保存(.json)に含まれます（外部送信なし）。容量が大きいとjsonが肥大化するため、目安として1ファイル5MBまで・合計は控えめにしてください。</div>
+      <div class="hint">格納方式は2通り：<b>ブラウザ内</b>（.jsonに含まれ持ち運び可能・1ファイル5MB目安）／<b>フォルダ</b>（「保存先フォルダ…」で設定したPCのフォルダへ「プロセスID/統制ID/ファイル名」で直接保存・容量制限なし・Chrome/Edge対応）。フォルダ方式の一覧から削除しても、フォルダ内のファイル自体は削除されません。</div>
     </div></section>
 
     <!-- STEPS DOC (成果物) -->
@@ -1856,7 +1858,7 @@ document.getElementById("fileCsv").addEventListener("change",function(ev){const 
 function saveProject(){db.projectName=document.getElementById("projName").value;db.savedAt=new Date().toISOString();download(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),(db.projectName||"jsox_project").replace(/[\\/:*?"<>|\s]+/g,"_")+".json");clearDirty();}
 function openProject(){document.getElementById("fileProj").click();}
 document.getElementById("fileProj").addEventListener("change",function(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.processes)throw new Error("形式が不正");db=o;normalize();applyMode();document.getElementById("projName").value=db.projectName||"";syncProcSel();clearDirty();_applied={};applyAll();show(curPage);}catch(e){alert("読込エラー: "+e.message);}};rd.readAsText(f);ev.target.value="";});
-function normalize(){db.mode=db.mode||"jsox";db.mappingProfiles=db.mappingProfiles||[];db.customCols=db.customCols||[];db.processes.forEach(p=>{p.steps=(p.steps||[]).map(s=>Object.assign(blankStep(),s));p.rcm=(p.rcm||[]).map(r=>{r=Object.assign(blankRcm(),r);if((r.assertion||"").trim()&&!ASRT_KEYS.some(k=>r[k])){const a=r.assertion;if(/実在/.test(a))r.as_exist=true;if(/網羅/.test(a))r.as_comp=true;if(/権利/.test(a))r.as_rights=true;if(/評価/.test(a))r.as_val=true;if(/期間/.test(a))r.as_cutoff=true;if(/表示/.test(a))r.as_pres=true;}
+function normalize(){db.mode=db.mode||"jsox";db.evStore=db.evStore||"browser";db.evDirName=db.evDirName||"";db.mappingProfiles=db.mappingProfiles||[];db.customCols=db.customCols||[];db.processes.forEach(p=>{p.steps=(p.steps||[]).map(s=>Object.assign(blankStep(),s));p.rcm=(p.rcm||[]).map(r=>{r=Object.assign(blankRcm(),r);if((r.assertion||"").trim()&&!ASRT_KEYS.some(k=>r[k])){const a=r.assertion;if(/実在/.test(a))r.as_exist=true;if(/網羅/.test(a))r.as_comp=true;if(/権利/.test(a))r.as_rights=true;if(/評価/.test(a))r.as_val=true;if(/期間/.test(a))r.as_cutoff=true;if(/表示/.test(a))r.as_pres=true;}
     if(!r.oe_result && r.evaluation){
       r.oe_result = ({ "○":"有効","×":"不備","△":"不備","－":"対象外" }[r.evaluation]) || "";
       if(r.evaluation==="△" && !r.oe_note) r.oe_note="（旧データ：一部不備）";
@@ -3098,9 +3100,105 @@ function evOf(cid){const p=P();p.evidence=p.evidence||{};if(!p.evidence[cid])p.e
 function fmtSize(n){if(n>=1048576)return (n/1048576).toFixed(1)+"MB";if(n>=1024)return Math.round(n/1024)+"KB";return (n||0)+"B";}
 let _evCid=null;
 function attachEvidence(cid){_evCid=cid;const fi=document.getElementById("evFileInput");fi.value="";fi.click();}
-function onEvFile(e){const cid=_evCid;if(!cid){return;}const files=[...e.target.files];if(!files.length)return;const o=evOf(cid);let pending=files.length;const done=()=>{if(--pending<=0){markDirty();renderEv();}};
-  files.forEach(f=>{if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした。`);done();return;}const fr=new FileReader();fr.onload=()=>{o.files.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};fr.onerror=done;fr.readAsDataURL(f);});}
+function onEvFile(e){const cid=_evCid;if(!cid){return;}const files=[...e.target.files];if(!files.length)return;const o=evOf(cid);
+  if((db.evStore||"browser")==="dir"&&FSA_OK){
+    (async()=>{let n=0;
+      for(const f of files){
+        try{const path=await evWriteDirFile(cid,f);o.files.push({name:f.name,type:f.type,size:f.size,store:"dir",path:path,addedAt:today()});n++;}
+        catch(err){alert(`「${f.name}」の保存に失敗: `+err.message);}
+      }
+      if(n){markDirty();renderEv();toast(n+"件をフォルダへ保存しました。");}
+    })();
+    return;
+  }
+  let pending=files.length;const done=()=>{if(--pending<=0){markDirty();renderEv();}};
+  files.forEach(f=>{if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした（フォルダ格納なら制限なし。「保存先フォルダ…」から設定できます）。`);done();return;}const fr=new FileReader();fr.onload=()=>{o.files.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};fr.onerror=done;fr.readAsDataURL(f);});}
 document.getElementById("evFileInput").addEventListener("change",onEvFile);
+/* =================================================================
+   証憑のフォルダ保存（File System Access API / Chrome・Edge）
+   ================================================================= */
+const FSA_OK=("showDirectoryPicker" in window);
+let _evDir=null;
+function idbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open("jsoxfb_fs",1);q.onupgradeneeded=()=>q.result.createObjectStore("kv");q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+function idbSet(k,v){return idbOpen().then(d=>new Promise((res,rej)=>{const t=d.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error);}));}
+function idbGet(k){return idbOpen().then(d=>new Promise((res,rej)=>{const t=d.transaction("kv");const q=t.objectStore("kv").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);}));}
+async function _verifyPerm(h){try{if(await h.queryPermission({mode:"readwrite"})==="granted")return true;return (await h.requestPermission({mode:"readwrite"}))==="granted";}catch(e){return false;}}
+async function evEnsureDir(){
+  if(_evDir&&await _verifyPerm(_evDir))return _evDir;
+  const h=await idbGet("evDir").catch(()=>null);
+  if(h&&await _verifyPerm(h)){_evDir=h;return h;}
+  return null;
+}
+function sanitizeSeg(s){return String(s||"").replace(/[\\/:*?"<>|]/g,"_").trim().slice(0,80)||"_";}
+async function evSetFolder(){
+  if(!FSA_OK){alert("お使いのブラウザはフォルダ保存に対応していません（Chrome または Edge をご利用ください）。従来どおりブラウザ内格納が使えます。");return;}
+  try{
+    _evDir=await showDirectoryPicker({mode:"readwrite"});
+    await idbSet("evDir",_evDir);
+    db.evStore="dir";db.evDirName=_evDir.name;markDirty();renderEv();
+    toast("証憑の保存先を「"+_evDir.name+"」に設定しました。以後の添付はフォルダへ直接保存されます。",6000);
+  }catch(e){/* キャンセル */}
+}
+function evSetStore(v){pushUndo();db.evStore=v;markDirty();renderEv();}
+async function _dirByPath(root,segs,create){let d=root;for(const s of segs){d=await d.getDirectoryHandle(s,{create:!!create});}return d;}
+async function evWriteDirFile(cid,file){
+  const root=await evEnsureDir();
+  if(!root)throw new Error("保存先フォルダにアクセスできません。「保存先フォルダ…」で設定してください。");
+  const segs=[sanitizeSeg(P().id),sanitizeSeg(cid)];
+  const d=await _dirByPath(root,segs,true);
+  const fh=await d.getFileHandle(sanitizeSeg(file.name),{create:true});
+  const w=await fh.createWritable();await w.write(file);await w.close();
+  return segs.join("/")+"/"+sanitizeSeg(file.name);
+}
+async function evReadDirFile(f){
+  const root=await evEnsureDir();
+  if(!root){alert("保存先フォルダにアクセスできません。証憑ページの「保存先フォルダ…」で再設定してください。");return null;}
+  try{
+    const segs=String(f.path||"").split("/");const name=segs.pop();
+    const d=await _dirByPath(root,segs,false);
+    const fh=await d.getFileHandle(name);
+    return await fh.getFile();
+  }catch(e){alert("フォルダ内にファイルが見つかりません: "+(f.path||f.name)+"\n（フォルダを移動・削除した場合は再格納してください）");return null;}
+}
+async function evExportAll(){
+  if(!FSA_OK){alert("お使いのブラウザはフォルダ保存に対応していません（Chrome / Edge をご利用ください）。");return;}
+  const root=await evEnsureDir()|| (await evSetFolder(), await evEnsureDir());
+  if(!root)return;
+  const ev=P().evidence||{};let n=0,skip=0;
+  for(const cid of Object.keys(ev)){
+    for(const f of (ev[cid].files||[])){
+      if(f.store==="dir"){skip++;continue;}
+      const b=dataUrlToBlob(f.data);if(!b){skip++;continue;}
+      try{
+        const segs=[sanitizeSeg(P().id),sanitizeSeg(cid)];
+        const d=await _dirByPath(root,segs,true);
+        const fh=await d.getFileHandle(sanitizeSeg(f.name),{create:true});
+        const w=await fh.createWritable();await w.write(b);await w.close();
+        f.path=segs.join("/")+"/"+sanitizeSeg(f.name);n++;
+      }catch(e){skip++;}
+    }
+  }
+  if(n&&confirm(n+"件をフォルダへ書き出しました。\nブラウザ内のコピーを解放してフォルダ参照に切り替えますか？\n（.jsonが軽くなります。ファイルはフォルダ側に残ります）")){
+    for(const cid of Object.keys(ev))for(const f of (ev[cid].files||[]))if(f.path&&f.store!=="dir"){f.store="dir";delete f.data;}
+    markDirty();
+  }
+  renderEv();
+  toast("一括書き出し完了: "+n+"件"+(skip?"（対象外 "+skip+"件）":""));
+}
+async function openEvidenceAsync(cid,idx){
+  const f=evOf(cid).files[idx];if(!f)return;
+  if(f.store==="dir"){const file=await evReadDirFile(f);if(!file)return;
+    const u=URL.createObjectURL(file);const w=window.open(u,"_blank");
+    if(!w)alert("ポップアップがブロックされました。");
+    setTimeout(()=>URL.revokeObjectURL(u),120000);return;}
+  openAttachment(f);
+}
+async function dlEvidenceAsync(cid,idx){
+  const f=evOf(cid).files[idx];if(!f)return;
+  if(f.store==="dir"){const file=await evReadDirFile(f);if(!file)return;
+    const u=URL.createObjectURL(file);const a=document.createElement("a");a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);return;}
+  dlAttachment(f);
+}
 /* ===== 添付ファイル: Blob化して開く/ダウンロード（data:URL直リンクはブラウザ制限で失敗するため） ===== */
 function dataUrlToBlob(du){const m=String(du||"").match(/^data:([^;,]+)?(;base64)?,([\s\S]*)$/);if(!m)return null;
   const mime=m[1]||"application/octet-stream";
@@ -3115,20 +3213,24 @@ function openAttachment(f){if(!f||!f.data){alert("ファイルデータがあり
   setTimeout(()=>URL.revokeObjectURL(u),120000);}
 function dlAttachment(f){if(!f||!f.data)return;const b=dataUrlToBlob(f.data);if(!b)return;
   const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=f.name||"file";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);}
-function openEvidence(cid,idx){openAttachment(evOf(cid).files[idx]);}
+function openEvidence(cid,idx){openEvidenceAsync(cid,idx);}
 function openLibFile(id,i){const it=libArr().find(x=>x.id===id);if(it)openAttachment((it.files||[])[i]);}
-function dlEvidence(cid,idx){dlAttachment(evOf(cid).files[idx]);}
-function delEvidence(cid,idx){const o=evOf(cid);if(!o.files[idx])return;if(!confirm(`証憑「${o.files[idx].name}」を削除しますか？`))return;o.files.splice(idx,1);markDirty();renderEv();}
-function evTotalBytes(){let n=0;Object.values(P().evidence||{}).forEach(o=>(o.files||[]).forEach(f=>n+=f.size||0));return n;}
+function dlEvidence(cid,idx){dlEvidenceAsync(cid,idx);}
+function delEvidence(cid,idx){const o=evOf(cid);const f=o.files[idx];if(!f)return;if(!confirm(`証憑「${f.name}」を一覧から削除しますか？`+(f.store==="dir"?"\n（フォルダ内のファイル自体は削除されません）":"")))return;o.files.splice(idx,1);markDirty();renderEv();}
+function evTotalBytes(){let n=0;Object.values(P().evidence||{}).forEach(o=>(o.files||[]).forEach(f=>{if(f.store!=="dir")n+=f.size||0;}));return n;}
 function renderEv(){
   const p=P();const ctrls=p.rcm.filter(r=>(r.control_id||"").trim());
   const need=ctrls.filter(r=>(r.evidence||"").trim()).length;let stored=0;const byst={};
   ctrls.forEach(r=>{const cid=(r.control_id||"").trim();const o=evOf(cid);if(o.files.length)stored++;byst[o.req_status]=(byst[o.req_status]||0)+1;});
-  document.getElementById("evSummary").innerHTML=`<div class="hint" style="margin:0">統制 ${ctrls.length} 件／証憑を要する統制 ${need} 件／証憑格納済 ${stored} 件　・　依頼状況：${["未依頼","依頼済","受領","不足"].map(s=>`${s} ${byst[s]||0}`).join("／")}　・　格納合計 ${fmtSize(evTotalBytes())}</div>`;
+  const storeSel=`格納方式: <select onchange="evSetStore(this.value)" style="height:26px;padding:0 6px;font-size:12px">`
+    +`<option value="browser"${(db.evStore||"browser")==="browser"?" selected":""}>ブラウザ内</option>`
+    +`<option value="dir"${db.evStore==="dir"?" selected":""}${FSA_OK?"":" disabled"}>フォルダ${FSA_OK?"":"（Chrome/Edgeのみ）"}</option></select>`
+    +(db.evStore==="dir"?`　保存先: <b>${esc(db.evDirName||"未設定")}</b>${db.evDirName?"":"（「保存先フォルダ…」で設定）"}`:"");
+  document.getElementById("evSummary").innerHTML=`<div class="hint" style="margin:0;display:flex;gap:14px;flex-wrap:wrap;align-items:center"><span>統制 ${ctrls.length} 件／証憑を要する統制 ${need} 件／証憑格納済 ${stored} 件　・　依頼状況：${["未依頼","依頼済","受領","不足"].map(s=>`${s} ${byst[s]||0}`).join("／")}　・　ブラウザ内格納 ${fmtSize(evTotalBytes())}</span><span style="white-space:nowrap">${storeSel}</span></div>`;
   let h="";
   if(!ctrls.length)h=`<tr><td colspan="8" style="color:var(--muted);padding:10px">統制ID付きのRCM行がありません。RCM編集で統制IDを入力してください。</td></tr>`;
   ctrls.forEach(r=>{const cid=(r.control_id||"").trim();const o=evOf(cid);
-    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})　クリックで開く"><a href="#" onclick="openEvidence('${escAttr(cid)}',${idx});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlEvidence('${escAttr(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escAttr(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">✕</a></span>`).join(" ");
+    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:${f.store==="dir"?"#3E6B63":"#56635F"}" title="${escAttr(f.store==="dir"?(f.path||f.name)+"（フォルダ格納）":f.name)} (${fmtSize(f.size)})　クリックで開く">${f.store==="dir"?'<i class="ph ph-folder" style="font-size:10px"></i> ':""}<a href="#" onclick="openEvidence('${escAttr(cid)}',${idx});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlEvidence('${escAttr(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escAttr(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">✕</a></span>`).join(" ");
     h+=`<tr>`
       +`<td class="w-no"><b>${esc(cid)}</b>${r.key?'<span class="tagmini" style="background:'+C_CTRL+'">KC</span>':""}</td>`
       +`<td>${esc(r.gyomu||"")}</td>`
