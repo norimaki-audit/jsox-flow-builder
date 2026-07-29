@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>業務フロー & マニュアルツール</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230f6e8c'/%3E%3Cpath d='M6 7h12M6 12h12M6 17h7' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>J-SOX三点セット作成ツール | IC Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230E7C73'/%3E%3Cpath d='M6 7h12M6 12h12M6 17h7' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -189,7 +189,7 @@
   .rc-mini{padding:0 5px;border-radius:5px;font-size:9.5px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
   .rc-mini.r{background:#F7ECEA;border:1px solid #ECCFCA;color:#A8473F;}
   .rc-mini.c{background:#E7F1EE;border:1px solid #BBD9D0;color:#0A5E57;}
-  .canvas-scroll{background:#FBFDFC;background-image:radial-gradient(#DEE7E3 1px,transparent 1px);background-size:22px 22px;border:none;border-radius:0;padding:16px;overflow:auto;max-height:72vh;}
+  .canvas-scroll{background:#FBFDFC;background-image:radial-gradient(#DEE7E3 1px,transparent 1px);background-size:22px 22px;border:none;border-radius:0 0 var(--r-card) var(--r-card);padding:16px;overflow:auto;max-height:72vh;}
   #flowCanvas{display:inline-block;transform-origin:top left;}
   #flowCanvas svg{display:block;box-shadow:0 1px 6px rgba(20,40,35,.10);background:#fff;border-radius:6px;}
   /* rcm preview table */
@@ -356,6 +356,28 @@
   .img-add{width:160px;height:104px;border-radius:8px;border:1.5px dashed #C0CCC8;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--c-primary-d);cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
   .img-add:hover{border-color:var(--c-primary);background:#F2F8F6;}
   .img-add i{font-size:20px;}
+  /* 狭幅ではステータス文言を省略しプロセス名を短縮（1段維持を優先） */
+  @media (max-width:1260px){
+    .appbar{gap:7px;padding:8px 12px;}
+    .proc-indicator select{min-width:96px;max-width:168px;}
+    #applyStatusTxt{display:none;}
+    .statuspill{padding:4px 8px;}
+    .brand-txt .bt2{display:none;}
+    .pa-lbl{display:none;}
+    .seg button{padding:0 9px;}
+  }
+  /* ===== ファイルメニュー（アプリバー集約） ===== */
+  .filemenu-wrap{position:relative;flex:none;}
+  .filemenu{display:none;position:absolute;top:36px;right:0;z-index:80;width:250px;background:#fff;border:1px solid var(--c-border);border-radius:12px;box-shadow:0 10px 32px rgba(20,40,35,.16);padding:8px;}
+  .filemenu.open{display:block;}
+  .filemenu button{display:flex;align-items:center;gap:9px;width:100%;height:34px;padding:0 10px;border:none;background:transparent;border-radius:8px;font-size:12.5px;color:#2A3633;text-align:left;}
+  .filemenu button:hover{background:#EFF4F2;border:none;}
+  .filemenu button i.ph:first-child{font-size:16px;color:#5A6863;width:18px;text-align:center;}
+  .filemenu .fm-sub{margin-left:auto;font-size:10.5px;color:var(--c-text-faint);}
+  .filemenu .fm-sep{height:1px;background:var(--c-line);margin:6px 4px;}
+  .filemenu .fm-row{display:flex;flex-direction:column;gap:4px;padding:6px 10px 10px;}
+  .filemenu .fm-row label{font-size:10.5px;font-weight:700;color:#9FABA7;letter-spacing:.06em;}
+  .filemenu .fm-row input{height:30px;padding:0 9px;border:1px solid #DCE5E3;border-radius:7px;font:inherit;font-size:12.5px;width:100%;}
   /* ===== 整備・運用評価ページ ===== */
   .evw-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   @media (max-width:960px){.evw-grid{grid-template-columns:1fr;}}
@@ -397,19 +419,27 @@
   </div>
   <span class="ab-sep"></span>
   <span class="proc-indicator" title="アクティブプロセスを切り替えます"><span class="proc-dot" id="procDot"></span><select id="procSel" style="min-width:150px"></select></span>
-  <button class="sm" onclick="openTmplModal()" style="border-style:dashed;color:var(--c-primary-d);font-weight:600;flex:none;white-space:nowrap" title="新規プロセスを追加 / テンプレートから作成"><i class="ph ph-plus"></i>プロセス追加</button>
+  <button class="sm" onclick="openTmplModal()" style="border-style:dashed;color:var(--c-primary-d);font-weight:600;flex:none;white-space:nowrap" title="新規プロセスを追加 / テンプレートから作成"><i class="ph ph-plus"></i><span class="pa-lbl">プロセス追加</span></button>
   <span class="grow"></span>
   <span id="dirty" class="dirty">● 未保存</span>
   <span class="statuspill" id="applyStatus"><span class="sdot"></span><span id="applyStatusTxt">反映済み</span></span>
   <button id="applyBtn" class="sm applybtn" onclick="applyAll()" title="いまの編集内容を、業務記述書・フロー図・RCM等の成果物に反映します（アクティブプロセス）"><i class="ph ph-check-circle"></i>反映</button>
   <span class="ab-sep"></span>
-  <input id="projName" style="width:110px" placeholder="プロジェクト名">
-  <button class="sm" onclick="newProject()" title="新規プロジェクトを作成します（モードを選択できます）">新規</button>
-  <button class="sm" onclick="loadExampleConfirmed()" title="サンプルデータを読み込みます（現在の内容は破棄されます）">サンプル</button>
-  <button class="sm" onclick="openProject()" title="プロジェクトファイル（.json）を開きます">開く</button>
   <button class="sm" onclick="saveProject()" title="現在のプロジェクトを .json ファイルに保存します"><i class="ph ph-floppy-disk" style="color:#5A6863"></i>保存</button>
   <button class="sm" onclick="exportXlsxRich()" title="色・罫線・結合・フロー図を含むExcelを出力します（配布用）"><i class="ph ph-microsoft-excel-logo" style="color:#1D7044"></i>Excel出力</button>
-  <button class="sm" onclick="exportXlsx()" title="アクティブプロセスのすべてのデータをExcel（.xlsx）に一括出力します（分析用・値のみ）">データ(.xlsx)</button>
+  <div class="filemenu-wrap">
+    <button class="sm" id="fileMenuBtn" onclick="toggleFileMenu(event)" title="プロジェクトの新規作成・読込・その他の出力"><i class="ph ph-folder-open" style="color:#5A6863"></i>ファイル<i class="ph ph-caret-down" style="font-size:11px;color:#9AA6A2"></i></button>
+    <div class="filemenu" id="fileMenu">
+      <div class="fm-row"><label>プロジェクト名</label><input id="projName" placeholder="（未設定）"></div>
+      <button onclick="closeFileMenu();newProject()"><i class="ph ph-file-plus"></i>新規作成<span class="fm-sub">用途を選んで開始</span></button>
+      <button onclick="closeFileMenu();openProject()"><i class="ph ph-folder-open"></i>プロジェクトを開く<span class="fm-sub">.json</span></button>
+      <button onclick="closeFileMenu();saveProject()"><i class="ph ph-floppy-disk"></i>プロジェクトを保存<span class="fm-sub">.json</span></button>
+      <div class="fm-sep"></div>
+      <button onclick="closeFileMenu();exportXlsx()"><i class="ph ph-microsoft-excel-logo"></i>データ出力<span class="fm-sub">.xlsx 値のみ</span></button>
+      <div class="fm-sep"></div>
+      <button onclick="closeFileMenu();loadExampleConfirmed()"><i class="ph ph-flask"></i>サンプル読込<span class="fm-sub">現在の内容は破棄</span></button>
+    </div>
+  </div>
   <input type="file" id="fileProj" accept=".json" style="display:none">
   <input type="file" id="fileCsv" accept=".csv" style="display:none">
 </div>
@@ -494,15 +524,21 @@
 
     <!-- FLOW -->
     <section class="page" id="page-flow"><div class="pad">
-      <div class="ph"><h2>フロー図</h2><span class="sub">業務記述書＋RCMから自動生成</span><span class="sp"></span>
-        <div class="zoom"><button class="sm" onclick="fzoom(-1)">−</button><span id="zlabel" style="min-width:42px;text-align:center;font-size:12px">100%</span><button class="sm" onclick="fzoom(1)">＋</button><button class="sm" onclick="fzoomReset()">100%</button></div>
-        <button class="sm" onclick="exportPNG()">PNG</button>
-        <button class="sm" onclick="exportSVG()">SVG</button>
-        <button class="sm" onclick="exportMermaid()">Mermaid</button>
-        <button class="sm" onclick="exportDrawio()">draw.io</button>
-      </div>
+      <div class="ph"><h2>フロー図</h2><span class="sub">業務記述書＋RCMから自動生成（記号は JIS X 0121 準拠）</span><span class="sp"></span></div>
       <div id="flowBanner"></div>
-      <div class="canvas-scroll"><div id="flowCanvas"></div></div>
+      <div class="flowcard">
+        <div class="flow-toolbar">
+          <span style="font-size:11.5px;color:var(--c-text-mid);display:inline-flex;align-items:center;gap:6px"><i class="ph ph-cursor-click" style="font-size:14px;color:var(--c-primary)"></i>ノードをクリックすると工程の詳細（メモ）が開きます</span>
+          <div style="flex:1"></div>
+          <div class="zoom"><button onclick="fzoom(-1)" title="縮小"><i class="ph ph-minus"></i></button><button onclick="fzoomReset()" title="100%に戻す" style="min-width:48px"><span id="zlabel" class="num">100%</span></button><button onclick="fzoom(1)" title="拡大"><i class="ph ph-plus"></i></button></div>
+          <div class="vsep"></div>
+          <button onclick="exportDrawio()" title="draw.io形式で書き出し"><i class="ph ph-tree-structure"></i>draw.io</button>
+          <button onclick="exportMermaid()" title="Mermaid形式で書き出し"><i class="ph ph-code"></i>Mermaid</button>
+          <button onclick="exportPNG()" title="PNG画像で書き出し"><i class="ph ph-image"></i>PNG</button>
+          <button onclick="exportSVG()" title="SVG画像で書き出し"><i class="ph ph-file-svg"></i>SVG</button>
+        </div>
+        <div class="canvas-scroll"><div id="flowCanvas"></div></div>
+      </div>
     </div></section>
 
     <!-- GAP -->
@@ -1704,6 +1740,7 @@ function applyMode(){
   document.body.classList.toggle("mode-manual",m==="manual");
   const brand=document.getElementById("appBrand");
   if(brand)brand.textContent=cfg.brand;
+  document.title=cfg.brand+" | IC Studio";
   const bj=document.getElementById("modeBtnJsox"),bm=document.getElementById("modeBtnManual");
   if(bj)bj.classList.toggle("on",m!=="manual");
   if(bm)bm.classList.toggle("on",m==="manual");
@@ -1722,6 +1759,10 @@ function applyMode(){
   const sdh2=document.getElementById("stepsDocPageH2");if(sdh2)sdh2.textContent=m==="manual"?"手順書（プレビュー）":"業務記述書";
   if(typeof updateTmplSel==="function")updateTmplSel();
 }
+/* ===== ファイルメニュー開閉 ===== */
+function toggleFileMenu(e){e.stopPropagation();document.getElementById("fileMenu").classList.toggle("open");}
+function closeFileMenu(){document.getElementById("fileMenu").classList.remove("open");}
+document.addEventListener("click",function(e){if(!e.target.closest(".filemenu-wrap"))closeFileMenu();});
 function setMode(m){if(((db&&db.mode)||"jsox")===m)return;switchMode();}
 function switchMode(){pushUndo();db.mode=(db.mode||"jsox")==="jsox"?"manual":"jsox";markDirty();applyMode();show(curPage);}
 /* ===== 編集｜プレビュー 統合ナビ（§2-1 / FIXES §12-A） ===== */
