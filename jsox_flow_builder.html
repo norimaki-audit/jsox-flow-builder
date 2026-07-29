@@ -1466,6 +1466,23 @@ function tableToWS(tableEl){
     r++;}
   const ws=XLSX.utils.aoa_to_sheet(grid);ws["!merges"]=Object.values(merges);return ws;
 }
+function addStepsDetailSheet(wb){
+  const p=outProc();const manual=((db&&db.mode)||"jsox")==="manual";
+  const active=p.steps.filter(s=>(s.dept||"").trim()||(s.label||"").trim());
+  const wd=active.filter(s=>(s.detail||"").trim());
+  if(!wd.length)return;
+  const ws=wb.addWorksheet(manual?"各手順の詳細":"各工程の詳細記述");
+  const thin={style:"thin",color:{argb:"FFE2E8E7"}};
+  const head=[manual?"手順No.":"工程No.","業務",manual?"手順":"業務内容","担当部門","担当","詳細な手順・記述"];
+  const hr=ws.addRow(head);
+  hr.eachCell(x=>{x.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFF2F6F5"}};x.font={name:XL_FONT,bold:true,color:{argb:"FF7A867F"},size:10};x.alignment={vertical:"middle",horizontal:"center"};x.border={top:thin,left:thin,bottom:thin,right:thin};});
+  wd.forEach(s=>{
+    const xr=ws.addRow([String(s.no==null?"":s.no),s.gyomu||"",s.label||"",s.dept||"",s.role||"",s.detail||""]);
+    xr.eachCell((x,ci)=>{x.font={name:XL_FONT,size:10};x.alignment={vertical:"top",horizontal:ci===1?"center":"left",wrapText:true};x.border={top:thin,left:thin,bottom:thin,right:thin};});
+  });
+  ws.columns=[{width:9},{width:12},{width:24},{width:12},{width:12},{width:88}];
+  ws.views=[{state:"frozen",ySplit:1}];
+}
 async function exportDocXlsx(containerId,fileBase){
   if(typeof ExcelJS==="undefined"){alert("Excelライブラリが見つかりません。");return;}
   const cont=document.getElementById(containerId);if(!cont)return;
@@ -1482,6 +1499,7 @@ async function exportDocXlsx(containerId,fileBase){
       const ws=wb.addWorksheet((baseName+(tables.length>1?"_"+(i+1):"")).slice(0,31));
       await tableToExcel(ws,tables[i]);
     }
+    if(containerId==="stepsDocBody")addStepsDetailSheet(wb);
     /* 評価結果サマリ（UI配色のヘッダ付き） */
     if(((db&&db.mode)||"jsox")!=="manual"){
       const agg=aggregate();
@@ -1657,6 +1675,7 @@ async function exportXlsxRich(){
         const ws=wb.addWorksheet(wsName.slice(0,31));
         await tableToExcel(ws,tables[i]);
       }
+      try{addStepsDetailSheet(wb);}catch(e){console.warn("詳細シートの追加に失敗:",e);}
     }
     // RCM / 業務ルール表
     const rcmDocEl=document.getElementById("rcmDocBody");
@@ -2038,15 +2057,15 @@ function exampleDB(){
     id:"P001",name:"販売プロセス（受注〜売上計上）",sub_process:"国内売上",in_scope:true,
     laneOrder:["得意先","営業部","倉庫","経理部"],
     steps:[
-      Object.assign(blankStep(),{no:10,gyomu:"受注",dept:"得意先",role:"得意先",type:"開始",label:"注文"}),
+      Object.assign(blankStep(),{no:10,gyomu:"受注",dept:"得意先",role:"得意先",type:"開始",label:"注文",detail:"得意先は注文書（FAX・郵送）又はEDIにより注文を行う。注文書には得意先名・商品コード・数量・単価・希望納期が記載される。受注窓口は営業部とし、電話等による口頭注文は受け付けない（必ず書面又はEDIによる）。"}),
       Object.assign(blankStep(),{no:20,gyomu:"受注",dept:"営業部",role:"営業担当",type:"システム処理",label:"受注入力",detail:"営業担当者は得意先から受領した注文書（FAX又はEDI）に基づき、販売管理システムの受注入力画面に得意先コード・商品コード・数量・単価・希望納期を入力する。入力後、画面表示と注文書の記載内容を目視で照合し、相違がないことを確認のうえ確定する。EDI受信分は取込結果リストと受信データを突合する。",system:"販売管理システム",evidence:"注文書"}),
-      Object.assign(blankStep(),{no:30,gyomu:"承認",dept:"営業部",role:"与信管理",type:"判断",label:"与信限度内か",system:"販売管理システム",yes:50,no2:40}),
-      Object.assign(blankStep(),{no:40,gyomu:"承認",dept:"営業部",role:"営業部長",type:"手動処理",label:"与信超過分を承認",evidence:"与信承認記録"}),
-      Object.assign(blankStep(),{no:50,gyomu:"出荷",dept:"倉庫",role:"出荷担当",type:"手動処理",label:"出荷指図に基づき出荷",evidence:"出荷指図書"}),
-      Object.assign(blankStep(),{no:60,gyomu:"出荷",dept:"倉庫",role:"出荷担当",type:"書類",label:"出荷報告書／納品書控",evidence:"納品書"}),
-      Object.assign(blankStep(),{no:70,gyomu:"売上計上",dept:"経理部",role:"経理担当",type:"システム処理",label:"売上計上（三者照合）",system:"会計システム"}),
-      Object.assign(blankStep(),{no:80,gyomu:"売上計上",dept:"経理部",role:"経理担当",type:"書類",label:"請求書",system:"販売管理システム",evidence:"請求書"}),
-      Object.assign(blankStep(),{no:90,gyomu:"売上計上",dept:"得意先",role:"得意先",type:"終了",label:"商品・請求書受領"})
+      Object.assign(blankStep(),{no:30,gyomu:"承認",dept:"営業部",role:"与信管理",type:"判断",label:"与信限度内か",system:"販売管理システム",yes:50,no2:40,detail:"販売管理システムは受注確定時に、受注金額と売掛金残高の合計を取引先別の与信限度額と自動照合する。限度内であればシステムが自動承認し、限度を超過する場合は承認ワークフローが起動して営業部長の承認を必須とする。承認なしには後続の出荷指図を作成できない。"}),
+      Object.assign(blankStep(),{no:40,gyomu:"承認",dept:"営業部",role:"営業部長",type:"手動処理",label:"与信超過分を承認",evidence:"与信承認記録",detail:"営業部長は与信超過アラートを受け、取引先の直近の入金状況・滞留債権の有無・受注内容の妥当性を確認のうえ、承認可否を判断し与信承認記録に記名・押印する。否認の場合は営業担当へ差し戻し、前受金への切替又は受注辞退を検討する。"}),
+      Object.assign(blankStep(),{no:50,gyomu:"出荷",dept:"倉庫",role:"出荷担当",type:"手動処理",label:"出荷指図に基づき出荷",evidence:"出荷指図書",detail:"出荷担当者は承認済みの出荷指図書を出力し、現品（商品・数量・ロット）と照合する。相違がないことを確認のうえ出荷し、出荷指図書に検品者の署名（照合印）を記載する。相違がある場合は出荷を保留し、営業担当へ連絡のうえ原因を解消してから再照合する。"}),
+      Object.assign(blankStep(),{no:60,gyomu:"出荷",dept:"倉庫",role:"出荷担当",type:"書類",label:"出荷報告書／納品書控",evidence:"納品書",detail:"出荷担当者は出荷完了後、販売管理システムから納品書を発行して商品に同梱し、控（納品書控・出荷報告書）を出荷指図書とともに日付順に保管する。控は売上計上時の三者照合の証跡となるため、欠落がないよう連番管理する。"}),
+      Object.assign(blankStep(),{no:70,gyomu:"売上計上",dept:"経理部",role:"経理担当",type:"システム処理",label:"売上計上（三者照合）",system:"会計システム",detail:"会計システムは受注データ・出荷実績・請求情報の三者照合を日次バッチで実行し、三者が一致した取引のみを売上として自動計上する。差異が検出された取引はエラーリストに出力され、経理担当者が翌営業日までに原因を調査・解消したうえで再処理する。エラーリストと解消記録は月次で経理課長が査閲する。"}),
+      Object.assign(blankStep(),{no:80,gyomu:"売上計上",dept:"経理部",role:"経理担当",type:"書類",label:"請求書",system:"販売管理システム",evidence:"請求書",detail:"経理担当者は売上計上結果に基づき、販売管理システムから請求書を発行して得意先へ送付する。請求金額・支払期日は受注・出荷データと自動連動しており、システム上の手修正はできない（修正が必要な場合は元データを訂正のうえ再発行する）。"}),
+      Object.assign(blankStep(),{no:90,gyomu:"売上計上",dept:"得意先",role:"得意先",type:"終了",label:"商品・請求書受領",detail:"得意先は商品と請求書を受領し、支払期日までに指定口座へ代金を支払う。入金は入金消込プロセス（別プロセス）で売掛金と照合される。"})
     ],
     rcm:[
       Object.assign(blankRcm(),{gyomu:"承認",risk_id:"R001",fs:"売掛金",as_val:true,risk_desc:"与信限度超過取引による回収不能",control_id:"C001",step_no:30,objective:"与信限度内での販売を担保する",control_desc:"受注時にシステムが与信限度残高を自動チェックし、超過時は受注を保留する",prev_det:"予防",man_auto:"自動",it_dep:true,freq:"都度",owner:"与信管理担当",reviewer:"営業部長",evidence:"与信チェックログ",key:true,ipe:true,ipe_ca:"",test:"与信限度マスタと残高計算を再計算で検証",fraud:false,evaluation:"○",eval_note:"－"}),
