@@ -161,6 +161,9 @@
   tr.grp-row .gdot{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:8px;}
   tr.grp-row .gname{font-size:12.5px;font-weight:700;color:#2C3A35;}
   tr.grp-row .gcount{font-size:10.5px;font-weight:600;color:var(--c-text-faint);font-family:var(--font-num);margin-left:8px;}
+  .grp-btn{height:22px;padding:0 8px;font-size:11px;font-weight:600;margin-left:8px;border:1px solid rgba(20,40,35,.14);background:rgba(255,255,255,.7);border-radius:6px;color:#2C3A35;vertical-align:1px;}
+  .grp-btn:hover{border-color:var(--c-primary);color:var(--c-primary-d);background:#fff;}
+  .grp-btn i{font-size:11px;}
   td.phase-edge{border-left:3px solid var(--phase-c,transparent)!important;}
   /* 種類バッジ（§3）: 編集セレクトは背景色で種別を示す */
   td.typecell select{border-radius:7px;font-size:12px;font-weight:600;padding:5px 8px;}
@@ -603,12 +606,13 @@
     <section class="page" id="page-steps"><div class="pad">
       <div class="ph"><h2 id="stepsPageH2">業務記述書</h2><span class="sub">1行＝1工程。上から順に自動で繋がります</span><span class="sp"></span>
         <div class="seg seg-view"><button class="on"><i class="ph ph-pencil-simple"></i>編集</button><button onclick="setView('steps','preview')"><i class="ph ph-eye"></i>プレビュー</button></div>
-        <button class="sm" onclick="addStep()"><i class="ph ph-plus"></i>行</button>
+        <button class="sm" onclick="addGroup()" title="新しい業務（グループ）を作り、最初の工程を追加します"><i class="ph ph-folder-plus"></i>業務グループ</button>
+        <button class="sm" onclick="addStep()" title="末尾に工程（行）を追加します"><i class="ph ph-plus"></i>行</button>
         <button class="sm" onclick="addCustomCol('steps')">＋列を追加</button>
         <button class="sm" onclick="exportStepsCSV()">CSV保存</button>
         <button class="sm" onclick="document.getElementById('fileCsv').click()">CSV読込</button>
       </div>
-      <div class="hint">種類が「判断」の行だけ Yes先 / No先 に飛び先No.を入れます。リスク・統制の中身は <b>RCMページ</b> で「対象ステップNo.」を合わせて入力すると、フロー図にタグ（R/C/KC/IPE）が付きます。</div>
+      <div class="hint">「業務」列が同じ行は自動で1つのグループ（申請・承認・支払・記帳 など）にまとまります。グループ見出しの［＋工程］でそのグループ内に追加、［＋業務グループ］で新しいまとまりを作成できます。種類が「判断」の行だけ Yes先 / No先 に飛び先No.を入れます。リスク・統制の中身は <b>RCMページ</b> で「対象ステップNo.」を合わせて入力すると、フロー図にタグ（R/C/KC/IPE）が付きます。</div>
       <div class="gridbox"><table class="dr"><thead id="stepHead"></thead><tbody id="stepBody"></tbody></table></div>
       <input type="file" id="stepImgInput" accept="image/*" style="display:none">
     </div></section>
@@ -934,6 +938,7 @@
 <datalist id="dlGyomu"></datalist>
 <datalist id="dlAssert"><option value="実在性"><option value="網羅性"><option value="権利と義務の帰属"><option value="評価の妥当性"><option value="期間配分の適切性"><option value="表示の妥当性"><option value="正確性"><option value="実在性・期間配分"></datalist>
 <datalist id="dlFreq"><option value="都度"><option value="日次"><option value="週次"><option value="月次"><option value="四半期"><option value="半期"><option value="年次"></datalist>
+<datalist id="dlProcType"><option value="質問"><option value="観察"><option value="閲覧"><option value="再実施"><option value="ウォークスルー"><option value="質問・閲覧"><option value="閲覧・再実施"><option value="質問・観察・閲覧"></datalist>
 <datalist id="dlOeMethod"><option value="無作為"><option value="MUS"><option value="特定項目"><option value="全件"></datalist>
 
 <script id="xlsxlib">/*! xlsx.js (C) 2013-present SheetJS -- http://sheetjs.com */
@@ -1000,7 +1005,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 // =================================================================
 function blankJournal(){return {jno:"",trigger:"",step_no:"",type:"定型",system:"",side:"借",account:"",sub:"",note:""};}
 function blankStep(no){return {no:no==null?"":no,gyomu:"",dept:"",role:"",type:"手動処理",label:"",detail:"",system:"",evidence:"",yes:"",no2:"",jump:"",point:"",dur:"",img:"",images:[],custom:{}};}
-function blankRcm(){return {gyomu:"",risk_id:"",fs:"",assertion:"",as_exist:false,as_comp:false,as_rights:false,as_val:false,as_cutoff:false,as_pres:false,risk_desc:"",control_id:"",step_no:"",objective:"",control_desc:"",prev_det:"",man_auto:"",it_dep:false,freq:"",owner:"",reviewer:"",evidence:"",key:false,ipe:false,ipe_ca:"",test:"",fraud:false,evaluation:"",eval_note:"",de_result:"",de_note:"",oe_method:"",oe_n:"",oe_excns:"",oe_result:"",oe_note:"",de_by:"",de_date:"",oe_by:"",oe_date:"",custom:{}};}
+function blankRcm(){return {gyomu:"",risk_id:"",fs:"",assertion:"",as_exist:false,as_comp:false,as_rights:false,as_val:false,as_cutoff:false,as_pres:false,risk_desc:"",control_id:"",step_no:"",objective:"",control_desc:"",prev_det:"",man_auto:"",it_dep:false,freq:"",owner:"",reviewer:"",evidence:"",key:false,ipe:false,ipe_ca:"",test:"",fraud:false,evaluation:"",eval_note:"",de_result:"",de_note:"",oe_method:"",oe_n:"",oe_excns:"",oe_result:"",oe_note:"",de_by:"",de_date:"",oe_by:"",oe_date:"",de_role:"",de_proc:"",oe_role:"",oe_period:"",oe_pop:"",wp_ref:"",wp_rev_by:"",wp_rev_date:"",custom:{}};}
 const ASRT_KEYS=["as_exist","as_comp","as_rights","as_val","as_cutoff","as_pres"];
 const ASRT_LBL=["実在性","網羅性","権利と義務の帰属","評価の妥当性","期間配分の適切性","表示の妥当性"];
 const ASRT_SHORT=["実在","網羅","権利","評価","期間","表示"];
@@ -1216,7 +1221,7 @@ function renderSteps(){
     const ph=pal[g]||["transparent","#F2F6F5"];
     if(g&&g!==prevG){
       const cnt=p.steps.filter(x=>(x.gyomu||"").trim()===g).length;
-      h+=`<tr class="grp-row" style="--grp-tint:${ph[1]}"><td colspan="${totalCols}"><span class="gdot" style="background:${ph[0]}"></span><span class="gname">${esc(g)}</span><span class="gcount">${cnt} ${unitLbl}</span></td></tr>`;
+      h+=`<tr class="grp-row" style="--grp-tint:${ph[1]}"><td colspan="${totalCols}"><span class="gdot" style="background:${ph[0]}"></span><span class="gname">${esc(g)}</span><span class="gcount">${cnt} ${unitLbl}</span><button class="grp-btn" onclick="addStepInGroup('${escAttr(g)}')" title="この業務の末尾に${unitLbl}を追加"><i class="ph ph-plus"></i>${unitLbl}</button><button class="grp-btn" onclick="renameGroup('${escAttr(g)}')" title="業務（グループ）名を変更"><i class="ph ph-pencil-simple"></i></button></td></tr>`;
     }
     prevG=g||prevG;
     const hasDetail=(s.detail||"").trim()||((s.images||[]).length>0);
@@ -1364,6 +1369,17 @@ document.getElementById("stepBody").addEventListener("click",gridClick);
 document.getElementById("rcmBody").addEventListener("click",gridClick);
 document.getElementById("jnlBody").addEventListener("click",gridClick);
 function updateDeptList(){const set=[...new Set(P().steps.map(s=>(s.dept||"").trim()).filter(Boolean))];document.getElementById("dlDept").innerHTML=set.map(d=>`<option value="${escAttr(d)}">`).join("");const g=[...new Set(P().steps.map(s=>(s.gyomu||"").trim()).filter(Boolean))];const gl=document.getElementById("dlGyomu");if(gl)gl.innerHTML=g.map(d=>`<option value="${escAttr(d)}">`).join("");}
+/* ===== 業務（グループ）操作: グループ内に工程追加・グループ名変更・新規グループ ===== */
+function nextStepNo(){let m=0;P().steps.forEach(s=>{const v=parseFloat(s.no);if(!isNaN(v))m=Math.max(m,v);});return m+10;}
+function addStepInGroup(g){pushUndo();const steps=P().steps;
+  let last=-1;steps.forEach((s,i)=>{if((s.gyomu||"").trim()===g)last=i;});
+  const ns=blankStep(nextStepNo());ns.gyomu=g;
+  const at=last>=0?last+1:steps.length;
+  steps.splice(at,0,ns);
+  markDirty();renderSteps();flashRow("stepBody",at);}
+function renameGroup(g){const ng=prompt("業務（グループ）名を変更します",g);if(ng==null)return;const t=ng.trim();if(!t||t===g)return;
+  pushUndo();P().steps.forEach(s=>{if((s.gyomu||"").trim()===g)s.gyomu=t;});markDirty();renderSteps();updateDeptList();}
+function addGroup(){const g=prompt("新しい業務（グループ）名を入力してください（例: 申請 / 承認 / 支払 / 記帳）");if(g==null)return;const t=g.trim();if(!t)return;addStepInGroup(t);}
 function addStep(){pushUndo();let m=0;P().steps.forEach(s=>{const v=parseFloat(s.no);if(!isNaN(v))m=Math.max(m,v);});P().steps.push(blankStep(m+10));markDirty();renderSteps();}
 function addRcm(){pushUndo();P().rcm.push(blankRcm());markDirty();renderRcm();}
 function addDef(){pushUndo();const m=P().deficiencies.length+1;const d=blankDef();d.def_id="D"+String(m).padStart(3,"0");P().deficiencies.push(d);markDirty();renderDef();}
@@ -1573,6 +1589,21 @@ function tableToWS(tableEl){
     r++;}
   const ws=XLSX.utils.aoa_to_sheet(grid);ws["!merges"]=Object.values(merges);return ws;
 }
+function addEvalDetailSheet(wb){
+  const p=outProc();const rows=rcmSorted(p.rcm.filter(r=>(r.control_id||"").trim()));
+  if(!rows.length)return;
+  const ws=wb.addWorksheet("評価手続詳細");
+  const thin={style:"thin",color:{argb:"FFE2E8E7"}};
+  const head=["統制ID","調書No","統制内容","整備:主体","整備:手続種類","整備:結果","整備:評価者","整備:評価日","整備評価の内容","運用:主体","テスト手続","対象期間","母集団","抽出方法","件数","例外","運用:結果","運用:評価者","運用:評価日","運用評価の内容","査閲者","査閲日","総合"];
+  const hr=ws.addRow(head);
+  hr.eachCell(x=>{x.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF0E7C73"}};x.font={name:XL_FONT,bold:true,color:{argb:"FFFFFFFF"},size:9};x.alignment={vertical:"middle",horizontal:"center",wrapText:true};x.border={top:thin,left:thin,bottom:thin,right:thin};});
+  rows.forEach(r=>{
+    const xr=ws.addRow([r.control_id,r.wp_ref||"",r.control_desc||"",r.de_role||"",r.de_proc||"",r.de_result||"",r.de_by||"",r.de_date||"",r.de_note||"",r.oe_role||"",r.test||"",r.oe_period||"",r.oe_pop||"",r.oe_method||"",r.oe_n||"",r.oe_excns||"",r.oe_result||"",r.oe_by||"",r.oe_date||"",r.oe_note||"",r.wp_rev_by||"",r.wp_rev_date||"",overallEvalText(r)]);
+    xr.eachCell(x=>{x.font={name:XL_FONT,size:9};x.alignment={vertical:"top",horizontal:"left",wrapText:true};x.border={top:thin,left:thin,bottom:thin,right:thin};});
+  });
+  ws.columns=[{width:9},{width:10},{width:30},{width:10},{width:12},{width:7},{width:10},{width:11},{width:40},{width:10},{width:26},{width:20},{width:22},{width:9},{width:6},{width:6},{width:8},{width:10},{width:11},{width:40},{width:10},{width:11},{width:8}];
+  ws.views=[{state:"frozen",ySplit:1}];
+}
 function addStepsDetailSheet(wb){
   const p=outProc();const manual=((db&&db.mode)||"jsox")==="manual";
   const active=p.steps.filter(s=>(s.dept||"").trim()||(s.label||"").trim());
@@ -1607,6 +1638,7 @@ async function exportDocXlsx(containerId,fileBase){
       await tableToExcel(ws,tables[i]);
     }
     if(containerId==="stepsDocBody")addStepsDetailSheet(wb);
+    if(containerId==="evalDocBody")addEvalDetailSheet(wb);
     /* 評価結果サマリ（UI配色のヘッダ付き） */
     if(((db&&db.mode)||"jsox")!=="manual"){
       const agg=aggregate();
@@ -1988,6 +2020,53 @@ function genSampleFor(i){
   markDirty();renderEvalWork();
   toast("サンプル番号を生成し、運用評価の評価内容に追記しました。");
 }
+/* =================================================================
+   列幅のドラッグ調整（table.dr / 成果物テーブル共通・localStorageに記憶）
+   ================================================================= */
+const _colW=(function(){try{return JSON.parse(localStorage.getItem("jsoxfb_colw")||"{}");}catch(e){return {};}})();
+function _colKey(th){
+  const tbl=th.closest("table");const sec=th.closest("section");
+  const thead=tbl.tHead;const headId=thead&&thead.id;
+  const tbls=sec?[...sec.querySelectorAll("table")]:[tbl];
+  const ti=tbls.indexOf(tbl);
+  const row=thead?[...thead.rows].indexOf(th.parentElement):0;
+  const idx=[...th.parentElement.children].indexOf(th);
+  return (headId||((sec?sec.id:"t")+"#"+ti))+":"+row+":"+idx;
+}
+function applyColWidths(root){
+  (root||document).querySelectorAll("table.dr th, .doc table th").forEach(th=>{
+    const k=_colKey(th);const w=_colW[k];
+    if(w){th.style.width=w+"px";th.style.minWidth=w+"px";th.style.maxWidth=w+"px";}
+  });
+}
+document.addEventListener("mousemove",e=>{
+  if(_rzActive)return;
+  const th=e.target.closest("table.dr th, .doc table th");
+  if(th){const r=th.getBoundingClientRect();th.style.cursor=(r.right-e.clientX<=6)?"col-resize":"";}
+});
+let _rzActive=false;
+document.addEventListener("mousedown",e=>{
+  const th=e.target.closest("table.dr th, .doc table th");
+  if(!th)return;
+  const r=th.getBoundingClientRect();
+  if(r.right-e.clientX>6)return;
+  e.preventDefault();_rzActive=true;
+  const startX=e.clientX,startW=r.width,key=_colKey(th);
+  const tbl=th.closest("table");const prevLayout=tbl.style.tableLayout;
+  const move=ev=>{const w=Math.max(44,Math.round(startW+(ev.clientX-startX)));
+    th.style.width=w+"px";th.style.minWidth=w+"px";th.style.maxWidth=w+"px";_colW[key]=w;};
+  const up=()=>{_rzActive=false;document.removeEventListener("mousemove",move);document.removeEventListener("mouseup",up);
+    try{localStorage.setItem("jsoxfb_colw",JSON.stringify(_colW));}catch(e){}};
+  document.addEventListener("mousemove",move);document.addEventListener("mouseup",up);
+});
+/* 再描画のたびに保存済みの列幅を再適用 */
+(function(){
+  const main=document.querySelector(".main");
+  if(!main)return;
+  let t=null;
+  new MutationObserver(()=>{clearTimeout(t);t=setTimeout(()=>applyColWidths(main),60);}).observe(main,{childList:true,subtree:true});
+  applyColWidths(main);
+})();
 /* ===== 評価・点検セクションの折りたたみ ===== */
 const EVAL_PGS=["evalwork","evaldoc","gap","walk","rollf","def","ev"];
 let _navEvalOpen=(function(){try{return localStorage.getItem("navEvalOpen")!=="0";}catch(e){return true;}})();
@@ -2800,12 +2879,21 @@ function renderManual(p,cc){
   document.getElementById("stepsDocBody").innerHTML=h;
 }
 function prnNotesBlock(rows){
-  const noted=rows.filter(r=>(r.oe_note||"").trim()||(r.de_note||"").trim());
+  const noted=rows.filter(r=>(r.oe_note||"").trim()||(r.de_note||"").trim()||(r.de_proc||"").trim()||(r.oe_pop||"").trim());
   if(!noted.length)return "";
-  let h=`<div class="print-only prn-notes"><h2>評価内容（統制別・全文）</h2>`;
+  let h=`<div class="print-only prn-notes"><h2>評価手続・評価内容（統制別・全文）</h2>`;
   noted.forEach(r=>{
     const id=(r.control_id||r.risk_id||"").trim();
+    const attrs=[
+      (r.de_proc||"").trim()?`手続種類: ${esc(r.de_proc)}`:"",
+      (r.oe_period||"").trim()?`対象期間: ${esc(r.oe_period)}`:"",
+      (r.oe_pop||"").trim()?`母集団: ${esc(r.oe_pop)}`:"",
+      ((r.oe_method||"").trim()||(r.oe_n||"").toString().trim())?`サンプル: ${esc(r.oe_method||"")} ${esc(r.oe_n||"")}件・例外 ${esc(r.oe_excns||"0")}件`:"",
+      (r.wp_ref||"").trim()?`調書番号: ${esc(r.wp_ref)}`:"",
+      ((r.wp_rev_by||"").trim()||(r.wp_rev_date||"").trim())?`査閲: ${esc(r.wp_rev_by||"")} ${esc(r.wp_rev_date||"")}`:"",
+    ].filter(Boolean).join("　／　");
     h+=`<div class="prn-note"><div class="pn-h"><b>${esc(id)}</b>　${esc(r.control_desc||r.risk_desc||"")}</div>`
+      +(attrs?`<div class="pn-b" style="color:#444">${attrs}</div>`:"")
       +((r.de_note||"").trim()?`<div class="pn-b"><span>整備評価:</span> ${esc(r.de_note)}</div>`:"")
       +((r.oe_note||"").trim()?`<div class="pn-b"><span>運用評価:</span> ${esc(r.oe_note)}</div>`:"")
       +`</div>`;
@@ -2920,19 +3008,20 @@ function renderEvalWork(){
   const sel=(i,f,v,opts)=>`<select onfocus="evwPush()" onchange="evwSet(${i},'${f}',this.value)">${opts.map(o=>`<option value="${escAttr(o)}"${o===v?" selected":""}>${esc(o||"　")}</option>`).join("")}</select>`;
   const inp2=(i,f,v,ph,list)=>`<input value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""}${list?` list="${list}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">`;
   const ta=(i,f,v,ph)=>`<textarea class="evw-note" placeholder="${escAttr(ph)}" onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">${esc(v||"")}</textarea>`;
-  const COLS=12;
+  const COLS=14;
+  const ROLES=["","業務部門（自己）","内部監査","会計監査人","監査役等","外部専門家"];
   let h=`<div class="gridbox" style="max-height:none"><table class="dr" style="white-space:normal;width:100%;min-width:1120px">
     <thead>
       <tr>
         <th rowspan="2" style="min-width:250px">統制</th>
-        <th class="ctl" colspan="3" style="text-align:center;border-bottom:1px solid #D4E4E0">整備評価（デザイン）</th>
-        <th class="evalc" colspan="6" style="text-align:center;border-bottom:1px solid #CBE3D4">運用評価（オペレーション）</th>
+        <th class="ctl" colspan="4" style="text-align:center;border-bottom:1px solid #D4E4E0">整備評価（デザイン）</th>
+        <th class="evalc" colspan="7" style="text-align:center;border-bottom:1px solid #CBE3D4">運用評価（オペレーション）</th>
         <th rowspan="2" style="text-align:center">総合</th>
         <th rowspan="2" style="text-align:center">詳細</th>
       </tr>
       <tr>
-        <th class="ctl">結果</th><th class="ctl">評価者</th><th class="ctl">評価日</th>
-        <th class="evalc">抽出方法</th><th class="evalc">件数</th><th class="evalc">例外</th><th class="evalc">結果</th><th class="evalc">評価者</th><th class="evalc">評価日</th>
+        <th class="ctl">結果</th><th class="ctl">主体</th><th class="ctl">評価者</th><th class="ctl">評価日</th>
+        <th class="evalc">抽出方法</th><th class="evalc">件数</th><th class="evalc">例外</th><th class="evalc">結果</th><th class="evalc">主体</th><th class="evalc">評価者</th><th class="evalc">評価日</th>
       </tr>
     </thead><tbody>`;
   rows.forEach(([r,i])=>{
@@ -2947,12 +3036,14 @@ function renderEvalWork(){
         <div style="font-size:12.5px;line-height:1.5;color:#2A3633">${esc(r.control_desc||r.objective||"（統制内容未入力）")}</div>
       </td>
       <td class="ctl" style="min-width:82px">${sel(i,"de_result",r.de_result||"",["","有効","不備"])}</td>
+      <td class="ctl" style="min-width:96px">${sel(i,"de_role",r.de_role||"",ROLES)}</td>
       <td class="ctl" style="min-width:88px">${inp2(i,"de_by",r.de_by,"氏名")}</td>
       <td class="ctl" style="min-width:98px">${inp2(i,"de_date",r.de_date,"YYYY-MM-DD")}</td>
       <td class="evalc" style="min-width:82px">${inp2(i,"oe_method",r.oe_method,"無作為","dlOeMethod")}</td>
       <td class="evalc w-sm">${inp2(i,"oe_n",r.oe_n,"25")}</td>
       <td class="evalc w-sm">${inp2(i,"oe_excns",r.oe_excns,"0")}</td>
       <td class="evalc" style="min-width:90px">${sel(i,"oe_result",r.oe_result||"",["","有効","不備","対象外"])}</td>
+      <td class="evalc" style="min-width:96px">${sel(i,"oe_role",r.oe_role||"",ROLES)}</td>
       <td class="evalc" style="min-width:88px">${inp2(i,"oe_by",r.oe_by,"氏名")}</td>
       <td class="evalc" style="min-width:98px">${inp2(i,"oe_date",r.oe_date,"YYYY-MM-DD")}</td>
       <td style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px"><span id="evw-total-${i}">${evalPill(overallEval(r))}</span></td>
@@ -2970,6 +3061,7 @@ function renderEvalWork(){
         <div class="evw-grid">
           <div>
             <div style="font-size:11.5px;font-weight:700;color:#44514E;margin-bottom:6px"><i class="ph ph-compass" style="color:var(--c-primary)"></i> 整備評価の内容（何をどう確かめたか）</div>
+            <div class="evw-row"><label>手続種類 ${inp2(i,"de_proc",r.de_proc,"閲覧・再実施 等","dlProcType")}</label></div>
             ${ta(i,"de_note",r.de_note,"例：ウォークスルーで注文書→受注入力→承認記録を1件追跡し、統制のデザインがリスクを低減できる設計であることを確認")}
           </div>
           <div>
@@ -2978,17 +3070,27 @@ function renderEvalWork(){
           </div>
         </div>
         <div style="margin-top:12px">
+          <div class="evw-row">
+            <label>対象期間 ${inp2(i,"oe_period",r.oe_period,"2025-04-01〜2026-03-31")}</label>
+            <label>母集団 ${inp2(i,"oe_pop",r.oe_pop,"定義・件数（例: 期間中の出荷取引 2,480件）")}</label>
+          </div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
             <span style="font-size:11.5px;font-weight:700;color:#44514E"><i class="ph ph-magnifying-glass" style="color:var(--c-primary)"></i> 運用評価の内容（サンプル・例外と結論の根拠）</span>
             <button class="sm" onclick="genSampleFor(${i})" title="母集団件数を入力すると、無作為のサンプル番号を生成してここに追記します"><i class="ph ph-dice-five"></i>乱数でサンプル抽出</button>
           </div>
           ${ta(i,"oe_note",r.oe_note,"例：25件中、例外3件。繁忙期に照合印の漏れ。追加サンプルの要否と不備評価を記載")}
         </div>
+        <div class="evw-row" style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--c-border)">
+          <label>調書番号 ${inp2(i,"wp_ref",r.wp_ref,"WP-C001")}</label>
+          <label>査閲者 ${inp2(i,"wp_rev_by",r.wp_rev_by,"氏名")}</label>
+          <label>査閲日 ${inp2(i,"wp_rev_date",r.wp_rev_date,"YYYY-MM-DD")}</label>
+          <span style="font-size:11px;color:var(--c-text-faint)">※ 作成者・作成日・査閲者・査閲日・結論の記録は監査調書の要件（監基報230）に対応</span>
+        </div>
       </td></tr>`;
     }
   });
   h+=`</tbody></table></div>`;
-  h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>行の 📝 ボタンで評価手続・評価内容（長文）を展開して記入できます。結果が「不備」の統制には ⚠ ボタンが表示され、不備管理の該当行へジャンプします。入力は即時保存、［反映］で成果物・一覧に反映されます。</div>`;
+  h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>行の 📝 ボタンで、手続種類（質問・観察・閲覧・再実施）・対象期間・母集団・評価内容・調書番号・査閲欄を記入できます。評価主体（業務部門の自己評価／内部監査／会計監査人等）を選ぶことで、経営者評価・内部監査・外部監査のいずれの調書としても利用できます。様式は「財務報告に係る内部統制の評価及び監査の基準・実施基準」および監基報230（監査調書）・330（運用評価手続）の記録要素を参考に構成しています。</div>`;
   el.innerHTML=h;
 }
 function renderEvalDoc(){
@@ -2998,16 +3100,19 @@ function renderEvalDoc(){
   const rows=keyCtrls.length?keyCtrls:ctrls;
   let h=`<h1>${esc(p.name||"")} — 評価結果（評価調書）</h1><div class="meta">プロセスID: ${esc(p.id)}　／　作成日: ${today()}　／　対象統制数: ${rows.length}${keyCtrls.length?`（キー統制。全統制数 ${ctrls.length}）`:""}</div>`;
   h+=`<div style="overflow:auto"><table style="font-size:12px"><thead><tr>`
-    +`<th>統制ID</th><th>業務</th><th>リスク</th><th>統制内容</th><th>整備評価</th><th>運用：抽出方法・件数・例外</th><th>運用評価</th><th>評価者・評価日</th><th>総合</th><th class="col-note">評価内容</th>`
+    +`<th>統制ID</th><th>調書No</th><th>業務</th><th>リスク</th><th>統制内容</th><th>整備評価</th><th>運用：抽出方法・件数・例外</th><th>運用評価</th><th>評価者（主体）・査閲</th><th>総合</th><th class="col-note">評価内容</th>`
     +`</tr></thead><tbody>`;
-  if(!rows.length)h+=`<tr><td colspan="10" style="color:var(--muted)">統制が未登録です</td></tr>`;
+  if(!rows.length)h+=`<tr><td colspan="11" style="color:var(--muted)">統制が未登録です</td></tr>`;
   rows.forEach(r=>{
     const oeDetail=[r.oe_method,(r.oe_n||"").toString().trim()?`件数:${r.oe_n}`:"",(r.oe_excns||"").toString().trim()?`例外:${r.oe_excns}`:""].filter(Boolean).join(" / ");
     const cid=(r.control_id||"").trim();
     const defLink=x=>(x==="不備")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr(cid)}');return false">${resPill(x)}</a>`:resPill(x);
-    const evby=[[r.de_by,r.de_date],[r.oe_by,r.oe_date]].filter(x=>x[0]||x[1]).map(x=>`${esc(x[0]||"—")}<span style="color:var(--c-text-faint)"> ${esc(x[1]||"")}</span>`).join("<br>")||`<span style="color:var(--c-text-faint)">—</span>`;
+    const roleAbbr=v=>({"業務部門（自己）":"自己","内部監査":"内監","会計監査人":"会監","監査役等":"監査役","外部専門家":"外部"}[v]||"");
+    const evln=(lbl,role,by,dt)=>(role||by||dt)?`<span style="color:var(--c-text-faint)">${lbl}:</span>${roleAbbr(role)?` <b>${esc(roleAbbr(role))}</b>`:""} ${esc(by||"—")}<span style="color:var(--c-text-faint)"> ${esc(dt||"")}</span>`:"";
+    const evby=[evln("整備",r.de_role,r.de_by,r.de_date),evln("運用",r.oe_role,r.oe_by,r.oe_date),evln("査閲","",r.wp_rev_by,r.wp_rev_date)].filter(Boolean).join("<br>")||`<span style="color:var(--c-text-faint)">—</span>`;
     h+=`<tr class="${r.key?"kc":""}">`
       +`<td style="white-space:nowrap"><a href="#" class="linkpill" title="整備・運用評価の詳細へジャンプ" onclick="gotoEvalWork('${escAttr(cid)}');return false"><span class="idchip">${esc(r.control_id)}</span></a>${r.key?" "+keyTag():""}</td>`
+      +`<td class="mono" style="white-space:nowrap;font-size:11.5px;color:var(--c-text-mid)">${esc(r.wp_ref||"—")}</td>`
       +`<td>${esc(r.gyomu)}</td>`
       +`<td>${esc(r.risk_desc)}</td>`
       +`<td>${esc(r.control_desc)}</td>`
@@ -3018,7 +3123,7 @@ function renderEvalDoc(){
       +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr(cid)}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
       +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
       +`</tr>`;});
-  h+=`</tbody></table></div>`+prnNotesBlock(rows)+`<div class="hint" style="margin-top:8px">整備評価＝統制が適切にデザインされているかの評価。運用評価＝サンプルテスト（抽出方法・件数・例外件数）に基づく運用状況の評価。総合＝整備・運用の結果を踏まえた総合判定です。キー統制が設定されている場合はキー統制のみを表示します。統制IDをクリックすると評価の詳細（整備・運用評価）へ、「不備」の表示をクリックすると不備管理の該当行へジャンプします。</div>`;
+  h+=`</tbody></table></div>`+prnNotesBlock(rows)+`<div class="hint" style="margin-top:8px">整備評価＝統制が適切にデザインされているかの評価。運用評価＝サンプルテスト（抽出方法・件数・例外件数）に基づく運用状況の評価。評価主体（自己評価／内部監査／会計監査人）・査閲・調書番号を記録でき、印刷・Excel出力をそのまま監査調書として利用できます（実施基準・監基報230/330の記録要素を参考）。総合＝整備・運用の結果を踏まえた総合判定です。キー統制が設定されている場合はキー統制のみを表示します。統制IDをクリックすると評価の詳細（整備・運用評価）へ、「不備」の表示をクリックすると不備管理の該当行へジャンプします。</div>`;
   document.getElementById("evalDocBody").innerHTML=h;
 }
 function deepCopy(o){return JSON.parse(JSON.stringify(o));}
