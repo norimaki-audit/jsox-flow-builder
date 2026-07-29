@@ -448,6 +448,41 @@
   table.signbox{border-collapse:collapse;}
   table.signbox th{border:1px solid #555;font-size:8pt;font-weight:600;padding:2px 0;width:20mm;text-align:center;background:#F2F2EE;color:#333;}
   table.signbox td{border:1px solid #555;height:15mm;}
+  /* ===== 運用評価サンプリング調書 ===== */
+  .oewp-sheet{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-card);padding:26px 30px;margin-bottom:18px;}
+  .oewp-meta{margin-left:auto;border-collapse:collapse;font-size:11.5px;}
+  .oewp-meta th{background:var(--c-primary-tint);border:1px solid var(--c-primary-bd);padding:3px 10px;font-weight:600;color:var(--c-primary-d);white-space:nowrap;}
+  .oewp-meta td{border:1px solid var(--c-border);padding:2px 6px;min-width:120px;}
+  .oewp-meta input{border:none;background:transparent;font:inherit;font-size:11.5px;width:110px;padding:2px 3px;}
+  .oewp-title{text-align:center;font-size:15.5px;font-weight:700;margin:12px 0 16px;letter-spacing:.06em;}
+  table.oewp{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.oewp th{background:var(--c-primary-tint);color:var(--c-primary-d);border:1px solid var(--c-primary-bd);padding:7px 10px;width:118px;text-align:center;font-weight:600;vertical-align:middle;}
+  table.oewp th.sub{background:#F2F6F5;color:#56635F;border-color:var(--c-border);width:96px;}
+  table.oewp td{border:1px solid var(--c-border);padding:5px 8px;vertical-align:middle;}
+  table.oewp input,table.oewp select,table.oewp textarea{border:none;background:transparent;font:inherit;font-size:12.5px;width:100%;padding:4px 6px;resize:vertical;}
+  table.oewp input:focus,table.oewp select:focus,table.oewp textarea:focus{outline:none;box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;border-radius:5px;}
+  table.oewp-res{width:100%;border-collapse:collapse;font-size:12px;margin-top:2px;}
+  table.oewp-res th{background:#F2F6F5;color:#7A867F;border:1px solid var(--c-border);padding:6px 8px;font-size:11px;font-weight:700;}
+  table.oewp-res td{border:1px solid var(--c-border);padding:2px 4px;}
+  table.oewp-res input,table.oewp-res select{border:none;background:transparent;font:inherit;font-size:12px;width:100%;padding:4px 5px;}
+  table.oewp-res input:focus,table.oewp-res select:focus{outline:none;box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;border-radius:4px;}
+  .oewp-concl{border:1px solid var(--c-border);border-top:none;padding:12px 14px;font-size:13px;line-height:1.7;}
+  .oewp-concl b.ok{color:var(--c-ok);}
+  .oewp-concl b.ng{color:var(--c-err);}
+  @media print{.oewp-sheet{border:none;border-radius:0;padding:0;margin-bottom:0;break-after:page;}
+    table.oewp th{background:#E8F0EE !important;color:#111;border:0.5pt solid #888;}
+    table.oewp td,table.oewp-res td{border:0.5pt solid #999;}
+    table.oewp-res th{background:#F0F2F0 !important;color:#333;border:0.5pt solid #888;}
+    .oewp-concl{border:0.5pt solid #999;}}
+  /* ===== 業務の棚卸・改善 ===== */
+  .kz-card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-card);padding:16px 18px;margin-bottom:12px;}
+  .kz-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:6px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+  .kz-eff{background:#E9F0F8;color:#2D5A86;border:1px solid #C9DBEE;}
+  .kz-std{background:var(--c-warn-bg);color:var(--c-warn);border:1px solid var(--c-warn-bd);}
+  .kz-doc{background:var(--c-primary-tint);color:var(--c-primary-d);border:1px solid var(--c-primary-bd);}
+  .kz-risk{background:var(--c-err-bg);color:var(--c-err);border:1px solid var(--c-err-bd);}
+  .kz-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed #D2DCD8;font-size:12.5px;line-height:1.6;}
+  .kz-item:last-child{border-bottom:none;}
   /* ===== トースト通知 ===== */
   #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
   #toastBox.on{opacity:1;transform:translate(-50%,0);}
@@ -549,6 +584,7 @@
         <div class="grp">メイン</div>
         <a class="jsox-only" data-pg="dash" tabindex="0" onclick="show('dash')" onkeydown="if(event.key==='Enter')show('dash')"><i class="ph ph-gauge"></i><span class="nav-lbl">ダッシュボード</span></a>
         <a data-pg="processes" tabindex="0" onclick="show('processes')" onkeydown="if(event.key==='Enter')show('processes')"><i class="ph ph-squares-four"></i><span class="nav-lbl">プロセス管理</span></a>
+        <a data-pg="kaizen" tabindex="0" onclick="show('kaizen')" onkeydown="if(event.key==='Enter')show('kaizen')"><i class="ph ph-lightbulb"></i><span class="nav-lbl">業務の棚卸・改善</span></a>
       </div>
       <div class="nav-feature">
         <div class="grp" id="navGrpMake">三点セット作成</div>
@@ -567,6 +603,7 @@
         <div class="grp grp-toggle" onclick="toggleNavEval()" title="クリックで開閉">評価・点検<i class="ph ph-caret-down" id="navEvalCaret"></i></div>
         <div id="navEvalItems">
           <a data-pg="evalwork" tabindex="0" onclick="show('evalwork')" onkeydown="if(event.key==='Enter')show('evalwork')"><i class="ph ph-list-checks"></i><span class="nav-lbl">整備・運用評価</span></a>
+          <a data-pg="oewp" tabindex="0" onclick="show('oewp')" onkeydown="if(event.key==='Enter')show('oewp')"><i class="ph ph-files"></i><span class="nav-lbl">サンプリング調書</span></a>
           <a data-pg="evaldoc" tabindex="0" onclick="show('evaldoc')" onkeydown="if(event.key==='Enter')show('evaldoc')"><i class="ph ph-clipboard-text"></i><span class="nav-lbl">評価結果（一覧）</span></a>
           <a data-pg="gap" tabindex="0" onclick="show('gap')" onkeydown="if(event.key==='Enter')show('gap')"><i class="ph ph-magnifying-glass"></i><span class="nav-lbl">ギャップチェック</span></a>
           <a data-pg="walk" tabindex="0" onclick="show('walk')" onkeydown="if(event.key==='Enter')show('walk')"><i class="ph ph-pencil-line"></i><span class="nav-lbl">ウォークスルー</span></a>
@@ -744,10 +781,27 @@
     <!-- EVAL WORK (整備・運用評価の記録) -->
     <section class="page" id="page-evalwork"><div class="pad">
       <div class="ph"><h2>整備・運用評価</h2><span class="sub">統制ごとに「何を・どのように評価したか」を記録します（入力は即時反映）</span><span class="sp"></span>
+        <button class="sm" onclick="show('oewp')"><i class="ph ph-files"></i>サンプリング調書</button>
         <button class="sm" onclick="show('evaldoc')"><i class="ph ph-clipboard-text"></i>評価結果（一覧）へ</button>
         <button class="sm applybtn" onclick="applyAll()" title="編集内容を成果物に反映">反映</button>
         <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="evalWorkBody" style="max-width:1180px"></div>
+    </div></section>
+
+    <!-- OE WORKPAPER (運用評価サンプリング調書) -->
+    <section class="page" id="page-oewp"><div class="pad">
+      <div class="ph"><h2>運用評価 サンプリング調書</h2><span class="sub">キーコントロールごとに1葉。サンプル別のテスト結果を記録します</span><span class="sp"></span>
+        <button class="sm" onclick="show('evalwork')"><i class="ph ph-list-checks"></i>整備・運用評価へ</button>
+        <button class="sm applybtn" onclick="applyAll()" title="編集内容を成果物に反映">反映</button>
+        <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
+      <div id="oewpBody" style="max-width:1020px"></div>
+    </div></section>
+
+    <!-- KAIZEN (業務の棚卸・改善) -->
+    <section class="page" id="page-kaizen"><div class="pad">
+      <div class="ph"><h2>業務の棚卸・改善</h2><span class="sub">全プロセスを横断して業務の全体像を棚卸し、改善ポイントを自動検出します</span><span class="sp"></span>
+        <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
+      <div id="kaizenBody" style="max-width:1180px"></div>
     </div></section>
 
     <!-- EVAL DOC (評価結果/評価調書) -->
@@ -1414,6 +1468,179 @@ document.getElementById("stepBody").addEventListener("click",gridClick);
 document.getElementById("rcmBody").addEventListener("click",gridClick);
 document.getElementById("jnlBody").addEventListener("click",gridClick);
 function updateDeptList(){const set=[...new Set(P().steps.map(s=>(s.dept||"").trim()).filter(Boolean))];document.getElementById("dlDept").innerHTML=set.map(d=>`<option value="${escAttr(d)}">`).join("");const g=[...new Set(P().steps.map(s=>(s.gyomu||"").trim()).filter(Boolean))];const gl=document.getElementById("dlGyomu");if(gl)gl.innerHTML=g.map(d=>`<option value="${escAttr(d)}">`).join("");}
+/* =================================================================
+   運用評価 サンプリング調書（1統制＝1葉）
+   ================================================================= */
+const SAMPLE_GUIDE=[["1日に複数回（年251件以上）",25],["日次（年53〜250件）",15],["週次（年13〜52件）",5],["月次（年12件以下）",2],["四半期・半期・年次",1]];
+function recommendN(freq){freq=String(freq||"");
+  if(/都度|随時|複数/.test(freq))return 25;
+  if(/日次|日常/.test(freq))return 15;
+  if(/週次/.test(freq))return 5;
+  if(/月次/.test(freq))return 2;
+  if(/四半期|半期|年次/.test(freq))return 1;
+  return null;}
+function oeSamples(r){r.oe_samples=r.oe_samples||[];return r.oe_samples;}
+function oewpEnsureRows(i){const r=P().rcm[i];const n=parseInt(r.oe_n,10)||0;
+  if(!n){alert("先にサンプル件数を入力してください。");return;}
+  pushUndo();const a=oeSamples(r);while(a.length<n)a.push({d:"",ref:"",desc:"",res:"",note:""});
+  markDirty();renderOewp();}
+function oewpAddRow(i){pushUndo();oeSamples(P().rcm[i]).push({d:"",ref:"",desc:"",res:"",note:""});markDirty();renderOewp();}
+function oewpDelRow(i,j){pushUndo();const a=oeSamples(P().rcm[i]);a.splice(j,1);oewpSyncExc(i);markDirty();renderOewp();}
+function oewpSyncExc(i){const r=P().rcm[i];const a=oeSamples(r);if(a.length)r.oe_excns=String(a.filter(x=>x.res==="×").length);}
+function oewpSet(i,j,f,v){const a=oeSamples(P().rcm[i]);if(!a[j])return;a[j][f]=v;
+  if(f==="res"){oewpSyncExc(i);markDirty();renderOewp();}else markDirty();}
+function oewpField(i,f,v){evwSet(i,f,v);if(f==="oe_result"||f==="oe_n")renderOewp();}
+function renderOewp(){
+  const p=P();const el=document.getElementById("oewpBody");if(!el)return;
+  const all=p.rcm.map((r,i)=>[r,i]).filter(([r])=>(r.control_id||"").trim());
+  const keys=all.filter(([r])=>r.key);
+  const rows=(keys.length?keys:all).sort((a,b)=>{const d=idNum(a[0].control_id)-idNum(b[0].control_id);return d||a[1]-b[1];});
+  if(!rows.length){el.innerHTML=`<div class="hint">統制ID付きのRCM行がありません。RCMの編集で統制ID（キーコントロールには「キー」チェック）を設定してください。</div>`;return;}
+  const inp3=(i,f,v,ph)=>`<input value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">`;
+  let h="";
+  rows.forEach(([r,i])=>{
+    const cid=(r.control_id||"").trim();
+    const rec=recommendN(r.freq);
+    const samples=oeSamples(r);
+    const exc=samples.length?samples.filter(x=>x.res==="×").length:(parseInt(r.oe_excns,10)||0);
+    const concl=r.oe_result==="有効"
+      ?`上記サンプリングテストの結果、当キーコントロールの運用状況の評価結果は、<b class="ok">有効</b>である。`
+      :r.oe_result==="不備"
+      ?`上記サンプリングテストの結果、当キーコントロールの運用状況には<b class="ng">不備</b>がある（例外 ${exc} 件）。不備管理に登録し、是正・再評価を実施する。`
+      :r.oe_result==="対象外"
+      ?`当キーコントロールは当期の運用評価の対象外である（理由を評価内容に記載）。`
+      :`<span style="color:var(--c-text-faint)">運用評価の結果（有効／不備）を選択すると、結論文がここに表示されます。</span>`;
+    h+=`<div class="oewp-sheet" id="oewp-${escAttr(cid)}">
+      <table class="oewp-meta"><tr><th>調書No</th><td>${inp3(i,"wp_ref",r.wp_ref,"WP-"+cid)}</td></tr>
+        <tr><th>評価日</th><td>${inp3(i,"oe_date",r.oe_date,"YYYY-MM-DD")}</td></tr>
+        <tr><th>評価者</th><td>${inp3(i,"oe_by",r.oe_by,"氏名")}</td></tr>
+        <tr><th>査閲者</th><td>${inp3(i,"wp_rev_by",r.wp_rev_by,"氏名")}　${inp3(i,"wp_rev_date",r.wp_rev_date,"YYYY-MM-DD")}</td></tr></table>
+      <div class="oewp-title">＜ 業務プロセス運用評価　サンプリング調書 ＞</div>
+      <table class="oewp">
+        <tr><th>プロセス</th><td colspan="3">${esc(p.name||"")}</td></tr>
+        <tr><th>サブプロセス</th><td colspan="3">${esc(p.sub_process||"—")}</td></tr>
+        <tr><th>リスクの内容</th><td colspan="3"><span class="rc-mini r">${esc(r.risk_id||"R?")}</span>　${esc(r.risk_desc||"")}</td></tr>
+        <tr><th>キー<br>コントロール</th><th class="sub">&lt;No.&gt;<br>${esc(cid)}${r.key?"<br>"+keyTag():""}</th><td colspan="2" style="line-height:1.7">${esc(r.control_desc||"")}</td></tr>
+        <tr><th rowspan="4">サンプリング<br>テスト手続</th><th class="sub">母集団</th><td colspan="2">${inp3(i,"oe_pop",r.oe_pop,"例: 2025年4月〜12月の全出荷取引（2,480件）")}</td></tr>
+        <tr><th class="sub">サンプル件数</th><td colspan="2"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <input style="width:64px;text-align:center" value="${escAttr(r.oe_n||"")}" onfocus="evwPush()" oninput="evwSet(${i},'oe_n',this.value)" placeholder="25">件 ／ 頻度: ${esc(r.freq||"未設定")}
+          ${rec!=null?`<span style="font-size:11px;color:var(--c-text-faint)" title="${SAMPLE_GUIDE.map(g=>g[0]+" → "+g[1]+"件").join("\n")}">（一般的な実務目安: ${rec}件）</span>`:""}
+        </div></td></tr>
+        <tr><th class="sub">抽出方法</th><td colspan="2">${inp3(i,"oe_method",r.oe_method,"無作為抽出")}</td></tr>
+        <tr><th class="sub">テスト内容</th><td colspan="2"><textarea rows="3" onfocus="evwPush()" oninput="evwSet(${i},'test',this.value)" placeholder="各サンプルについて (1)必要な証憑が揃っているか (2)チェック・承認の証跡があるか (3)証憑の日付・金額等が原帳票と一致するか を検証する">${esc(r.test||"")}</textarea></td></tr>
+      </table>
+      <table class="oewp" style="border-top:none"><tr><th style="vertical-align:top;padding-top:14px">サンプリング<br>テスト結果</th><td style="padding:8px">
+        <div class="no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+          <button class="sm" onclick="oewpEnsureRows(${i})" title="サンプル件数分の空行を作成します（既存行は保持）"><i class="ph ph-rows"></i>件数分の行を作成</button>
+          <button class="sm" onclick="oewpAddRow(${i})"><i class="ph ph-plus"></i>行</button>
+          <button class="sm" onclick="genSampleFor(${i})" title="母集団件数から無作為のサンプル番号を生成し、評価内容に追記します"><i class="ph ph-dice-five"></i>乱数でサンプル抽出</button>
+          <span style="font-size:11px;color:var(--c-text-faint)">結果に「×」を付けると例外件数（現在 ${exc} 件）へ自動集計されます</span>
+        </div>
+        ${samples.length?`<table class="oewp-res"><thead><tr><th style="width:36px">No.</th><th style="width:100px">日付</th><th style="width:130px">証憑番号・コード等</th><th>摘要（取引先名・金額 等）</th><th style="width:58px">結果</th><th style="width:150px">備考</th><th class="no-print" style="width:30px"></th></tr></thead><tbody>`
+          +samples.map((s2,j)=>`<tr><td style="text-align:center" class="num">${j+1}</td>
+            <td><input value="${escAttr(s2.d||"")}" placeholder="MM/DD" onfocus="evwPush()" oninput="oewpSet(${i},${j},'d',this.value)"></td>
+            <td><input value="${escAttr(s2.ref||"")}" onfocus="evwPush()" oninput="oewpSet(${i},${j},'ref',this.value)"></td>
+            <td><input value="${escAttr(s2.desc||"")}" onfocus="evwPush()" oninput="oewpSet(${i},${j},'desc',this.value)"></td>
+            <td><select onfocus="evwPush()" onchange="oewpSet(${i},${j},'res',this.value)"><option value=""${!s2.res?" selected":""}>　</option><option value="○"${s2.res==="○"?" selected":""}>○</option><option value="×"${s2.res==="×"?" selected":""}>×</option></select></td>
+            <td><input value="${escAttr(s2.note||"")}" onfocus="evwPush()" oninput="oewpSet(${i},${j},'note',this.value)"></td>
+            <td class="no-print" style="text-align:center"><button class="opbtn" onclick="oewpDelRow(${i},${j})" title="行を削除">✕</button></td></tr>`).join("")
+          +`</tbody></table>`
+          :`<div style="font-size:12px;color:var(--c-text-faint);padding:8px 2px">「件数分の行を作成」でサンプル別の結果表を作成できます（作成しない場合は評価内容の記載のみで運用可）。</div>`}
+      </td></tr></table>
+      <div class="oewp-concl"><b style="margin-right:12px">有効性評価の結果</b>
+        <select class="no-print" style="height:26px;padding:0 6px;font-size:12px;margin-right:10px" onfocus="evwPush()" onchange="oewpField(${i},'oe_result',this.value)">${["","有効","不備","対象外"].map(o=>`<option value="${o}"${(r.oe_result||"")===o?" selected":""}>${o||"（選択）"}</option>`).join("")}</select>
+        <span>${concl}</span>
+        ${(r.oe_note||"").trim()?`<div style="margin-top:8px;font-size:12px;color:#3A4742;white-space:pre-wrap"><b>評価内容:</b> ${esc(r.oe_note)}</div>`:""}
+      </div>
+    </div>`;
+  });
+  h+=`<div class="pagehint no-print"><i class="ph ph-info" style="font-size:14px"></i>キーコントロールのみ表示（キー未設定時は全統制）。テスト内容の観点例: 証憑の網羅性・承認証跡の有無・原帳票との一致。印刷すると1統制＝1ページの調書として出力されます。サンプル件数の目安は取引頻度に応じた一般的な実務水準です（リスクに応じて増減してください）。</div>`;
+  el.innerHTML=h;
+}
+/* =================================================================
+   業務の棚卸・改善（全プロセス横断）
+   ================================================================= */
+function kaizenCheck(p){
+  const out=[];const add=(cat,cls,msg)=>out.push({cat,cls,msg});
+  const act=(p.steps||[]).filter(s=>(s.label||"").trim()||(s.dept||"").trim());
+  if(!act.length)return out;
+  const manual=act.filter(s=>s.type==="手動処理");
+  const sys=act.filter(s=>s.type==="システム処理");
+  const docs=act.filter(s=>s.type==="書類");
+  const noDetail=act.filter(s=>!(s.detail||"").trim()&&s.type!=="開始"&&s.type!=="終了");
+  const noPoint=act.filter(s=>!(s.point||"").trim()&&(s.type==="手動処理"||s.type==="判断"));
+  const mr=manual.length/act.length;
+  if(act.length>=4&&mr>=0.5)add("効率化","kz-eff",`手作業が ${manual.length}/${act.length} 工程（${Math.round(mr*100)}%）。システム化・自動化の検討余地があります（対象: No.${manual.map(s=>s.no).join(", ")}）`);
+  if(docs.length>=3)add("効率化","kz-eff",`紙の書類工程が ${docs.length} 件。ペーパーレス化・電子承認の検討候補です（No.${docs.map(s=>s.no).join(", ")}）`);
+  if(noDetail.length)add("文書化","kz-doc",`詳細手順が未記載の工程が ${noDetail.length} 件。属人化解消のため記載を推奨（No.${noDetail.map(s=>s.no).join(", ")}）`);
+  if(noPoint.length>=2)add("文書化","kz-doc",`チェックポイント・注意点が未記載の手作業/判断が ${noPoint.length} 件。ノウハウの明文化を推奨`);
+  const roles={};act.forEach(s=>{const k=(s.role||"").trim();if(k)roles[k]=(roles[k]||0)+1;});
+  const soloHeavy=Object.entries(roles).filter(([k,v])=>v>=Math.max(3,act.length*0.5));
+  soloHeavy.forEach(([k,v])=>add("標準化","kz-std",`「${k}」に ${v} 工程が集中。バックアップ担当・引継ぎ体制の整備を推奨`));
+  if(!act.some(s=>s.type==="判断")&&act.length>=5)add("リスク","kz-risk","判断（分岐）工程がありません。例外時の対応（差戻し・承認超過等）が文書化されているか確認してください");
+  if(p.attribution_risk==="高")add("標準化","kz-std","属人化リスクが「高」に設定されています。標準化・マニュアル整備を優先してください");
+  const durs=act.map(s=>[s,parseFloat(String(s.dur||"").replace(/[^0-9.]/g,""))]).filter(x=>!isNaN(x[1])&&x[1]>0);
+  if(durs.length>=3){const total=durs.reduce((a,x)=>a+x[1],0);const mx=durs.reduce((a,x)=>x[1]>a[1]?x:a);
+    add("効率化","kz-eff",`所要時間の合計 約${total} ／ 最長は No.${mx[0].no}「${mx[0].label}」（${mx[0].dur}）。ボトルネック改善の候補です`);}
+  return out;
+}
+function renderKaizen(){
+  const el=document.getElementById("kaizenBody");if(!el)return;
+  const manual=((db&&db.mode)||"jsox")==="manual";
+  const procs=db.processes||[];
+  const act=p=>(p.steps||[]).filter(s=>(s.label||"").trim()||(s.dept||"").trim());
+  let tSteps=0,tMan=0,tSys=0,tDoc=0,tDet=0,tAll=0;
+  const perProc=procs.map(p2=>{
+    const a=act(p2);const man=a.filter(s=>s.type==="手動処理").length;
+    const sys=a.filter(s=>s.type==="システム処理").length;
+    const dc=a.filter(s=>s.type==="書類").length;
+    const det=a.filter(s=>(s.detail||"").trim()).length;
+    const items=kaizenCheck(p2);
+    tSteps+=a.length;tMan+=man;tSys+=sys;tDoc+=dc;tDet+=det;tAll+=items.length;
+    const rv=p2.revisions||[];const last=rv.map(r=>r.date||"").filter(Boolean).sort().pop()||"—";
+    return {p:p2,a,man,sys,dc,det,items,last};
+  });
+  const pct=(a,b)=>b?Math.round(a/b*100)+"%":"—";
+  const kpi=(lb,v,sub,icon,tint,accent)=>`<div class="kpi"><div class="kh"><span class="kl">${lb}</span><span class="kic" style="background:${tint}"><i class="ph ${icon}" style="color:${accent}"></i></span></div><div class="kv">${v}</div><div class="ks">${sub}</div></div>`;
+  let h=`<div class="kpi-row">`
+    +kpi("業務プロセス",procs.length,"登録済み","ph-squares-four","#E8F3F1","#0E7C73")
+    +kpi("総工程数",tSteps,"全プロセス合計","ph-list-numbers","#E8F3F1","#0E7C73")
+    +kpi("手作業比率",pct(tMan,tSteps),`手動処理 ${tMan}工程`,"ph-hand","#FBF2DD","#B7791F")
+    +kpi("システム化率",pct(tSys,tSteps),`システム処理 ${tSys}工程`,"ph-monitor","#E9F0F8","#2D5A86")
+    +kpi("文書化率",pct(tDet,tSteps),"詳細手順の記載済み","ph-article","#E6F2EC","#157F5B")
+    +kpi("改善ポイント",tAll+"件","自動検出","ph-lightbulb",tAll?"#F7E9E7":"#E6F2EC",tAll?"#B0413B":"#157F5B")
+    +`</div>`;
+  h+=`<div class="kz-card"><div style="font-size:13.5px;font-weight:700;margin-bottom:10px">業務の棚卸（プロセス横断）</div>
+    <div class="gridbox" style="max-height:none"><table class="dr" style="white-space:normal;width:100%"><thead><tr>
+    <th>プロセス</th><th style="text-align:center">${manual?"手順":"工程"}数</th><th style="text-align:center">手作業</th><th style="text-align:center">システム</th><th style="text-align:center">書類</th><th style="text-align:center">文書化率</th>${manual?"":`<th style="text-align:center">統制数</th>`}<th style="text-align:center">属人化</th><th style="text-align:center">最終改訂</th><th style="text-align:center">改善P</th><th class="no-print"></th></tr></thead><tbody>`;
+  perProc.forEach(x=>{
+    const ar=x.p.attribution_risk||"—";
+    h+=`<tr><td style="padding:8px 10px;font-weight:600">${esc(x.p.name||"")}</td>
+      <td style="text-align:center" class="num">${x.a.length}</td>
+      <td style="text-align:center" class="num">${x.man}</td>
+      <td style="text-align:center" class="num">${x.sys}</td>
+      <td style="text-align:center" class="num">${x.dc}</td>
+      <td style="text-align:center" class="num">${pct(x.det,x.a.length)}</td>
+      ${manual?"":`<td style="text-align:center" class="num">${x.p.rcm.filter(r=>(r.control_id||"").trim()).length}</td>`}
+      <td style="text-align:center;color:${ar==="高"?"var(--c-err)":ar==="中"?"var(--c-warn)":"inherit"}">${esc(ar)}</td>
+      <td style="text-align:center" class="num">${esc(x.last)}</td>
+      <td style="text-align:center" class="num" style="font-weight:700">${x.items.length}</td>
+      <td class="no-print" style="text-align:center;padding:4px"><button class="sm" onclick="selectProcess('${escAttr(x.p.id)}');show('steps')" title="このプロセスを開く"><i class="ph ph-arrow-right"></i></button></td></tr>`;
+  });
+  h+=`</tbody></table></div></div>`;
+  perProc.filter(x=>x.items.length).forEach(x=>{
+    h+=`<div class="kz-card"><div style="display:flex;align-items:center;gap:9px;margin-bottom:6px">
+      <span style="font-size:13.5px;font-weight:700">${esc(x.p.name||"")}</span>
+      <span style="font-size:11px;color:var(--c-text-faint)" class="num">${x.items.length}件の改善ポイント</span>
+      <span style="flex:1"></span>
+      <button class="sm no-print" onclick="selectProcess('${escAttr(x.p.id)}');show('steps')"><i class="ph ph-pencil-simple"></i>編集へ</button></div>`;
+    x.items.forEach(it=>{h+=`<div class="kz-item"><span class="kz-badge ${it.cls}">${esc(it.cat)}</span><span>${esc(it.msg)}</span></div>`;});
+    h+=`</div>`;
+  });
+  if(!tAll)h+=`<div class="kz-card" style="display:flex;gap:10px;align-items:center;color:var(--c-ok)"><i class="ph ph-check-circle" style="font-size:20px"></i>自動検出できる改善ポイントはありません。</div>`;
+  h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>検出ルール: 手作業比率・紙書類の多さ・詳細/ノウハウの未記載・担当集中（属人化）・判断分岐の欠如・所要時間のボトルネック等。記載の充実（詳細・所要時間・ポイント）ほど検出精度が上がります。個別の記載漏れは「ギャップチェック」を参照してください。</div>`;
+  el.innerHTML=h;
+}
 /* ===== 業務（グループ）操作: グループ内に工程追加・グループ名変更・新規グループ ===== */
 function nextStepNo(){let m=0;P().steps.forEach(s=>{const v=parseFloat(s.no);if(!isNaN(v))m=Math.max(m,v);});return m+10;}
 function addStepInGroup(g){pushUndo();const steps=P().steps;
@@ -1963,7 +2190,7 @@ const MODE_CONFIG={
     navLabels:{processes:"業務の管理",steps:"手順書",stepsdoc:"手順書",rcm:"業務ルール表 編集",rcmdoc:"業務ルール表",flow:"業務フロー図",gap:"抜け漏れチェック",walk:"業務ヒアリングメモ",def:"改善ポイント",ev:"使用資料",library:"規程・資料",manualout:"マニュアル出力"},
     terms:{process:"業務",risk:"起こりうるミス・問題",control:"チェックポイント",keyControl:"重要チェック",evidence:"使用帳票・関連資料・記録",deficiency:"改善ポイント",evaluation:"実施確認"},
     /* §7: マニュアルモードでは J-SOX 系ページを非表示（手順書・フロー図・取込・規程資料・ヘルプ中心） */
-    hiddenPages:["dash","rcm","rcmdoc","evalwork","evaldoc","gap","walk","rollf","def","ev","jnl"],
+    hiddenPages:["dash","rcm","rcmdoc","evalwork","evaldoc","oewp","gap","walk","rollf","def","ev","jnl"],
     hiddenFields:["assertion","ipe","itac"],
     templates:["expense_manual","bill_manual","collect_manual","payment_manual","monthly_manual","order_manual","inquiry_manual"]
   },
@@ -2268,7 +2495,7 @@ function aiCopy(){
   else{document.getElementById("aiText").select();document.execCommand("copy");done();}
 }
 /* ===== 評価・点検セクションの折りたたみ ===== */
-const EVAL_PGS=["evalwork","evaldoc","gap","walk","rollf","def","ev"];
+const EVAL_PGS=["evalwork","evaldoc","oewp","gap","walk","rollf","def","ev"];
 let _navEvalOpen=(function(){try{return localStorage.getItem("navEvalOpen")!=="0";}catch(e){return true;}})();
 function toggleNavEval(){_navEvalOpen=!_navEvalOpen;try{localStorage.setItem("navEvalOpen",_navEvalOpen?"1":"0");}catch(e){}applyNavEval();}
 function applyNavEval(){const it=document.getElementById("navEvalItems");if(it)it.style.display=_navEvalOpen?"":"none";
@@ -2308,6 +2535,8 @@ function xlsCtxOf(){
     stepsdoc:null, // steps と同じ（下で共有）
     rcm:{lbl:"RCM をExcel出力",run:function(){applyAll();renderRcmDoc();exportDocXlsx("rcmDocBody",fname()+"_RCM");}},
     rcmdoc:null,
+    oewp:{lbl:"サンプリング調書 をExcel出力",run:function(){applyAll();renderOewp();exportDocXlsx("oewpBody",fname()+"_運用評価調書");}},
+    kaizen:{lbl:"棚卸・改善 をExcel出力",run:function(){renderKaizen();exportDocXlsx("kaizenBody",fname()+"_棚卸改善");}},
     evalwork:{lbl:"評価調書 をExcel出力",run:function(){applyAll();renderEvalDoc();exportDocXlsx("evalDocBody",fname()+"_評価調書");}},
     evaldoc:null,
     flow:{lbl:"フロー図込みExcel（装飾）を出力",run:function(){exportXlsxRich();}},
@@ -2514,7 +2743,7 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   if(pg==="steps"||pg==="stepsdoc")_viewPref.steps=(pg==="steps")?"edit":"preview";
   if(pg==="rcm"||pg==="rcmdoc")_viewPref.rcm=(pg==="rcm")?"edit":"preview";
   document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById("page-"+pg).classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.dataset.pg===(NAV_ALIAS[pg]||pg)));
-  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
+  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="oewp")renderOewp();else if(pg==="kaizen")renderKaizen();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
   updateApplyBtn();if(typeof updateXlsMenu==="function")updateXlsMenu();
   if(EVAL_PGS.includes(pg)&&!_navEvalOpen){_navEvalOpen=true;try{localStorage.setItem("navEvalOpen","1");}catch(e){}}
   applyNavEval();
