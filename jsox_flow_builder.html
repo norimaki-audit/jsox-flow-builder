@@ -1043,7 +1043,7 @@
         <span id="aiCount" style="font-size:11px;color:var(--c-text-faint)"></span>
       </div>
       <textarea id="aiText" class="evw-note" style="min-height:300px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.6"></textarea>
-      <div class="hint" style="margin-top:10px">⚠ 貼り付け先は<b>会社で承認されたAIツール（入力が学習に使用されない契約のもの）</b>をご利用ください。送信前にプレビューを確認し、機密性の高い固有名詞等は編集・削除してください。AIの回答はあくまで下書き・参考であり、<b>評価判断と結論は評価者自身が行い、調書に記録</b>してください。</div>
+      <div class="hint" style="margin-top:10px">⚠ 貼り付け先は<b>会社で承認されたAIツール（入力が学習に使用されない契約のもの）</b>をご利用ください。送信前にプレビューを確認し、機密性の高い固有名詞等は編集・削除してください。AIの回答はあくまで下書き・参考であり、<b>評価判断と結論は評価者自身が行い、調書に記録</b>してください。 <a href="#" onclick="aiClose();helpShowByTitle('AI活用ガイド — なぜ「AI任せ」にせず、このツールと組み合わせるのか');return false" style="color:var(--c-primary-d)">→ AI活用ガイド（なぜAI任せにしないのか）</a></div>
       </div>
       <div id="aiPaneImp" style="display:none">
         <textarea id="aiInText" class="evw-note" style="min-height:240px;font-size:12px" placeholder="AIの回答をここにそのまま貼り付けてください（回答に含まれる ```json コードブロックを自動で認識します）" oninput="aiParse()"></textarea>
@@ -4369,6 +4369,43 @@ HELP.push(
 <li>「業務の棚卸・改善」ページ新設（プロセス横断の棚卸と改善ポイント自動検出）</li>
 </ul>`,mode:null}
 );
+HELP.push(
+{cat:"はじめに",title:"AI活用ガイド — なぜ「AI任せ」にせず、このツールと組み合わせるのか",keywords:["AI","活用","ChatGPT","Claude","使い分け","全任せ","責任","ハルシネーション"],html:`
+<p>「三点セットも評価も、全部AIに作らせればいいのでは？」— もっともな疑問です。結論から言うと、<b>AIは強力な下書き係・レビュー係ですが、正本（マスターデータ）と判断はAIに任せられません</b>。このツールは、その分業を成立させるために存在します。</p>
+
+<h2>AIに「全任せ」できない5つの理由</h2>
+<ol>
+<li><b>内部統制報告は経営者の責任だから。</b>内部統制の評価と報告は経営者の責任で行うものです（金商法・内部統制基準）。AIの出力をそのまま調書にすることは、「誰がどう判断したか」という監査調書の根幹（監基報230）を欠きます。<b>AIの提案 → 人が検証・判断 → 記録</b>という順序が崩せません。</li>
+<li><b>AIは間違えるから（ハルシネーション）。</b>もっともらしく誤った統制記述・存在しない基準の引用は普通に起きます。監査対応の文書は「検証可能性」が命であり、誤りが混入したまま固定される全任せ運用は危険です。</li>
+<li><b>三点セットは「整合性」が命だから。</b>業務記述書のNo.・RCMの統制ID・フロー図のタグ・評価調書は相互に紐づいています。チャットの自由文で毎回生成すると、この整合が毎回崩れます。<b>構造化データを正本として1か所で管理する</b>のはツールの仕事です（本ツールでは入力→反映→三点セット自動生成）。</li>
+<li><b>毎期の継続性が必要だから。</b>ロールフォワード（前期との差分）、評価・査閲の履歴、証憑の蓄積は「会話」ではなく「データベース」の仕事です。AIチャットには前期の正本がありません。</li>
+<li><b>機密情報の管理があるから。</b>業務プロセス・統制・不備の全文をAIへ投げ続ける運用は、情報管理規程上のリスクを伴います。<b>必要な断片だけを、人が確認してから渡す</b>設計（本ツールのコピー方式）が現実的です。</li>
+</ol>
+
+<h2>推奨する分業モデル</h2>
+<table><thead><tr><th>役割</th><th>担当</th><th>具体例</th></tr></thead><tbody>
+<tr><td><b>正本・構造・証跡</b></td><td>このツール</td><td>三点セットの整合管理、評価・査閲の記録、ロールフォワード、Excel/調書出力</td></tr>
+<tr><td><b>下書き・壁打ち</b></td><td>AI</td><td>リスクの洗い出し、統制記述の文章改善、評価手続のレビュー、不備の原因分析の壁打ち</td></tr>
+<tr><td><b>判断・承認・責任</b></td><td>人（評価者・経営者）</td><td>キー統制の選定、評価結論、不備の重要性判断、AI提案の採否</td></tr>
+</tbody></table>
+
+<h2>実践レシピ（画面別のAI活用）</h2>
+<ul>
+<li><b>業務記述書</b>で「✨AIに相談 → 文章改善」— 統制記述を監査に耐える表現（主語・頻度・証跡）に。回答は「取り込む」タブでワンクリック反映 → <b>必ず自分で読み直してから［反映］</b></li>
+<li><b>RCM</b>で「網羅性チェック」— アサーション別にリスク・統制の漏れを提案させる。取り込み後、<b>自社の実態に合うか1件ずつ精査</b>（AIは貴社の実務を知りません）</li>
+<li><b>整備・運用評価</b>で「評価手続の妥当性レビュー」— サンプル件数・例外対応・記録の不足を監基報の観点で指摘させ、調書の穴を潰す</li>
+<li><b>ギャップチェック</b>の指摘をコピーして「解決の優先順位と対応案」を相談</li>
+<li><b>業務の棚卸・改善</b>の検出結果を渡して「改善施策の具体化」をブレスト</li>
+</ul>
+
+<h2>運用上の注意（再掲）</h2>
+<ul>
+<li>貼り付け先は<b>会社で承認されたAI（入力が学習に使用されない契約）</b>を使う</li>
+<li>送信前プレビューで<b>機密性の高い固有名詞・金額を確認・削除</b>する</li>
+<li>AIの回答は下書き。<b>採否の判断と結論は評価者が行い、調書に残す</b>（誰が・いつ・何を確かめたか）</li>
+</ul>
+<p>操作方法は「AIに相談（コピー＆回答の取り込み）」の記事をご覧ください。</p>`,mode:null}
+);
 let _help={view:"home",cat:null,idx:-1};
 function helpVisible(a){const m=(db&&db.mode)||"jsox";return a.mode==null||a.mode===m;}
 function helpCats(){const order=[];HELP.forEach(a=>{if(helpVisible(a)&&!order.includes(a.cat))order.push(a.cat);});return order;}
@@ -4451,6 +4488,7 @@ function renderHelp(){
 }
 function helpHome(){_help={view:"home",cat:null,idx:-1};const s=document.getElementById("helpSearch");if(s)s.value="";renderHelp();}
 function helpCat(c){_help={view:"cat",cat:c,idx:-1};const s=document.getElementById("helpSearch");if(s)s.value="";renderHelp();}
+function helpShowByTitle(t){const i=HELP.findIndex(a=>a.title===t);if(i>=0){show("help");helpShow(i);}}
 function helpShow(i){const a=HELP[i];if(!a)return;_help={view:"article",cat:a.cat,idx:i};const s=document.getElementById("helpSearch");if(s)s.value="";renderHelp();}
 
 // =================================================================
