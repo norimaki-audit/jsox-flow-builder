@@ -349,6 +349,10 @@
     table.dr td{border:0.5pt solid #999;border-bottom:0.5pt solid #999;padding:2px 3px;}
     table.dr td.rn{background:#F7F7F5;}
     tr.grp-row td{border:0.5pt solid #888;}
+    /* 列の最小幅制約を解除（A4横に自然に収める） */
+    .w-md,.w-wide,.w-xl,.dept{min-width:0 !important;}
+    table.dr input{width:100% !important;min-width:0 !important;}
+    table.dr{min-width:0 !important;width:100% !important;}
     /* 入力欄は値だけを印字（枠・矢印を消す） */
     input,select,textarea{border:none !important;background:transparent !important;appearance:none;-webkit-appearance:none;box-shadow:none !important;font:inherit;color:#111;padding:1px 2px;}
     textarea{overflow:visible;resize:none;}
@@ -369,6 +373,14 @@
     /* KPI等のカード段組は維持しつつ改ページ配慮 */
     .kpi,.gap-item,.evw-exp td,.manual-step-block,tr{break-inside:avoid;}
     thead{display:table-header-group;}
+    /* 長文の評価内容は列から外し、表の後に全文注記として出力 */
+    .col-note{display:none !important;}
+    .prn-notes{margin-top:5mm;}
+    .prn-notes h2{font-size:11pt;color:#111;margin:0 0 2mm;border-left:none;padding-left:0;}
+    .prn-note{border:0.5pt solid #999;padding:2mm 3mm;margin-bottom:2mm;break-inside:avoid;}
+    .prn-note .pn-h{font-size:9pt;margin-bottom:1mm;}
+    .prn-note .pn-b{font-size:8.5pt;line-height:1.75;white-space:pre-wrap;}
+    .prn-note .pn-b span{font-weight:700;color:#333;}
   }
 
   /* ===== モード出し分け ===== */
@@ -1960,6 +1972,26 @@ function genSampleFor(i){
   markDirty();renderEvalWork();
   toast("サンプル番号を生成し、運用評価の評価内容に追記しました。");
 }
+/* ===== 印刷: 横幅を自動縮小してA4横に収める ===== */
+let _printZoomed=false;
+window.addEventListener("beforeprint",function(){
+  try{
+    const pg=document.querySelector(".page.active");if(!pg)return;
+    let w=0;
+    pg.querySelectorAll("table").forEach(t=>{
+      let cols=0;for(const tr of t.rows){let c=0;for(const cell of tr.cells)c+=cell.colSpan||1;cols=Math.max(cols,c);}
+      /* 印刷CSSで最小幅が解除されるため、実測ではなく列数ベースで見積もる */
+      w=Math.max(w,Math.min(t.scrollWidth||0,cols*70));
+    });
+    pg.querySelectorAll("#flowCanvas svg").forEach(el=>{w=Math.max(w,el.scrollWidth||el.getBoundingClientRect().width||0);});
+    const printW=1045; /* A4横 277mm ≒ 1045px @96dpi */
+    const z=Math.min(1,printW/(w||printW));
+    if(z<0.999){document.querySelector(".main").style.zoom=String(Math.max(0.55,z));_printZoomed=true;}
+  }catch(e){}
+});
+window.addEventListener("afterprint",function(){
+  if(_printZoomed){const m=document.querySelector(".main");if(m)m.style.zoom="";_printZoomed=false;}
+});
 /* ===== ファイル / Excel出力メニュー開閉 ===== */
 function toggleFileMenu(e){e.stopPropagation();closeXlsMenu();updateAsInfo();document.getElementById("fileMenu").classList.toggle("open");}
 function closeFileMenu(){const m=document.getElementById("fileMenu");if(m)m.classList.remove("open");}
@@ -2743,6 +2775,19 @@ function renderManual(p,cc){
   }else{h+=`<p style="color:var(--muted);font-size:12.5px">改訂履歴はまだ登録されていません。</p>`;}
   document.getElementById("stepsDocBody").innerHTML=h;
 }
+function prnNotesBlock(rows){
+  const noted=rows.filter(r=>(r.oe_note||"").trim()||(r.de_note||"").trim());
+  if(!noted.length)return "";
+  let h=`<div class="print-only prn-notes"><h2>評価内容（統制別・全文）</h2>`;
+  noted.forEach(r=>{
+    const id=(r.control_id||r.risk_id||"").trim();
+    h+=`<div class="prn-note"><div class="pn-h"><b>${esc(id)}</b>　${esc(r.control_desc||r.risk_desc||"")}</div>`
+      +((r.de_note||"").trim()?`<div class="pn-b"><span>整備評価:</span> ${esc(r.de_note)}</div>`:"")
+      +((r.oe_note||"").trim()?`<div class="pn-b"><span>運用評価:</span> ${esc(r.oe_note)}</div>`:"")
+      +`</div>`;
+  });
+  return h+`</div>`;
+}
 /* RCM出力の番号順ソート（R/C IDの数値部で昇順。IDなし行は末尾・入力順維持） */
 function idNum(v){const m=String(v==null?"":v).match(/\d+/);return m?parseInt(m[0],10):Infinity;}
 function rcmSorted(arr){return arr.map((r,i)=>[r,i]).sort((a,b)=>{
@@ -2760,7 +2805,7 @@ function renderRcmDoc(){
   if(!detail){
     // 簡潔様式（画像準拠）
     h+=`<div style="overflow:auto"><table style="font-size:12px"><thead>`
-      +`<tr><th rowspan="2">業務</th><th rowspan="2">リスクの内容</th><th rowspan="2">統制の内容</th><th colspan="6" style="text-align:center">要件（アサーション）</th><th rowspan="2">評価</th><th rowspan="2">評価内容</th>`
+      +`<tr><th rowspan="2">業務</th><th rowspan="2">リスクの内容</th><th rowspan="2">統制の内容</th><th colspan="6" style="text-align:center">要件（アサーション）</th><th rowspan="2">評価</th><th rowspan="2" class="col-note">評価内容</th>`
       +cc.map(c=>`<th rowspan="2">${esc(c.label)}</th>`).join("")
       +`</tr>`
       +`<tr>`+ASRT_LBL.map(l=>`<th style="writing-mode:vertical-rl;text-orientation:upright;white-space:nowrap;padding:6px 3px">${l}</th>`).join("")+`</tr></thead><tbody>`;
@@ -2772,7 +2817,7 @@ function renderRcmDoc(){
         +`<td>${(r.control_id||"").trim()?`<span class="idchip" style="margin-right:6px">${esc(r.control_id)}</span>`:""}${r.key?keyTag():""}<div style="margin-top:3px">${esc(r.control_desc)}</div></td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
         +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
-        +`<td>${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
+        +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
         +cc.map(c=>`<td>${esc((r.custom||{})[c.id]||"")}</td>`).join("")
         +`</tr>`;});
     h+=`</tbody></table></div><div class="hint" style="margin-top:8px">○＝該当するアサーション。評価＝整備・運用評価の結果（○適切／△一部不備／×不備）。網掛け＝キーコントロール。詳細項目（頻度・責任者・IPE・テスト手続等）はRCM編集・CSV・Excel出力で確認できます。</div>`;
@@ -2783,7 +2828,7 @@ function renderRcmDoc(){
       +`<tr>`
       +`<th rowspan="2">業務</th><th rowspan="2">リスクの内容</th><th rowspan="2">統制の内容</th>`
       +`<th colspan="6" style="text-align:center">要件（アサーション）</th>`
-      +`<th rowspan="2">総合評価</th><th rowspan="2">評価内容</th>`
+      +`<th rowspan="2">総合評価</th><th rowspan="2" class="col-note">評価内容</th>`
       +`<th rowspan="2">統制ID</th><th rowspan="2" ${vcol}>予防・発見</th><th rowspan="2" ${vcol}>手動・自動</th><th rowspan="2" ${vcol}>IT依存</th>`
       +`<th rowspan="2">頻度</th><th rowspan="2">統制責任者</th><th rowspan="2">関連文書・証跡</th><th rowspan="2" ${vcol}>キー</th>`
       +`<th rowspan="2" ${vcol}>整備評価</th><th rowspan="2">運用詳細<br><small style="font-weight:400">方法・件数・例外</small></th><th rowspan="2" ${vcol}>運用評価</th>`
@@ -2799,7 +2844,7 @@ function renderRcmDoc(){
         +`<td>${esc(r.control_desc)}</td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
         +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
-        +`<td>${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
+        +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
         +`<td style="white-space:nowrap">${(r.control_id||"").trim()?`<span class="idchip">${esc(r.control_id)}</span>`:""}${r.key?" "+keyTag():""}</td>`
         +`<td style="text-align:center">${esc(r.prev_det||"")}</td>`
         +`<td style="text-align:center">${esc(r.man_auto||"")}</td>`
@@ -2815,6 +2860,7 @@ function renderRcmDoc(){
         +`</tr>`;});
     h+=`</tbody></table></div><div class="hint" style="margin-top:8px">○＝該当するアサーション。総合評価＝整備・運用評価を踏まえた総合判定（○適切／△一部不備／×不備）。網掛け＝キーコントロール（★）。整備評価・運用評価の詳細は「評価結果（評価調書）」ページを参照。</div>`;
   }
+  h+=prnNotesBlock(rcmSorted(p.rcm));
   document.getElementById("rcmDocBody").innerHTML=h;
 }
 /* =================================================================
@@ -2928,7 +2974,7 @@ function renderEvalDoc(){
   const rows=keyCtrls.length?keyCtrls:ctrls;
   let h=`<h1>${esc(p.name||"")} — 評価結果（評価調書）</h1><div class="meta">プロセスID: ${esc(p.id)}　／　作成日: ${today()}　／　対象統制数: ${rows.length}${keyCtrls.length?`（キー統制。全統制数 ${ctrls.length}）`:""}</div>`;
   h+=`<div style="overflow:auto"><table style="font-size:12px"><thead><tr>`
-    +`<th>統制ID</th><th>業務</th><th>リスク</th><th>統制内容</th><th>整備評価</th><th>運用：抽出方法・件数・例外</th><th>運用評価</th><th>評価者・評価日</th><th>総合</th><th>評価内容</th>`
+    +`<th>統制ID</th><th>業務</th><th>リスク</th><th>統制内容</th><th>整備評価</th><th>運用：抽出方法・件数・例外</th><th>運用評価</th><th>評価者・評価日</th><th>総合</th><th class="col-note">評価内容</th>`
     +`</tr></thead><tbody>`;
   if(!rows.length)h+=`<tr><td colspan="10" style="color:var(--muted)">統制が未登録です</td></tr>`;
   rows.forEach(r=>{
@@ -2946,9 +2992,9 @@ function renderEvalDoc(){
       +`<td style="text-align:center">${defLink(r.oe_result)}</td>`
       +`<td style="font-size:11.5px;white-space:nowrap">${evby}</td>`
       +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr(cid)}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
-      +`<td>${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
+      +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
       +`</tr>`;});
-  h+=`</tbody></table></div><div class="hint" style="margin-top:8px">整備評価＝統制が適切にデザインされているかの評価。運用評価＝サンプルテスト（抽出方法・件数・例外件数）に基づく運用状況の評価。総合＝整備・運用の結果を踏まえた総合判定です。キー統制が設定されている場合はキー統制のみを表示します。統制IDをクリックすると評価の詳細（整備・運用評価）へ、「不備」の表示をクリックすると不備管理の該当行へジャンプします。</div>`;
+  h+=`</tbody></table></div>`+prnNotesBlock(rows)+`<div class="hint" style="margin-top:8px">整備評価＝統制が適切にデザインされているかの評価。運用評価＝サンプルテスト（抽出方法・件数・例外件数）に基づく運用状況の評価。総合＝整備・運用の結果を踏まえた総合判定です。キー統制が設定されている場合はキー統制のみを表示します。統制IDをクリックすると評価の詳細（整備・運用評価）へ、「不備」の表示をクリックすると不備管理の該当行へジャンプします。</div>`;
   document.getElementById("evalDocBody").innerHTML=h;
 }
 function deepCopy(o){return JSON.parse(JSON.stringify(o));}
