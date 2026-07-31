@@ -1809,6 +1809,11 @@ function gapCheck(p){
   const out=[];const add=(lv,cat,msg)=>out.push({lv,cat,msg});
   const active=p.steps.filter(s=>(s.dept||"").trim()||(s.label||"").trim());
   const byNo={};active.forEach(s=>{if((s.no||"").toString().trim())byNo[(s.no||"").toString().trim()]=s;});
+  /* ID一意性（重複はフロー分岐・RCM紐付け・評価を壊すためエラー扱い） */
+  const dup=(arr)=>{const seen={},d=new Set();arr.forEach(v=>{v=(v==null?"":String(v)).trim();if(!v)return;if(seen[v])d.add(v);seen[v]=1;});return [...d];};
+  dup(active.map(s=>s.no)).forEach(v=>add("error","ID重複",`工程No.「${v}」が複数の行で使われています（分岐先・RCM紐付けが不定になります）`));
+  dup(p.rcm.map(r=>r.risk_id)).forEach(v=>add("error","ID重複",`リスクID「${v}」が重複しています`));
+  dup(p.rcm.map(r=>r.control_id)).forEach(v=>add("error","ID重複",`統制ID「${v}」が重複しています（評価・証憑・調書が同一視されます）`));
   active.forEach(s=>{
     const sh=typeToShape(s.type),tag=`S${s.no} ${s.label||""}`;
     if(!(s.dept||"").trim())add("warning","部門",`${tag}: 担当部門が未設定`);
@@ -2657,6 +2662,73 @@ function mgShare(){
   if(navigator.share)navigator.share({title:"J-SOX Flow Builder",text:"J-SOX三点セットを、ひとつのデータから作成・更新できる無料ツール（PC推奨）",url:APP_PC_URL}).catch(()=>{});
   else mgCopy();}
 function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){}document.getElementById("mobileGate").classList.remove("on");}
+/* =================================================================
+   セルフテスト（?selftest=1）: 主要機能の自動スモーク
+   実データに影響しないよう、開始時にdbを退避し終了時に復元する
+   ================================================================= */
+async function runSelfTest(){
+  const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
+  const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
+  const _bak=JSON.stringify(db);const _asBak=_asDisabled;_asDisabled=true;
+  const _alert=window.alert,_confirm=window.confirm;window.alert=()=>{};window.confirm=()=>true;
+  let _dl=[];const _download=window.download;window.download=(b,n)=>_dl.push({size:b.size,name:n});
+  try{
+    // 1. 新規プロジェクト作成
+    T("新規プロジェクト作成",()=>{db={projectName:"t",activeProcessId:"P001",processes:[{id:"P001",name:"新規",sub_process:"",in_scope:true,laneOrder:[],steps:[blankStep(10)],rcm:[]}]};normalize();eq(db.features.eval,false,"評価初期値");eq(db.processes[0].steps.length,1);});
+    // 2. サンプル読込
+    T("サンプルデータ読込",()=>{db=exampleDB();normalize();eq(P().steps.length,9,"工程数");eq(P().rcm.length,3,"RCM行数");});
+    // 3. JSON保存/復元（往復一致）
+    T("JSON保存・復元",()=>{const j=JSON.stringify(db);const d2=JSON.parse(j);const before=P().steps.map(s=>s.no+s.label).join("|");db=d2;normalize();const after=P().steps.map(s=>s.no+s.label).join("|");eq(after,before,"工程往復");eq(P().rcm[0].control_id,"C001");});
+    // 4. 後方互換（旧形式JSON: features無し・評価入力あり→自動オン）
+    T("後方互換（旧JSON）",()=>{const legacy={projectName:"旧",activeProcessId:"P001",processes:[{id:"P001",name:"旧",steps:[{no:10,dept:"A",label:"x"}],rcm:[{risk_id:"R1",control_id:"C1",de_result:"有効"}]}]};db=legacy;normalize();eq(db.features.eval,true,"評価データありは自動オン");eq(typeof P().steps[0].detail,"string","blankStep補完");});
+    // 5. CSV取込（正常）
+    T("CSV取込（正常）",()=>{db=exampleDB();normalize();const csv="プロセス名,テスト\nNo.,業務,担当部門,担当(役割),種類,業務内容,詳細,使用システム,証跡,Yes先,No先,接続(上書),ポイント・注意点,所要時間目安\n10,受注,営業,担当,手動処理,工程A,,,,,,,,\n20,受注,営業,担当,判断,工程B,,,,30,10,,,\n30,受注,営業,担当,終了,工程C,,,,,,,,";importStepsCSV(csv);eq(P().steps.length,3,"取込行数");eq(P().steps[1].yes,"30","Yes先");});
+    // 6. 不正CSV（クラッシュしないこと）
+    T("不正データ取込（CSV）",()=>{importStepsCSV("");importStepsCSV("garbage,,,\x00");return true;});
+    // 7. 工程・リスク・統制の追加/編集/削除
+    T("行の追加・編集・削除",()=>{db=exampleDB();normalize();const n0=P().steps.length;addStep();eq(P().steps.length,n0+1,"追加");P().steps[n0].label="編集テスト";eq(P().steps[n0].label,"編集テスト");P().steps.splice(n0,1);eq(P().steps.length,n0,"削除");addRcm();eq(P().rcm.length,4);P().rcm.pop();});
+    // 8. 三点セット同期（編集→反映→フロー/成果物）
+    T("三点セット同期",()=>{P().steps[1].label="同期テスト工程";applyAll();const def=buildDef(outProc());const found=def.nodes.some(n=>n.label==="同期テスト工程");eq(found,true,"フローに反映");renderStepsDoc();eq(document.getElementById("stepsDocBody").innerHTML.includes("同期テスト工程"),true,"記述書に反映");});
+    // 9. ID整合性（重複検出）
+    T("ID重複の検出",()=>{db=exampleDB();normalize();P().steps[1].no=10;/* 10が2つ */P().rcm[1].control_id="C001";applyAll();const items=gapCheck(outProc());const e1=items.some(x=>x.cat==="ID重複"&&x.msg.includes("工程No"));const e2=items.some(x=>x.cat==="ID重複"&&x.msg.includes("統制ID"));eq(e1&&e2,true,"重複がエラー化");});
+    // 10. ギャップチェック（分岐先不在）
+    T("ギャップチェック",()=>{db=exampleDB();normalize();P().steps[2].yes="999";applyAll();const items=gapCheck(outProc());eq(items.some(x=>x.lv==="error"&&x.msg.includes("999")),true,"存在しない分岐先");});
+    // 11. ロールフォワード
+    T("ロールフォワード",()=>{db=exampleDB();normalize();P().prior={savedAt:"2026-01-01",steps:deepCopy(P().steps),rcm:deepCopy(P().rcm)};P().steps[1].label="RF変更";renderRollf();eq(document.getElementById("rollfBody").textContent.includes("変更"),true,"差分表示");});
+    // 12. Excel出力（値のみ）
+    _dl=[];T("Excel出力(exportXlsx)",()=>{exportXlsx();eq(_dl.length>0&&_dl[0].size>1000,true,"xlsx生成 "+(_dl[0]?_dl[0].size+"bytes":""));});
+    // 13. draw.io出力
+    T("draw.io出力",()=>{const xml=buildDrawioXml(outProc());eq(xml.includes("<mxfile")&&xml.includes("与信限度内か"),true,"XML内容");});
+    // 14. 評価機能オン/オフとデータ保持
+    T("評価オン/オフ・データ保持",()=>{db=exampleDB();normalize();db.features.eval=true;P().rcm[0].oe_note="保持テスト";db.features.eval=false;applyNavEval();eq(P().rcm[0].oe_note,"保持テスト","オフでも保持");db.features.eval=true;eq(isEvalOn(),true);});
+    // 15. AI回答取込（正JSON/壊れJSON）
+    T("AI取込バリデーション",()=>{
+      document.getElementById("aiInText").value='```json\n{"type":"rcm_add","rows":[{"risk_id":"R9","control_id":"C9","risk_desc":"t","control_desc":"t","assertion":["実在性"]}]}\n```';
+      aiParse();eq(_aiOps.length,1,"正JSON");
+      const n0=P().rcm.length;aiApply();eq(P().rcm.length,n0+1,"適用");eq(P().rcm[n0].as_exist,true,"アサーション変換");
+      document.getElementById("aiInText").value="{broken json]";aiParse();eq(_aiOps.length,0,"壊れJSONは0件");
+      eq(document.getElementById("aiApplyBtn").disabled,true,"適用ボタン無効");
+      document.getElementById("aiInText").value="";});
+    // 16. Excel取込パイプライン（demoMap→プレビュー）
+    T("Excel取込マッピング",()=>{demoMap();eq(document.getElementById("impMapCard").style.display,"","マッピングカード表示");eq(_imp.headers.includes("業務内容")||_imp.headers.includes("作業内容"),true,"ヘッダ認識");});
+  }finally{
+    db=JSON.parse(_bak);normalize();applyMode();syncProcSel();_applied={};applyAll();clearDirty();
+    window.alert=_alert;window.confirm=_confirm;window.download=_download;_asDisabled=_asBak;
+  }
+  // 結果表示
+  const ok=results.filter(x=>x.pass).length;
+  window.__selftest={ok,total:results.length,results};
+  console.table(results);
+  const h=`<div style="position:fixed;inset:0;background:rgba(15,25,22,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px" onclick="this.remove()">
+    <div style="background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:22px 26px" onclick="event.stopPropagation()">
+    <h2 style="margin:0 0 4px;font-size:17px">セルフテスト結果: ${ok} / ${results.length} 合格</h2>
+    <div style="font-size:11.5px;color:#8A9794;margin-bottom:14px">実データには影響しません（テスト後に復元済み）。閉じるには背景をクリック。</div>
+    ${results.map(x=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed #D2DCD8;font-size:12.5px"><span style="flex:none;font-weight:700;color:${x.pass?"#157F5B":"#B0413B"}">${x.pass?"✓":"✕"}</span><span style="flex:1">${esc(x.name)}</span><span style="color:#8A9794;max-width:280px;text-align:right">${esc(x.detail)}</span></div>`).join("")}
+    </div></div>`;
+  const d=document.createElement("div");d.innerHTML=h;document.body.appendChild(d.firstChild);
+  show("dash");
+  return window.__selftest;
+}
 /* ===== 評価管理グループの表示制御（機能フラグ） ===== */
 const EVAL_PGS=["evalwork","evaldoc","oewp","gap","walk","rollf","def","ev"];
 const EVAL_OPT_PGS=["evalwork","evaldoc","oewp","def","ev"];/* オプション化対象（確認・更新系は含まない） */
@@ -4737,6 +4809,7 @@ document.addEventListener("keydown",e=>{
 // 起動（自動保存→復元 / URLパラメータ→デモ表示 / いずれもなければスタート画面）
 (function boot(){
   const q=urlParams();const pgParam=q.get("pg");const demo=q.get("demo");
+  if(q.get("selftest")==="1"){db=exampleDB();normalize();applyMode();syncProcSel();_applied={};applyAll();clearDirty();show("dash");setTimeout(runSelfTest,400);return;}
   // スマホ向け案内（?pg= 指定時と「このまま開く」選択済みは表示しない）
   let mobileSkip=false;try{mobileSkip=localStorage.getItem("jsoxfb_mobile_ok")==="1";}catch(e){}
   if(isMobileView()&&!pgParam&&!mobileSkip){
