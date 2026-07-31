@@ -44,3 +44,47 @@
 ## アーカイブ
 
 `docs/archive/` に初期デザインモック（dc.html＋support.js）・実装反映ガイド・旧スクリーンショットを保全。
+
+
+## バージョン方針
+
+- 現行: **v0.9.0-beta**（アプリ内 `APP_VER`・README・CHANGELOG で一致させる）
+- 安定化完了（CI常時グリーン＋主要導線のフィードバック反映）で **v1.0.0**
+- 以降はセマンティックバージョニング（破壊的変更=メジャー／機能=マイナー／修正=パッチ）
+
+## ソース分割の段階的移行計画（配布物は単一HTMLを維持）
+
+### 現在のセクション境界（単一HTML内・コメントで区分済み）
+
+`<style>`（デザイントークン/コンポーネント/印刷） → `<body>`（ナビ/各page/モーダル/オーバーレイ） → SheetJS → ExcelJS → メインスクリプト（データモデル → ユーティリティ → フロー描画 → グリッド → ギャップ → 出力(Excel/CSV/drawio/mermaid) → モード設定 → テンプレート → 取込 → 反映モデル → 成果物描画 → 評価(evalwork/oewp) → 証憑/フォルダ格納 → 棚卸 → ヘルプ → AI連携 → データ保全 → ガイド/スタート → セルフテスト → 起動）
+
+### 主なグローバル依存
+
+- 状態: `db` / `curPage` / `_applied` / `_viewPref` / `_tour` / `_aiCands` / `_imp` / `fscale`
+- 中核関数: `P()` `outProc()` `applyAll()` `normalize()` `show()` `esc()` `toast()`
+- DOM ID結合が強い層: グリッド描画（stepBody等）・モーダル群
+
+### 分割候補（リスク低い順）
+
+1. 定数（STEP_TYPES / PHASE_COLORS / ASRT_* / SAMPLE_GUIDE / HELP_CAT_META）
+2. サンプルデータ・テンプレート（exampleDB / TEMPLATES）
+3. ユーティリティ（esc / download / dataUrlToBlob / idNum / rcmSorted / toast）
+4. セルフテスト（runSelfTest — 純粋に付加的で最初の切り出しに最適）
+5. ヘルプ記事データ（HELP配列）
+6. AI連携（プロンプト生成・取込パース）
+7. 出力層（drawio/mermaid/ExcelJS変換）
+8. 最後: データモデル・描画中核（十分なテスト整備後）
+
+### ビルド設計（案）
+
+```
+src/
+  00_style.css  10_body.html  20_vendor/(sheetjs,exceljs)
+  30_model.js ... 90_boot.js  tests/selftest.js
+build.js   # マーカー置換で dist/jsox_flow_builder.html に連結
+dist/jsox_flow_builder.html   # 従来どおり単体配布
+```
+
+- `build.js` は Node 標準のみで実装（依存ゼロ）。CI で「ビルド結果 = リポジトリのHTML」を検証し乖離を防ぐ
+- 移行単位ごとに: 切り出し → ビルド → セルフテスト18項目 → コミット、の小さなサイクルで進める
+- 一度に全面リファクタリングしない。各段階で既存JSON・自動保存の互換を維持

@@ -8,6 +8,15 @@ AIで作成したRCM案等も取り込み、人間が確認・確定したうえ
 > 🚀 **紹介ページ（スマホOK）** → https://norimaki-audit.github.io/jsox-flow-builder/
 > 💻 **アプリを開く（PC推奨）** → https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html
 
+| Status | Version | Tested | Self-test | Last verified |
+|---|---|---|---|---|
+| **Beta** | v0.9.0-beta | Chrome / Edge | **18項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
+
+- 📦 [出力される成果物サンプル](https://norimaki-audit.github.io/jsox-flow-builder/#outputs)（Excel / PDF / draw.io / SVG / JSON — 実出力）
+- 🎬 [操作の流れ（デモ）](https://norimaki-audit.github.io/jsox-flow-builder/#demo)
+- 🐛 [不具合報告・要望はこちら](https://github.com/norimaki-audit/jsox-flow-builder/issues/new/choose)
+- ⚠️ 既知の制約: スマホでの編集操作は非対応（閲覧案内を表示）／証憑フォルダ格納は Chrome・Edge のみ／Excelの複雑な結合セルは取込時に列マッピングでの調整が必要
+
 - 💻 PC推奨（横長の表・フロー図を扱うため）
 - 📦 インストール不要・アカウント不要
 - 🔒 入力した業務データをアプリから外部送信しない（ローカル処理）
