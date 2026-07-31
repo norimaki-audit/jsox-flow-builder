@@ -2648,7 +2648,7 @@ function ssSample(){ssHide();loadExample();}
 function ssImport(){ssHide();startImportProject();}
 function ssTemplate(){ssHide();startProject("jsox");setTimeout(()=>openTmplModal(),80);}
 function urlParams(){try{return new URLSearchParams(location.search);}catch(e){return {get:()=>null};}}
-function isMobileView(){return matchMedia("(max-width:768px)").matches&&matchMedia("(pointer:coarse)").matches;}
+function isMobileView(){if(!matchMedia("(max-width:768px)").matches)return false;return matchMedia("(pointer:coarse)").matches||navigator.maxTouchPoints>0||/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);}
 const APP_PC_URL="https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html";
 function mgCopy(){const t=APP_PC_URL;
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast("PC用URLをコピーしました。PCのブラウザに貼り付けて開いてください。",6000),()=>prompt("このURLをコピーしてください",t));
