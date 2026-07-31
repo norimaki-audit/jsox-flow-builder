@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J-SOX三点セット作成ツール | IC Studio</title>
+<title>J-SOX Flow Builder — by IC Studio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230E7C73'/%3E%3Cpath d='M6 7h12M6 12h12M6 17h7' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +61,7 @@
   .brand-logo i{font-size:18px;color:#fff;}
   .brand-txt{display:flex;flex-direction:column;line-height:1.15;white-space:nowrap;}
   .brand-txt .bt1{font-size:13.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink);}
-  .brand-txt .bt2{font-size:9px;font-weight:600;letter-spacing:.13em;color:#94A4A0;}
+  .brand-txt .bt2{font-size:9.5px;font-weight:600;letter-spacing:.04em;color:#94A4A0;}
   .appbar .grow{flex:1;}
   .ab-sep{width:1px;height:26px;background:var(--c-border);margin:0 2px;flex:none;}
   .dirty{color:var(--c-warn);font-size:12px;font-weight:700;display:none;flex:none;white-space:nowrap;}
@@ -602,7 +602,7 @@
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
 </svg>
 <div class="appbar">
-  <span class="brand"><span class="brand-logo"><i class="ph ph-shield-check"></i></span><span class="brand-txt"><span class="bt1">IC Studio</span><span class="bt2" id="appBrand">INTERNAL CONTROL</span></span></span>
+  <span class="brand"><span class="brand-logo"><i class="ph ph-shield-check"></i></span><span class="brand-txt"><span class="bt1">J-SOX Flow Builder</span><span class="bt2" id="appBrand">by IC Studio</span></span></span>
   <span class="ab-sep"></span>
   <div class="seg" id="modeSeg">
     <button id="modeBtnJsox" onclick="setMode('jsox')" title="J-SOX（内部統制）モードに切り替えます（表示のみ変わりデータは保持されます）"><i class="ph ph-shield-check"></i>J-SOX</button>
@@ -614,7 +614,7 @@
   <span class="grow"></span>
   <span id="dirty" class="dirty">● 未保存</span>
   <span class="statuspill" id="applyStatus"><span class="sdot"></span><span id="applyStatusTxt">反映済み</span></span>
-  <button id="applyBtn" class="sm applybtn" onclick="applyAll()" title="いまの編集内容を、業務記述書・フロー図・RCM等の成果物に反映します（アクティブプロセス）"><i class="ph ph-check-circle"></i>反映</button>
+  <button id="applyBtn" class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します"><i class="ph ph-check-circle"></i>成果物へ反映</button>
   <span class="ab-sep"></span>
   <button class="sm" onclick="saveProject()" title="現在のプロジェクトを .json ファイルに保存します"><i class="ph ph-floppy-disk" style="color:#5A6863"></i>保存</button>
   <button class="sm" onclick="aiOpen()" title="いま見ている画面の内容を、お使いのAIツールに貼り付けられる形で整形コピーします（自動送信はしません）"><i class="ph ph-sparkle" style="color:#0E7C73"></i><span class="ai-lbl">AIに相談</span></button>
@@ -641,7 +641,7 @@
       <div class="fm-sep"></div>
       <button onclick="toggleEvalFeature()" title="整備・運用評価／サンプリング調書／評価結果／不備管理／証憑管理の表示を切り替えます。オフにしてもデータは保持されます"><i class="ph ph-list-checks"></i>評価・証憑管理機能<span class="fm-sub" id="evalFeatState">オフ</span></button>
       <div class="fm-sep"></div>
-      <div class="fm-row" style="padding-bottom:2px"><label id="asInfo">自動保存: なし</label></div>
+      <div class="fm-row" style="padding-bottom:2px"><label id="asInfo">自動保存: なし</label><label style="letter-spacing:.02em">J-SOX Flow Builder v0.9.0-beta ・ by IC Studio</label></div>
       <button onclick="closeFileMenu();restoreAutosave()"><i class="ph ph-clock-counter-clockwise"></i>自動保存から復元<span class="fm-sub">直近</span></button>
       <button onclick="closeFileMenu();restoreAutosave(true)"><i class="ph ph-arrow-counter-clockwise"></i>1つ前の自動保存<span class="fm-sub">世代2</span></button>
     </div>
@@ -834,7 +834,7 @@
     <section class="page" id="page-stepsdoc"><div class="pad">
       <div class="ph"><h2 id="stepsDocPageH2">業務記述書</h2><span class="sub">構造化データから生成（プレビュー）</span><span class="sp"></span>
         <div class="seg seg-view"><button onclick="setView('steps','edit')"><i class="ph ph-pencil-simple"></i>編集</button><button class="on"><i class="ph ph-eye"></i>プレビュー</button></div>
-        <button class="sm applybtn" onclick="applyAll()" title="編集内容を反映して再描画">反映</button><button class="sm primary" onclick="exportXlsxRich()" title="色・罫線・フロー図込みのExcelを出力します（配布用）">Excel出力（装飾＋図）</button><button class="sm" onclick="exportDocXlsx('stepsDocBody',fname()+'_業務記述書')" title="画面の表レイアウトのまま .xlsx に出力（値のみ）">データ(.xlsx)</button><button class="sm" onclick="window.print()">印刷 / PDF</button></div>
+        <button class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します">成果物へ反映</button><button class="sm primary" onclick="exportXlsxRich()" title="色・罫線・フロー図込みのExcelを出力します（配布用）">Excel出力（装飾＋図）</button><button class="sm" onclick="exportDocXlsx('stepsDocBody',fname()+'_業務記述書')" title="画面の表レイアウトのまま .xlsx に出力（値のみ）">データ(.xlsx)</button><button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="stepsDocBanner"></div>
       <div id="stepsDocBody" class="doc"></div>
       <div class="manual-only" style="margin-top:20px">
@@ -847,7 +847,7 @@
     <section class="page" id="page-rcmdoc"><div class="pad">
       <div class="ph"><h2>RCM</h2><span class="sub">構造化データから生成（プレビュー）</span><span class="sp"></span>
         <div class="seg seg-view"><button onclick="setView('rcm','edit')"><i class="ph ph-pencil-simple"></i>編集</button><button class="on"><i class="ph ph-eye"></i>プレビュー</button></div>
-        <label style="font-size:12px;font-weight:600;white-space:nowrap">様式：<select id="rcmDocFmt" onchange="renderRcmDoc()"><option value="detail" selected>詳細（一般的なRCM）</option><option value="simple">簡潔（画像準拠）</option></select></label><button class="sm applybtn" onclick="applyAll()" title="編集内容を反映して再描画">反映</button><button class="sm primary" onclick="exportXlsxRich()" title="色・罫線・フロー図込みのExcelを出力します（配布用）">Excel出力（装飾＋図）</button><button class="sm" onclick="exportDocXlsx('rcmDocBody',fname()+'_RCM')" title="値のみのExcelを出力します（分析用）">データ(.xlsx)</button><button class="sm" onclick="exportRcmCSV()" title="全フィールドのCSVを保存">CSV(.csv)</button><button class="sm" onclick="window.print()">印刷 / PDF</button></div>
+        <label style="font-size:12px;font-weight:600;white-space:nowrap">様式：<select id="rcmDocFmt" onchange="renderRcmDoc()"><option value="detail" selected>詳細（一般的なRCM）</option><option value="simple">簡潔（画像準拠）</option></select></label><button class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します">成果物へ反映</button><button class="sm primary" onclick="exportXlsxRich()" title="色・罫線・フロー図込みのExcelを出力します（配布用）">Excel出力（装飾＋図）</button><button class="sm" onclick="exportDocXlsx('rcmDocBody',fname()+'_RCM')" title="値のみのExcelを出力します（分析用）">データ(.xlsx)</button><button class="sm" onclick="exportRcmCSV()" title="全フィールドのCSVを保存">CSV(.csv)</button><button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="rcmDocBanner"></div>
       <div id="rcmDocBody" class="doc"></div>
     </div></section>
@@ -857,7 +857,7 @@
       <div class="ph"><h2>整備・運用評価</h2><span class="sub">統制ごとに「何を・どのように評価したか」を記録します（入力は即時反映）</span><span class="sp"></span>
         <button class="sm" onclick="show('oewp')"><i class="ph ph-files"></i>サンプリング調書</button>
         <button class="sm" onclick="show('evaldoc')"><i class="ph ph-clipboard-text"></i>評価結果（一覧）へ</button>
-        <button class="sm applybtn" onclick="applyAll()" title="編集内容を成果物に反映">反映</button>
+        <button class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します">成果物へ反映</button>
         <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="evalWorkBody" style="max-width:1180px"></div>
     </div></section>
@@ -866,7 +866,7 @@
     <section class="page" id="page-oewp"><div class="pad">
       <div class="ph"><h2>運用評価 サンプリング調書</h2><span class="sub">キーコントロールごとに1葉。サンプル別のテスト結果を記録します</span><span class="sp"></span>
         <button class="sm" onclick="show('evalwork')"><i class="ph ph-list-checks"></i>整備・運用評価へ</button>
-        <button class="sm applybtn" onclick="applyAll()" title="編集内容を成果物に反映">反映</button>
+        <button class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します">成果物へ反映</button>
         <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="oewpBody" style="max-width:1020px"></div>
     </div></section>
@@ -880,7 +880,7 @@
 
     <!-- EVAL DOC (評価結果/評価調書) -->
     <section class="page" id="page-evaldoc"><div class="pad">
-      <div class="ph"><h2>評価結果（評価調書）</h2><span class="sub">整備状況評価・運用状況評価の結果一覧（構造化データから生成）</span><span class="sp"></span><button class="sm applybtn" onclick="applyAll()" title="編集内容を反映して再描画">反映</button><button class="sm primary" onclick="exportXlsxRich()" title="色・罫線・フロー図込みのExcelを出力します（配布用）">Excel出力（装飾＋図）</button><button class="sm" onclick="exportDocXlsx('evalDocBody',fname()+'_評価調書')" title="値のみのExcelを出力します（分析用）">データ(.xlsx)</button><button class="sm" onclick="window.print()">印刷 / PDF</button></div>
+      <div class="ph"><h2>評価結果（評価調書）</h2><span class="sub">整備状況評価・運用状況評価の結果一覧（構造化データから生成）</span><span class="sp"></span><button class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します">成果物へ反映</button><button class="sm primary" onclick="exportXlsxRich()" title="色・罫線・フロー図込みのExcelを出力します（配布用）">Excel出力（装飾＋図）</button><button class="sm" onclick="exportDocXlsx('evalDocBody',fname()+'_評価調書')" title="値のみのExcelを出力します（分析用）">データ(.xlsx)</button><button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div id="evalDocBanner"></div>
       <div id="evalDocBody" class="doc"></div>
     </div></section>
@@ -958,7 +958,7 @@
     <!-- MANUAL OUTPUTS (マニュアル出力) -->
     <section class="page" id="page-manualout"><div class="pad">
       <div class="ph"><h2>マニュアル出力</h2><span class="sub">チェックリスト・使用資料一覧・改善ポイント・担当者別タスク・引継ぎ資料（アクティブ業務）</span><span class="sp"></span>
-        <button class="sm applybtn" onclick="applyAll()" title="編集内容を反映して再描画">反映</button>
+        <button class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します">成果物へ反映</button>
         <button class="sm primary" onclick="exportDocXlsx('manualOutBody',fname()+'_マニュアル出力')" title="表をExcelに出力">データ(.xlsx)</button>
         <button class="sm" onclick="window.print()" title="引継ぎ資料として印刷／PDF化">印刷 / PDF（引継ぎ資料）</button></div>
       <div class="hint no-print">「印刷 / PDF」では、業務マニュアル・フロー図とあわせて引継ぎ用ワンセットとして出力できます（フロー図ページも別途印刷してください）。</div>
@@ -2030,7 +2030,7 @@ async function exportDocXlsx(containerId,fileBase){
   loadingEl.textContent="Excelを生成中…";
   document.body.appendChild(loadingEl);
   try{
-    const wb=new ExcelJS.Workbook();wb.creator=APP_NAME;wb.created=new Date();
+    const wb=new ExcelJS.Workbook();wb.creator=APP_NAME+" by IC Studio";wb.created=new Date();
     const baseName=String(fileBase||"export").split("_").pop().replace(/[\\\/*?:\[\]]/g,"")||"Sheet";
     for(let i=0;i<tables.length;i++){
       const ws=wb.addWorksheet((baseName+(tables.length>1?"_"+(i+1):"")).slice(0,31));
@@ -2199,7 +2199,7 @@ async function exportXlsxRich(){
   document.body.appendChild(loadingEl);
   try{
     const wb=new ExcelJS.Workbook();
-    wb.creator="業務フロー & マニュアルツール";
+    wb.creator=APP_NAME+" by IC Studio";
     wb.created=new Date();
     const p=outProc();
     const m=db&&db.mode||"jsox";
@@ -2332,7 +2332,7 @@ function normalize(){db.mode=db.mode||"jsox";db.evStore=db.evStore||"browser";db
 // MODE_CONFIG: モード差分（用語・ナビ・非表示・テンプレ）を一元管理
 const MODE_CONFIG={
   manual:{
-    label:"業務マニュアル", brand:"業務フロー・マニュアル作成ツール",
+    label:"業務マニュアル", brand:"業務マニュアルモード｜J-SOX Flow Builder",
     navLabels:{processes:"業務の管理",steps:"手順書",stepsdoc:"手順書",rcm:"業務ルール表 編集",rcmdoc:"業務ルール表",flow:"業務フロー図",gap:"抜け漏れチェック",walk:"業務ヒアリングメモ",def:"改善ポイント",ev:"使用資料",library:"規程・資料",manualout:"マニュアル出力"},
     terms:{process:"業務",risk:"起こりうるミス・問題",control:"チェックポイント",keyControl:"重要チェック",evidence:"使用帳票・関連資料・記録",deficiency:"改善ポイント",evaluation:"実施確認"},
     /* §7: マニュアルモードでは J-SOX 系ページを非表示（手順書・フロー図・取込・規程資料・ヘルプ中心） */
@@ -2341,14 +2341,15 @@ const MODE_CONFIG={
     templates:["expense_manual","bill_manual","collect_manual","payment_manual","monthly_manual","order_manual","inquiry_manual"]
   },
   jsox:{
-    label:"J-SOX", brand:"J-SOX三点セット作成ツール",
+    label:"J-SOX", brand:"J-SOX Flow Builder",
     navLabels:{processes:"プロセス管理",steps:"業務記述書",stepsdoc:"業務記述書",rcm:"RCM（リスクと統制）",rcmdoc:"RCM",flow:"フロー図",gap:"ギャップチェック",walk:"ウォークスルー",def:"不備管理",ev:"証憑（格納・依頼）",library:"規程・資料"},
     terms:{process:"業務プロセス",risk:"リスク",control:"統制",keyControl:"キー統制",evidence:"証跡・証憑",deficiency:"不備",evaluation:"評価結果"},
     hiddenPages:[], hiddenFields:[],
     templates:["sales","purchase","inventory","fixedasset","expense"]
   }
 };
-const APP_NAME="業務フロー・マニュアル作成ツール";
+const APP_VER="0.9.0-beta";
+const APP_NAME="J-SOX Flow Builder";
 function modeCfg(){return MODE_CONFIG[(db&&db.mode)||"jsox"]||MODE_CONFIG.jsox;}
 function term(k){const c=modeCfg();return (c.terms&&c.terms[k])||k;}
 // L(k): 後方互換ラッパ（navLabels→terms→旧キーの順で解決）
@@ -2360,8 +2361,8 @@ function applyMode(){
   const m=(db&&db.mode)||"jsox";const cfg=MODE_CONFIG[m]||MODE_CONFIG.jsox;
   document.body.classList.toggle("mode-manual",m==="manual");
   const brand=document.getElementById("appBrand");
-  if(brand)brand.textContent=cfg.brand;
-  document.title=cfg.brand+" | IC Studio";
+  if(brand)brand.textContent=(m==="manual"?"業務マニュアルモード ・ ":"")+"by IC Studio";
+  document.title=(m==="manual"?"業務マニュアルモード｜J-SOX Flow Builder":"J-SOX Flow Builder — 三点セットを、ひとつのデータから");
   const bj=document.getElementById("modeBtnJsox"),bm=document.getElementById("modeBtnManual");
   if(bj)bj.classList.toggle("on",m!=="manual");
   if(bm)bm.classList.toggle("on",m==="manual");
@@ -2642,7 +2643,7 @@ function aiApply(){
   markDirty();
   if(curPage==="steps")renderSteps();else if(curPage==="rcm")renderRcm();else if(curPage==="evalwork")renderEvalWork();
   aiClose();
-  toast(`AI回答を取り込みました: 追加 ${added}件・更新 ${updated}件（✨マーク付き）。内容を確認し、問題なければ［反映］してください。`,7000);
+  toast(`AI回答を取り込みました: 追加 ${added}件・更新 ${updated}件（✨マーク付き）。内容を確認し、問題なければ［成果物へ反映］を押してください。`,7000);
 }
 function aiClose(){document.getElementById("aiModal").style.display="none";}
 function aiBuild(){
@@ -3059,7 +3060,7 @@ function updatePrintHead(pg){
   const meta=document.getElementById("phDocMeta");
   if(meta)meta.textContent=(proc?proc.id+"　"+(proc.name||""):"")+"　／　基準日: "+today()+((db&&db.projectName)?"　／　プロジェクト: "+db.projectName:"");
   const pf=document.getElementById("printFoot");
-  if(pf)pf.innerHTML="<span>"+esc((modeCfg()||{}).brand||"")+"</span><span>"+esc(proc?proc.id+" "+(proc.name||""):"")+"</span><span>印刷日 "+today()+"</span>";
+  if(pf)pf.innerHTML="<span>"+esc((modeCfg()||{}).brand||"")+" ・ by IC Studio ・ v"+APP_VER+"</span><span>"+esc(proc?proc.id+" "+(proc.name||""):"")+"</span><span>印刷日 "+today()+"</span>";
 }
 function fzoom(d){fscale=Math.min(2,Math.max(0.4,fscale+d*0.1));document.getElementById("flowCanvas").style.transform="scale("+fscale+")";document.getElementById("zlabel").textContent=Math.round(fscale*100)+"%";}
 function fzoomReset(){fscale=1;document.getElementById("flowCanvas").style.transform="scale(1)";document.getElementById("zlabel").textContent="100%";}
@@ -3492,10 +3493,10 @@ function snapKey(p){return JSON.stringify({n:p.name,sp:p.sub_process,sc:p.in_sco
 function outProc(){const p=P();return _applied[p.id]||p;}
 function isPending(){const p=P();return !_applied[p.id]||snapKey(_applied[p.id])!==snapKey(p);}
 function applyAll(){pushUndo();const p=P();_applied[p.id]=JSON.parse(JSON.stringify(p));updateApplyBtn();if(OUTPAGES.indexOf(curPage)>=0)show(curPage);}
-function updateApplyBtn(){const b=document.getElementById("applyBtn");if(!b)return;const pend=isPending();b.classList.toggle("pending",pend);b.innerHTML=pend?'<i class="ph ph-check-circle"></i>反映 ●':'<i class="ph ph-check-circle"></i>反映';
+function updateApplyBtn(){const b=document.getElementById("applyBtn");if(!b)return;const pend=isPending();b.classList.toggle("pending",pend);b.innerHTML=pend?'<i class="ph ph-check-circle"></i>成果物へ反映 ●':'<i class="ph ph-check-circle"></i>成果物へ反映';
   const sp=document.getElementById("applyStatus");if(sp){sp.classList.toggle("pend",pend);const t=document.getElementById("applyStatusTxt");if(t)t.textContent=pend?"未反映の編集あり":"反映済み";}}
 function updatePending(){updateApplyBtn();}
-function pendBannerHTML(){return isPending()?`<div class="pend-banner">編集が未反映です。上部の［反映］を押すと成果物に反映されます。<button class="sm" onclick="applyAll()">いま反映</button></div>`:"";}
+function pendBannerHTML(){return isPending()?`<div class="pend-banner">編集内容がまだ成果物に反映されていません。<button class="sm" onclick="applyAll()">成果物へ反映</button></div>`:"";}
 function setBanner(id){const el=document.getElementById(id);if(el)el.innerHTML=pendBannerHTML();}
 function today(){const d=new Date();const z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;}
 
@@ -4562,14 +4563,14 @@ HELP.push(
 <p>このツールで迷子にならないための、たった3つの考え方です。</p>
 <ol>
 <li><b>編集</b> — 業務記述書やRCMの表に入力する場所。入力は即座に「作業中データ」に保存されます（自動保存あり）。</li>
-<li><b>反映</b> — 上部の緑の<b>［反映］ボタン</b>を押すと、作業中データが「成果物」に写されます。<b>押すまで成果物・フロー図・ダッシュボードは変わりません。</b>これは「作りかけの状態が成果物に混ざらないようにする」ための仕様です。</li>
+<li><b>反映</b> — 上部の緑の<b>［成果物へ反映］ボタン</b>を押すと、作業中データが「成果物」に写されます。<b>押すまで成果物・フロー図・ダッシュボードは変わりません。</b>これは「作りかけの状態が成果物に混ざらないようにする」ための仕様です。</li>
 <li><b>プレビュー</b> — 各画面右上の<b>編集｜プレビュー</b>トグルで、入力用の表と、印刷・提出用の体裁を切り替えます。</li>
 </ol>
 <p>「編集したのに変わらない！」と思ったら、まず上部の反映ステータス（<b>未反映の編集あり</b>）を確認してください。9割はこれです。</p>`,mode:null},
 {cat:"つまずきポイント",title:"開発者が通しで操作して感じた難所 10選",keywords:["つまずき","難しい","わからない","初心者","コツ","注意"],html:`
 <p>このツールを実際に最初から最後まで操作してみて、「ここは初めての人には分かりにくい」と感じた箇所を正直に書きます。</p>
 <h2>1. 編集しても成果物が変わらない</h2>
-<p>最大のつまずきポイント。<b>［反映］ボタンを押すまで、成果物（プレビュー・フロー図・ダッシュボード・一覧）は更新されません。</b>上部に「未反映の編集あり」と出ていたら押してください。</p>
+<p>最大のつまずきポイント。<b>［成果物へ反映］ボタンを押すまで、成果物（プレビュー・フロー図・ダッシュボード・一覧）は更新されません。</b>上部に「未反映の編集あり」と出ていたら押してください。</p>
 <h2>2. いま「編集」と「プレビュー」のどちらを見ているか分からなくなる</h2>
 <p>画面右上のトグルで確認できます。<b>白く浮いている方が現在の表示</b>です。入力したいのに書き込めない→プレビューを見ています。</p>
 <h2>3. フロー図にR（リスク）/C（統制）のタグが出ない</h2>
