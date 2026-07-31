@@ -554,6 +554,22 @@
   .aic-d ins{background:#E3F1EB;color:#0F5E42;text-decoration:none;border-radius:3px;padding:0 3px;}
   .ai-mark{cursor:pointer;font-size:12px;margin-right:2px;}
   .ai-mark:hover{filter:brightness(1.2);}
+  /* ===== 初回4ステップガイド ===== */
+  #tourCard{position:fixed;right:20px;bottom:20px;width:290px;background:#fff;border:1px solid var(--c-primary-bd);border-radius:14px;box-shadow:0 10px 34px rgba(14,124,115,.22);z-index:65;display:none;overflow:hidden;}
+  #tourCard.on{display:block;}
+  .tc-h{display:flex;align-items:center;gap:9px;padding:12px 14px;background:linear-gradient(150deg,#0E7C73,#0A5E57);color:#fff;font-size:12.5px;font-weight:700;}
+  .tc-h button{margin-left:auto;width:24px;height:24px;padding:0;border:none;background:rgba(255,255,255,.16);border-radius:6px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .tc-b{padding:10px 14px 12px;}
+  .tc-s{display:flex;align-items:flex-start;gap:9px;padding:7px 0;font-size:12.5px;border-bottom:1px dashed var(--c-line);}
+  .tc-s:last-child{border-bottom:none;}
+  .tc-s .n2{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #C9D6D2;color:#8A9794;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .tc-s.done .n2{background:var(--c-primary);border-color:var(--c-primary);color:#fff;}
+  .tc-s.done .tl{color:var(--c-text-faint);text-decoration:line-through;}
+  .tc-s.next .n2{border-color:var(--c-primary);color:var(--c-primary-d);}
+  .tc-s.next .tl{font-weight:700;color:var(--c-primary-d);}
+  .tc-s .tl{flex:1;line-height:1.5;cursor:pointer;}
+  .tc-s .tl small{display:block;font-weight:400;color:var(--c-text-faint);font-size:11px;}
+  @media print{#tourCard{display:none!important;}}
   /* ===== トースト通知 ===== */
   #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
   #toastBox.on{opacity:1;transform:translate(-50%,0);}
@@ -1117,17 +1133,17 @@
       <button class="ss-card" onclick="ssImport()">
         <span class="ic2"><i class="ph ph-upload-simple"></i></span>
         <span class="t">既存Excel / CSVを取り込む</span>
-        <span class="d">手持ちの業務記述書・RCMを列マッピングで取り込み、そのまま三点セット化します</span>
+        <span class="d"><b>すでに業務記述書やRCMがある方向け。</b>列マッピングで取り込み、そのまま三点セット化します</span>
       </button>
       <button class="ss-card" onclick="ssTemplate()">
         <span class="ic2"><i class="ph ph-files"></i></span>
         <span class="t">テンプレートから新規作成</span>
-        <span class="d">販売・購買・在庫・固定資産・経費などの業種別ひな形から始めます</span>
+        <span class="d"><b>新しく業務を文書化する方向け。</b>販売・購買・在庫・固定資産・経費のひな形から始めます</span>
       </button>
       <button class="ss-card" onclick="ssSample()">
         <span class="ic2"><i class="ph ph-flask"></i></span>
         <span class="t">サンプルデータで試す</span>
-        <span class="d">販売プロセスの記入例で全機能を体験。壊れても大丈夫です</span>
+        <span class="d"><b>操作方法をすぐ確認したい方向け。</b>販売プロセスの記入例で体験。壊れても大丈夫です</span>
         <span class="rec">まずはこれがおすすめ</span>
       </button>
     </div>
@@ -1152,6 +1168,16 @@
       <button class="mg-sec" onclick="mgShare()"><i class="ph ph-share-network"></i>共有する</button>
       <button class="mg-ghost" onclick="mgProceed()">このまま開く</button>
     </div>
+  </div>
+</div>
+<!-- 初回4ステップガイド -->
+<div id="tourCard">
+  <div class="tc-h"><i class="ph ph-flag-checkered"></i>最初の4ステップ<button onclick="tourClose()" title="閉じる（二度と表示しない）"><i class="ph ph-x" style="font-size:13px"></i></button></div>
+  <div class="tc-b">
+    <div class="tc-s" id="tc-1"><span class="n2">1</span><span class="tl" onclick="show('steps')">工程を1行編集してみる<small>業務記述書のセルをどこでも書き換えてOK</small></span></div>
+    <div class="tc-s" id="tc-2"><span class="n2">2</span><span class="tl" onclick="applyAll();">成果物へ反映<small>上部の緑のボタン。編集が三点セットに写ります</small></span></div>
+    <div class="tc-s" id="tc-3"><span class="n2">3</span><span class="tl" onclick="show('flow')">フロー図を確認<small>編集した工程が図に反映されています</small></span></div>
+    <div class="tc-s" id="tc-4"><span class="n2">4</span><span class="tl" onclick="toggleXlsMenu(new MouseEvent('click'))">Excelへ出力<small>右上「Excel出力」から画面に応じた出力を選択</small></span></div>
   </div>
 </div>
 <datalist id="dlDept"></datalist>
@@ -1575,6 +1601,7 @@ function onGrid(e){
   a[i][f]=(t.type==="checkbox")?t.checked:t.value;markDirty();
   if(t.dataset.g==="steps"&&(f==="dept"||f==="gyomu"))updateDeptList();
   if(t.dataset.g==="steps"&&e.type==="change"&&(f==="type"||f==="gyomu"||f==="dept"))renderSteps();
+  if(t.dataset.g==="steps"&&typeof tourStep==="function")tourStep(1);
   if(t.dataset.g==="def"&&e.type==="change")renderDefSummary();
 }
 document.getElementById("stepBody").addEventListener("input",onGrid);
@@ -2683,7 +2710,7 @@ function demoMap(){
   impAfterSheet();
 }
 function ssHide(){const s=document.getElementById("startScreen");if(s)s.classList.remove("on");}
-function ssSample(){ssHide();loadExample();}
+function ssSample(){ssHide();loadExample();tourStart();}
 function ssImport(){ssHide();startImportProject();}
 function ssTemplate(){ssHide();startProject("jsox");setTimeout(()=>openTmplModal(),80);}
 function urlParams(){try{return new URLSearchParams(location.search);}catch(e){return {get:()=>null};}}
@@ -2777,6 +2804,32 @@ async function runSelfTest(){
   show("dash");
   return window.__selftest;
 }
+/* =================================================================
+   初回4ステップガイド（軽量チェックリスト・完了/クローズ後は表示しない）
+   ================================================================= */
+let _tour={on:false,done:[false,false,false,false]};
+function tourDone(){try{return localStorage.getItem("jsoxfb_tour_done")==="1";}catch(e){return false;}}
+function tourStart(){if(tourDone())return;_tour.on=true;_tour.done=[false,false,false,false];tourRender();
+  const c=document.getElementById("tourCard");if(c)c.classList.add("on");}
+function tourClose(){_tour.on=false;try{localStorage.setItem("jsoxfb_tour_done","1");}catch(e){}
+  const c=document.getElementById("tourCard");if(c)c.classList.remove("on");}
+function tourRender(){
+  if(!_tour.on)return;
+  let next=_tour.done.findIndex(x=>!x);
+  for(let i=0;i<4;i++){const el=document.getElementById("tc-"+(i+1));if(!el)continue;
+    el.classList.toggle("done",_tour.done[i]);
+    el.classList.toggle("next",i===next);}
+}
+function tourStep(i){
+  if(!_tour.on||_tour.done[i-1])return;
+  _tour.done[i-1]=true;tourRender();
+  const msgs=["工程を編集しました。次は上部の「成果物へ反映」を押しましょう",
+              "成果物へ反映しました。左メニューの「フロー図」で変化を確認しましょう",
+              "フロー図に反映されています。最後に右上の「Excel出力」から出力してみましょう",
+              "おつかれさまでした！ 基本の流れはこれだけです。保存は ファイル → プロジェクトを保存(.json)"];
+  toast(msgs[i-1],5500);
+  if(_tour.done.every(x=>x))setTimeout(tourClose,6000);
+}
 /* ===== 評価管理グループの表示制御（機能フラグ） ===== */
 const EVAL_PGS=["evalwork","evaldoc","oewp","gap","walk","rollf","def","ev"];
 const EVAL_OPT_PGS=["evalwork","evaldoc","oewp","def","ev"];/* オプション化対象（確認・更新系は含まない） */
@@ -2859,7 +2912,7 @@ function updateXlsMenu(){
   if(c){btn.style.display="";lbl.textContent=c.lbl;}
   else{btn.style.display="";lbl.textContent="全データ（.xlsx）を出力";}
 }
-function exportContextXlsx(){const c=xlsCtxOf();if(c)c.run();else exportXlsx();}
+function exportContextXlsx(){const c=xlsCtxOf();if(c)c.run();else exportXlsx();if(typeof tourStep==="function"&&_tour.on&&_tour.done[2])tourStep(4);}
 function setMode(m){if(((db&&db.mode)||"jsox")===m)return;switchMode();}
 function switchMode(){pushUndo();db.mode=(db.mode||"jsox")==="jsox"?"manual":"jsox";markDirty();applyMode();show(curPage);}
 /* ===== 編集｜プレビュー 統合ナビ（§2-1 / FIXES §12-A） ===== */
@@ -3051,6 +3104,7 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   updateApplyBtn();if(typeof updateXlsMenu==="function")updateXlsMenu();
   if(EVAL_OPT_PGS.includes(pg)&&db&&db.features&&!db.features.eval){db.features.eval=true;toast("評価・証憑管理機能をオンにしました（ファイルメニューからオフにできます）。",5000);}
   applyNavEval();
+  if(pg==="flow"&&typeof tourStep==="function"&&_tour.on&&_tour.done[1])tourStep(3);
   updatePrintHead(pg);}
 function updatePrintHead(pg){
   const t=document.getElementById("phDocTitle");if(!t)return;
@@ -3492,7 +3546,7 @@ let _applied={};const OUTPAGES=["stepsdoc","flow","rcmdoc","gap","walk"];
 function snapKey(p){return JSON.stringify({n:p.name,sp:p.sub_process,sc:p.in_scope,lo:p.laneOrder,s:p.steps,r:p.rcm});}
 function outProc(){const p=P();return _applied[p.id]||p;}
 function isPending(){const p=P();return !_applied[p.id]||snapKey(_applied[p.id])!==snapKey(p);}
-function applyAll(){pushUndo();const p=P();_applied[p.id]=JSON.parse(JSON.stringify(p));updateApplyBtn();if(OUTPAGES.indexOf(curPage)>=0)show(curPage);}
+function applyAll(){pushUndo();const p=P();_applied[p.id]=JSON.parse(JSON.stringify(p));updateApplyBtn();if(typeof tourStep==="function"&&_tour.on&&_tour.done[0])tourStep(2);if(OUTPAGES.indexOf(curPage)>=0)show(curPage);}
 function updateApplyBtn(){const b=document.getElementById("applyBtn");if(!b)return;const pend=isPending();b.classList.toggle("pending",pend);b.innerHTML=pend?'<i class="ph ph-check-circle"></i>成果物へ反映 ●':'<i class="ph ph-check-circle"></i>成果物へ反映';
   const sp=document.getElementById("applyStatus");if(sp){sp.classList.toggle("pend",pend);const t=document.getElementById("applyStatusTxt");if(t)t.textContent=pend?"未反映の編集あり":"反映済み";}}
 function updatePending(){updateApplyBtn();}
@@ -4857,6 +4911,10 @@ document.addEventListener("keydown",e=>{
 // 起動（自動保存→復元 / URLパラメータ→デモ表示 / いずれもなければスタート画面）
 (function boot(){
   const q=urlParams();const pgParam=q.get("pg");const demo=q.get("demo");
+  if(q.get("start")==="sample"){db=exampleDB();normalize();applyMode();
+    const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
+    syncProcSel();_applied={};applyAll();clearDirty();show("steps");tourStart();
+    updateAsInfo();return;}
   if(q.get("selftest")==="1"){db=exampleDB();normalize();applyMode();syncProcSel();_applied={};applyAll();clearDirty();show("dash");setTimeout(runSelfTest,400);return;}
   // スマホ向け案内（?pg= 指定時と「このまま開く」選択済みは表示しない）
   let mobileSkip=false;try{mobileSkip=localStorage.getItem("jsoxfb_mobile_ok")==="1";}catch(e){}
