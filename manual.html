@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>業務マニュアル・業務フロー図を、ひとつのデータから — J-SOX Flow Builder 業務マニュアルモード</title>
+<meta name="description" content="手順を表に入力するだけで、業務フロー図・チェックリスト・引継ぎ資料まで自動生成。中小企業・士業・バックオフィスの脱属人化と引継ぎのための無料ツールです。インストール不要・データはブラウザ内で処理。">
+<link rel="canonical" href="https://norimaki-audit.github.io/jsox-flow-builder/manual.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="業務マニュアルと業務フロー図を、ひとつのデータから。">
+<meta property="og:description" content="手順を表に入力するだけで、業務フロー図・チェックリスト・引継ぎ資料まで自動生成。脱属人化・引継ぎのための無料ツール。">
+<meta property="og:url" content="https://norimaki-audit.github.io/jsox-flow-builder/manual.html">
+<meta property="og:image" content="https://norimaki-audit.github.io/jsox-flow-builder/assets/og/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0E7C73">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230E7C73'/%3E%3Cpath d='M6 7h12M6 12h12M6 17h7' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root{--p:#0E7C73;--pd:#0A5E57;--tint:#EAF4F1;--bd:#C9E0D9;--bg:#F4F6F6;--line:#E2E8E7;--ink:#14201E;--mid:#56635F;--faint:#8A9794;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo",system-ui,sans-serif;color:var(--ink);background:#fff;line-height:1.75;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
+  h2{font-size:24px;letter-spacing:-.01em;margin-bottom:8px;}
+  .sec{padding:64px 0;}
+  .sec-sub{color:var(--mid);font-size:14.5px;margin-bottom:34px;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:52px;padding:0 26px;border-radius:12px;font-size:15.5px;font-weight:700;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:transform .12s,box-shadow .12s;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-p{background:var(--p);color:#fff;box-shadow:0 4px 14px rgba(14,124,115,.3);}
+  .btn-s{background:#fff;color:#33403C;border:1.5px solid #D5DEDB;}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--pd);background:var(--tint);border:1px solid var(--bd);border-radius:20px;padding:5px 14px;}
+  svg.i{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.18em;}
+  .hero{background:linear-gradient(165deg,#0E7C73 0%,#0A5E57 78%);color:#fff;padding:74px 0 66px;}
+  .hero .badge{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#D6EEEA;margin-bottom:22px;}
+  .hero h1{font-size:clamp(28px,5vw,44px);font-weight:800;letter-spacing:-.015em;line-height:1.4;margin-bottom:18px;}
+  .hero .lead{font-size:clamp(14.5px,1.8vw,17px);color:#D6EEEA;max-width:660px;margin-bottom:12px;}
+  .hero .note{font-size:13px;color:#A9D4CD;margin-bottom:30px;}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;}
+  .pc-only{display:flex;} .sp-only{display:none;}
+  @media (max-width:768px){.pc-only{display:none!important;}.sp-only{display:flex;}}
+  .sp-cta{flex-direction:column;width:100%;max-width:380px;}
+  .sp-note{font-size:12px;color:#A9D4CD;margin-top:10px;}
+  .pain{background:var(--bg);}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;}
+  .card h3{font-size:15px;margin:10px 0 6px;}
+  .card p{font-size:13px;color:var(--mid);}
+  .card .ic{width:42px;height:42px;border-radius:11px;background:var(--tint);display:flex;align-items:center;justify-content:center;color:var(--p);font-size:20px;}
+  .steps{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;justify-content:center;}
+  .stp{flex:1;min-width:190px;max-width:240px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;position:relative;margin:0 16px 16px 0;}
+  .stp .n{width:28px;height:28px;border-radius:50%;background:var(--p);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+  .stp h3{font-size:14.5px;margin-bottom:5px;}
+  .stp p{font-size:12.5px;color:var(--mid);}
+  .stp::after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);color:#9FB5AD;font-size:18px;font-weight:700;}
+  .stp:last-child::after{content:"";}
+  .shots{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:768px){.shots{grid-template-columns:1fr;}}
+  .shot{cursor:zoom-in;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;transition:box-shadow .15s;}
+  .shot:hover{box-shadow:0 8px 26px rgba(20,40,35,.14);}
+  .shot img{width:100%;display:block;}
+  .shot figcaption{font-size:12.5px;color:var(--mid);padding:10px 14px;border-top:1px solid var(--line);}
+  #lightbox{position:fixed;inset:0;background:rgba(15,25,22,.88);display:none;align-items:center;justify-content:center;z-index:100;padding:22px;cursor:zoom-out;}
+  #lightbox.on{display:flex;}
+  #lightbox img{max-width:100%;max-height:92vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .trust li{list-style:none;display:flex;gap:11px;align-items:flex-start;padding:9px 0;font-size:14px;}
+  .trust li svg{color:var(--p);margin-top:5px;}
+  .xover{border:1.5px solid var(--bd);background:var(--tint);border-radius:14px;padding:22px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .xover p{font-size:13.5px;color:#2A3633;flex:1;min-width:240px;}
+  .fcta{background:linear-gradient(165deg,#0E7C73,#0A5E57);color:#fff;text-align:center;padding:64px 22px;}
+  .fcta h2{color:#fff;margin-bottom:10px;}
+  .fcta p{color:#C9E6E1;font-size:13.5px;margin-bottom:26px;}
+  footer{padding:34px 22px;text-align:center;font-size:12px;color:var(--faint);background:#0B1513;}
+  footer a{color:#8FB8B0;}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#14201E;color:#fff;font-size:13px;padding:11px 20px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:110;}
+  .toast.on{opacity:1;}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="badge">無料 ・ ブラウザだけで動作 ・ J-SOX不要の会社向け</span>
+    <h1>業務マニュアルと業務フロー図を、<br>ひとつのデータから。</h1>
+    <p class="lead">手順を表に入力するだけで、業務フロー図・手順書・チェックリスト・引継ぎ資料まで自動生成。「あの人しか分からない仕事」をなくすための無料ツールです。</p>
+    <p class="note">公認会計士が開発。インストール不要。入力した業務データはアプリから外部サーバーへ送信しません。</p>
+    <div class="cta pc-only">
+      <a class="btn btn-p" href="./jsox_flow_builder.html?mode=manual"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>PCで無料で試す（マニュアルモード）</a>
+      <a class="btn btn-s" href="#shots">操作画面を見る</a>
+    </div>
+    <div class="cta sp-only sp-cta">
+      <button class="btn btn-p" onclick="copyUrl()"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>PC用URLをコピー</button>
+      <button class="btn btn-s" onclick="shareUrl()"><svg class="i" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>PCへ共有する</button>
+      <a class="btn btn-s" href="#shots">操作画面を見る</a>
+      <span class="sp-note">操作画面はPC向けです。スマートフォンでは概要と操作例をご覧いただけます。</span>
+    </div>
+  </div>
+</header>
+
+<section class="sec pain">
+  <div class="wrap">
+    <h2>こんな悩みはありませんか</h2>
+    <p class="sec-sub">中小企業・士業事務所・バックオフィスで、毎日のように起きていることです。</p>
+    <div class="cards">
+      <div class="card"><span class="ic">🙋</span><h3>あの人しか分からない</h3><p>担当者が休む・辞めると業務が止まる。頭の中にしかない手順がある</p></div>
+      <div class="card"><span class="ic">📦</span><h3>引継ぎのたびにゼロから</h3><p>異動・退職のたびに口頭とメモで引継ぎ。抜け漏れが必ず起きる</p></div>
+      <div class="card"><span class="ic">🗓️</span><h3>マニュアルが古い</h3><p>作った手順書が更新されず、実態と合っていない。直すのも大変</p></div>
+      <div class="card"><span class="ic">⏰</span><h3>作る時間がない</h3><p>Wordで一から書くのは重すぎて、結局後回しになっている</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <h2>しくみ：表に書くだけ</h2>
+    <p class="sec-sub">文章を書くのではなく、<b>手順を1行ずつ表に入力する</b>だけ。フロー図もマニュアルも同じデータから自動で作られるので、直すのも1か所です。</p>
+    <div class="steps">
+      <div class="stp"><span class="n">1</span><h3>手順を入力</h3><p>1行＝1手順。担当・使用資料・注意点も。テンプレート（請求書発行・入金確認・経費精算など）からも開始できます</p></div>
+      <div class="stp"><span class="n">2</span><h3>フロー図が自動生成</h3><p>部署ごとのスイムレーン図が自動で描かれます。作図作業はゼロ</p></div>
+      <div class="stp"><span class="n">3</span><h3>マニュアル・チェックリスト出力</h3><p>手順書・チェックリスト・担当者別タスク・引継ぎ資料を印刷/Excelへ</p></div>
+      <div class="stp"><span class="n">4</span><h3>棚卸して改善</h3><p>属人化・記載漏れ・手作業の多さを自動検出。改善ポイントが見える</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec pain" id="shots">
+  <div class="wrap">
+    <h2>実際の操作画面</h2>
+    <p class="sec-sub">クリック（タップ）で拡大できます。すべて現行バージョンの実機画面・サンプルデータです。</p>
+    <div class="shots">
+      <figure class="shot"><img src="assets/screenshots/current/m1-manual-steps.png" alt="手順書の編集画面：業務ごとにグルーピングされた手順表" loading="lazy"><figcaption>① 手順書：1行＝1手順。業務ごとに自動グルーピング</figcaption></figure>
+      <figure class="shot"><img src="assets/screenshots/current/m2-manual-flow.png" alt="自動生成された業務フロー図" loading="lazy"><figcaption>② 業務フロー図は自動生成（部署ごとのスイムレーン）</figcaption></figure>
+      <figure class="shot"><img src="assets/screenshots/current/m3-manual-output.png" alt="マニュアル出力：チェックリストと引継ぎ資料" loading="lazy"><figcaption>③ チェックリスト・担当者別タスク・引継ぎ資料を出力</figcaption></figure>
+      <figure class="shot"><img src="assets/screenshots/current/m4-manual-kaizen.png" alt="業務の棚卸・改善画面" loading="lazy"><figcaption>④ 業務の棚卸：属人化・記載漏れ・改善ポイントを自動検出</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <h2>安心してお使いいただくために</h2>
+    <ul class="trust">
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>アカウント登録・インストール不要。ブラウザで開くだけ・完全無料</span></li>
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>入力した業務データを、アプリから外部サーバーへ送信しません（表示用のフォント等のみCDNから取得）</span></li>
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>データはJSONファイルとしてPCに保存・復元できます（自動保存つき）</span></li>
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>AIに手順の文章改善や抜け漏れ確認を頼める「AIに相談」機能つき（送信は自分で確認してコピー）</span></li>
+    </ul>
+    <div class="xover" style="margin-top:34px">
+      <p><b>上場準備・J-SOX対応が必要になったら。</b>同じデータのまま「J-SOXモード」に切り替えると、業務記述書・RCM・整備運用評価まで発展させられます。マニュアル整備が、そのまま内部統制文書化の第一歩になります。</p>
+      <a class="btn btn-s" href="./" style="flex:none">J-SOX三点セット版を見る →</a>
+    </div>
+  </div>
+</section>
+
+<div class="fcta">
+  <h2 class="pc-only" style="display:block">まずは1つの業務から</h2>
+  <h2 class="sp-only" style="display:block">PCでお試しください</h2>
+  <p>「請求書を発行する」「入金を確認する」— 小さな業務1つから始めるのがおすすめです。</p>
+  <div class="cta pc-only" style="justify-content:center">
+    <a class="btn btn-s" href="./jsox_flow_builder.html?mode=manual" style="background:#fff;color:var(--pd)">マニュアルモードで開く（無料）</a>
+  </div>
+  <div class="cta sp-only sp-cta" style="margin:0 auto">
+    <button class="btn btn-s" style="background:#fff;color:var(--pd)" onclick="copyUrl()">PC用URLをコピーする</button>
+    <button class="btn btn-s" style="background:rgba(255,255,255,.15);color:#fff" onclick="shareUrl()">PCに共有する</button>
+  </div>
+</div>
+
+<footer>
+  <p>J-SOX Flow Builder 業務マニュアルモード（ベータ版・開発中） ・ <a href="./">J-SOX版の紹介</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder">GitHub</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder/blob/main/docs/PRIVACY.md">データの取り扱い</a></p>
+</footer>
+
+<div id="lightbox" onclick="this.classList.remove('on')"><img id="lbImg" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const APP_URL="https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html?mode=manual";
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000);}
+function copyUrl(){
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(APP_URL).then(()=>toast("PC用URLをコピーしました。PCのブラウザに貼り付けて開いてください。"),()=>prompt("このURLをコピーしてください",APP_URL));
+  else prompt("このURLをコピーしてください",APP_URL);
+}
+function shareUrl(){
+  if(navigator.share)navigator.share({title:"業務マニュアル・フロー図作成ツール",text:"手順を表に書くだけで、業務フロー図・マニュアル・引継ぎ資料まで自動生成できる無料ツール（PC推奨）",url:APP_URL}).catch(()=>{});
+  else copyUrl();
+}
+document.querySelectorAll(".shot img").forEach(img=>{
+  img.parentElement.addEventListener("click",()=>{
+    document.getElementById("lbImg").src=img.src;
+    document.getElementById("lbImg").alt=img.alt;
+    document.getElementById("lightbox").classList.add("on");
+  });
+});
+</script>
+</body>
+</html>

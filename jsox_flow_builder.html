@@ -4863,10 +4863,12 @@ document.addEventListener("keydown",e=>{
     document.getElementById("mobileGate").classList.add("on");
   }
   const a=getAutosave();
+  const modeParam=q.get("mode");
   if(pgParam){
     // ディープリンク: サンプルで指定ページを開く（撮影・共有用）
     if(a&&a.json){try{db=JSON.parse(a.json);}catch(e){db=exampleDB();}}else db=exampleDB();
     normalize();
+    if(modeParam==="manual")db.mode="manual";
     if(["evalwork","evaldoc","oewp","def","ev"].includes(pgParam))db.features.eval=true;
     applyMode();
     const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
@@ -4898,7 +4900,13 @@ document.addEventListener("keydown",e=>{
     }catch(e){console.warn("自動保存の復元に失敗:",e);}
   }
   // 初回: 空のプロジェクトを内部的に用意し、スタート画面を表示
-  db=exampleDB();normalize();applyMode();
+  db=exampleDB();normalize();
+  if(modeParam==="manual"){db.mode="manual";applyMode();
+    const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
+    syncProcSel();_applied={};applyAll();clearDirty();show("steps");
+    toast("業務マニュアルモードで開きました。サンプルの手順書を編集して試せます。最初から作る場合は ファイル → 新規作成。",7000);
+    updateAsInfo();return;}
+  applyMode();
   const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
   syncProcSel();_applied={};applyAll();clearDirty();show("dash");
   document.getElementById("startScreen").classList.add("on");
