@@ -507,6 +507,38 @@
   #evalWorkBody tbody td.evalc{background:#F7FBF2;}
   /* 評価内容セルの行高抑制 */
   td.col-note{max-width:300px;word-break:break-word;}
+  /* ===== スタート画面（初回3択） ===== */
+  #startScreen{position:fixed;inset:0;background:linear-gradient(160deg,#F4F6F6 0%,#EAF2F0 100%);z-index:70;display:none;align-items:center;justify-content:center;padding:24px;overflow:auto;}
+  #startScreen.on{display:flex;}
+  .ss-box{width:880px;max-width:100%;}
+  .ss-logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px;}
+  .ss-title{text-align:center;font-size:22px;font-weight:700;letter-spacing:-.01em;margin:0 0 6px;}
+  .ss-sub{text-align:center;font-size:13px;color:var(--c-text-mid);margin:0 0 26px;}
+  .ss-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+  @media (max-width:760px){.ss-cards{grid-template-columns:1fr;}}
+  .ss-card{background:#fff;border:1px solid var(--c-border);border-radius:14px;padding:22px 20px;cursor:pointer;text-align:center;transition:border-color var(--ease),box-shadow var(--ease),transform var(--ease);display:flex;flex-direction:column;align-items:center;gap:10px;height:auto;font:inherit;}
+  .ss-card:hover{border-color:var(--c-primary);box-shadow:0 6px 22px rgba(14,124,115,.14);transform:translateY(-2px);background:#fff;}
+  .ss-card .ic2{width:52px;height:52px;border-radius:13px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center;}
+  .ss-card .ic2 i{font-size:26px;color:var(--c-primary);}
+  .ss-card .t{font-size:14.5px;font-weight:700;color:#1F2B27;}
+  .ss-card .d{font-size:11.5px;color:var(--c-text-mid);line-height:1.6;}
+  .ss-card .rec{font-size:10px;font-weight:700;color:#fff;background:var(--c-primary);border-radius:9px;padding:2px 9px;}
+  .ss-flow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--c-text-mid);margin-bottom:18px;}
+  .ss-step{background:#fff;border:1px solid var(--c-border);border-radius:8px;padding:6px 13px;font-weight:600;color:#33403C;white-space:nowrap;}
+  .ss-flow i{color:#9FB5AD;}
+  .ss-foot{text-align:center;font-size:11.5px;color:var(--c-text-faint);}
+  .ss-foot a{color:var(--c-primary-d);}
+  /* ===== スマホ向けPC推奨案内 ===== */
+  #mobileGate{position:fixed;inset:0;background:#F4F6F6;z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 22px;text-align:center;overflow:auto;}
+  #mobileGate.on{display:flex;}
+  #mobileGate .mg-box{max-width:420px;width:100%;}
+  #mobileGate h2{font-size:19px;margin:14px 0 8px;}
+  #mobileGate p{font-size:13px;color:var(--c-text-mid);line-height:1.8;margin:0 0 20px;}
+  #mobileGate .mg-btns{display:flex;flex-direction:column;gap:10px;}
+  #mobileGate button,#mobileGate a.mg-a{height:46px;border-radius:11px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-family:inherit;}
+  #mobileGate .mg-primary{background:var(--c-primary);color:#fff;border:1px solid var(--c-primary-d);}
+  #mobileGate .mg-sec{background:#fff;color:#33403C;border:1px solid #DCE5E3;}
+  #mobileGate .mg-ghost{background:transparent;border:none;color:var(--c-text-faint);font-size:12px;height:auto;padding:6px;}
   /* ===== トースト通知 ===== */
   #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
   #toastBox.on{opacity:1;transform:translate(-50%,0);}
@@ -1057,6 +1089,53 @@
       <button onclick="aiClose()">閉じる</button>
       <button class="primary" id="aiCopyBtn" onclick="aiCopy()"><i class="ph ph-clipboard-text"></i>クリップボードにコピー</button>
       <button class="primary" id="aiApplyBtn" style="display:none" disabled onclick="aiApply()"><i class="ph ph-check"></i>取り込みを実行</button>
+    </div>
+  </div>
+</div>
+<!-- スタート画面（初回） -->
+<div id="startScreen">
+  <div class="ss-box">
+    <div class="ss-logo"><span class="brand-logo" style="width:44px;height:44px;border-radius:12px"><i class="ph ph-shield-check" style="font-size:24px"></i></span></div>
+    <h1 class="ss-title">J-SOX三点セットを、ひとつのデータから。</h1>
+    <p class="ss-sub">業務記述書・フロー図・RCMを、構造化した工程・リスク・統制データから整合した状態で作成・更新します。<br>まずは始め方を選んでください。</p>
+    <div class="ss-cards">
+      <button class="ss-card" onclick="ssImport()">
+        <span class="ic2"><i class="ph ph-upload-simple"></i></span>
+        <span class="t">既存Excel / CSVを取り込む</span>
+        <span class="d">手持ちの業務記述書・RCMを列マッピングで取り込み、そのまま三点セット化します</span>
+      </button>
+      <button class="ss-card" onclick="ssTemplate()">
+        <span class="ic2"><i class="ph ph-files"></i></span>
+        <span class="t">テンプレートから新規作成</span>
+        <span class="d">販売・購買・在庫・固定資産・経費などの業種別ひな形から始めます</span>
+      </button>
+      <button class="ss-card" onclick="ssSample()">
+        <span class="ic2"><i class="ph ph-flask"></i></span>
+        <span class="t">サンプルデータで試す</span>
+        <span class="d">販売プロセスの記入例で全機能を体験。壊れても大丈夫です</span>
+        <span class="rec">まずはこれがおすすめ</span>
+      </button>
+    </div>
+    <div class="ss-flow">
+      <span class="ss-step">入力・取込</span><i class="ph ph-arrow-right"></i>
+      <span class="ss-step">内容確認・修正</span><i class="ph ph-arrow-right"></i>
+      <span class="ss-step">三点セット生成</span><i class="ph ph-arrow-right"></i>
+      <span class="ss-step">Excel / draw.io 出力</span>
+    </div>
+    <div class="ss-foot">アカウント登録不要 ・ 入力データはアプリから外部サーバーへ送信しません ・ <a href="#" onclick="ssSample();setTimeout(()=>show('help'),100);return false">使い方を見る</a></div>
+  </div>
+</div>
+<!-- スマホ向けPC推奨案内 -->
+<div id="mobileGate">
+  <div class="mg-box">
+    <span class="brand-logo" style="width:52px;height:52px;border-radius:14px;margin:0 auto;display:flex"><i class="ph ph-shield-check" style="font-size:28px"></i></span>
+    <h2>このツールはPCでの利用を推奨しています</h2>
+    <p>J-SOX Flow Builder は横長の表・業務フロー図・Excel取込を扱うため、画面の広いPCでの操作を前提に設計されています。<br>スマートフォンでは、まず概要をご覧いただき、URLをPCへ共有してお試しください。</p>
+    <div class="mg-btns">
+      <a class="mg-a mg-primary" href="./"><i class="ph ph-book-open"></i>ツールの概要を見る</a>
+      <button class="mg-sec" onclick="mgCopy()"><i class="ph ph-copy"></i>PC用URLをコピー</button>
+      <button class="mg-sec" onclick="mgShare()"><i class="ph ph-share-network"></i>共有する</button>
+      <button class="mg-ghost" onclick="mgProceed()">このまま開く</button>
     </div>
   </div>
 </div>
@@ -2542,6 +2621,23 @@ function aiCopy(){
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>{document.getElementById("aiText").select();document.execCommand("copy");done();});
   else{document.getElementById("aiText").select();document.execCommand("copy");done();}
 }
+/* =================================================================
+   スタート画面（初回3択）・スマホ案内・撮影/共有用ディープリンク
+   ================================================================= */
+function ssHide(){const s=document.getElementById("startScreen");if(s)s.classList.remove("on");}
+function ssSample(){ssHide();loadExample();}
+function ssImport(){ssHide();startImportProject();}
+function ssTemplate(){ssHide();startProject("jsox");setTimeout(()=>openTmplModal(),80);}
+function urlParams(){try{return new URLSearchParams(location.search);}catch(e){return {get:()=>null};}}
+function isMobileView(){return matchMedia("(max-width:768px)").matches&&matchMedia("(pointer:coarse)").matches;}
+const APP_PC_URL="https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html";
+function mgCopy(){const t=APP_PC_URL;
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast("PC用URLをコピーしました。PCのブラウザに貼り付けて開いてください。",6000),()=>prompt("このURLをコピーしてください",t));
+  else prompt("このURLをコピーしてください",t);}
+function mgShare(){
+  if(navigator.share)navigator.share({title:"J-SOX Flow Builder",text:"J-SOX三点セットを、ひとつのデータから作成・更新できる無料ツール（PC推奨）",url:APP_PC_URL}).catch(()=>{});
+  else mgCopy();}
+function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){}document.getElementById("mobileGate").classList.remove("on");}
 /* ===== 評価管理グループの表示制御（機能フラグ） ===== */
 const EVAL_PGS=["evalwork","evaldoc","oewp","gap","walk","rollf","def","ev"];
 const EVAL_OPT_PGS=["evalwork","evaldoc","oewp","def","ev"];/* オプション化対象（確認・更新系は含まない） */
@@ -4590,9 +4686,37 @@ document.addEventListener("keydown",e=>{
   }
 });
 
-// 起動（自動保存があれば復元・なければサンプル読込）
+// 起動（自動保存→復元 / URLパラメータ→デモ表示 / いずれもなければスタート画面）
 (function boot(){
+  const q=urlParams();const pgParam=q.get("pg");const demo=q.get("demo");
+  // スマホ向け案内（?pg= 指定時と「このまま開く」選択済みは表示しない）
+  let mobileSkip=false;try{mobileSkip=localStorage.getItem("jsoxfb_mobile_ok")==="1";}catch(e){}
+  if(isMobileView()&&!pgParam&&!mobileSkip){
+    document.getElementById("mobileGate").classList.add("on");
+  }
   const a=getAutosave();
+  if(pgParam){
+    // ディープリンク: サンプルで指定ページを開く（撮影・共有用）
+    if(a&&a.json){try{db=JSON.parse(a.json);}catch(e){db=exampleDB();}}else db=exampleDB();
+    normalize();
+    if(["evalwork","evaldoc","oewp","def","ev"].includes(pgParam))db.features.eval=true;
+    applyMode();
+    const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
+    syncProcSel();_applied={};applyAll();clearDirty();
+    show(pgParam);
+    updateAsInfo();
+    setTimeout(()=>{
+      try{
+        if(demo==="ai")aiOpen();
+        else if(demo==="aiimport"){aiOpen();aiTab("imp");
+          const ex='提案します。\n```json\n{"type":"rcm_add","rows":[{"gyomu":"承認","risk_id":"R004","risk_desc":"与信限度額の年次見直しが行われず、限度額が実態と乖離する","fs":"売掛金","assertion":["評価の妥当性"],"control_id":"C004","step_no":"30","control_desc":"与信管理担当者は年次で全取引先の与信限度額を見直し、営業部長の承認を得て改定する","prev_det":"予防","man_auto":"手動","freq":"年次","key":false,"evidence":"与信見直し承認記録"}]}\n```';
+          document.getElementById("aiInText").value=ex;aiParse();}
+        else if(demo==="xls")toggleXlsMenu(new MouseEvent("click"));
+        else if(demo==="tmpl")openTmplModal();
+      }catch(e){}
+    },600);
+    return;
+  }
   if(a&&a.json){
     try{
       db=JSON.parse(a.json);normalize();applyMode();
@@ -4604,7 +4728,12 @@ document.addEventListener("keydown",e=>{
       return;
     }catch(e){console.warn("自動保存の復元に失敗:",e);}
   }
-  loadExample();updateAsInfo();
+  // 初回: 空のプロジェクトを内部的に用意し、スタート画面を表示
+  db=exampleDB();normalize();applyMode();
+  const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
+  syncProcSel();_applied={};applyAll();clearDirty();show("dash");
+  document.getElementById("startScreen").classList.add("on");
+  updateAsInfo();
 })();
 </script>
 </body>
