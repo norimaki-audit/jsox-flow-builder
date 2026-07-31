@@ -98,8 +98,9 @@
     <p class="lead">業務記述書・業務フロー図・RCMを別々のExcelで管理するのではなく、工程・リスク・統制を一元管理し、整合した成果物として出力できる無料ツールです。</p>
     <p class="note">公認会計士が実務上の課題をもとに開発しています。インストール不要。入力した業務データはアプリから外部サーバーへ送信しません。</p>
     <div class="cta pc-only">
-      <a class="btn btn-p" href="./jsox_flow_builder.html"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>PCで無料で試す</a>
+      <a class="btn btn-p" href="./jsox_flow_builder.html?start=sample"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>サンプルデータで無料で試す</a>
       <a class="btn btn-s" href="#shots">操作画面を見る</a>
+      <a class="btn btn-s" href="https://github.com/norimaki-audit/jsox-flow-builder" style="background:transparent;border-color:rgba(255,255,255,.35);color:#D6EEEA">GitHubを見る</a>
     </div>
     <div class="cta sp-only sp-cta">
       <button class="btn btn-p" onclick="copyUrl()"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>PC用URLをコピー</button>
@@ -154,6 +155,37 @@
   </div>
 </section>
 
+<section class="sec" id="outputs">
+  <div class="wrap">
+    <h2>出力される成果物</h2>
+    <p class="sec-sub">操作画面だけでなく、最終的に手に入るものをご覧ください。すべてサンプルデータからの<b>実際の出力</b>です（クリックでダウンロード）。</p>
+    <div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;margin-bottom:18px">
+      <img src="assets/samples/sample_flow.svg" alt="実際に出力された業務フロー図（SVG）" style="width:100%;display:block" loading="lazy">
+      <div style="font-size:12.5px;color:var(--mid);padding:10px 14px;border-top:1px solid var(--line)">業務フロー図の実出力（SVG）— このままdraw.ioやPNGにも書き出せます</div>
+    </div>
+    <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      <a class="card" download href="assets/samples/sample_narrative.xlsx" style="text-decoration:none;color:inherit"><span class="ic">📊</span><h3>業務記述書 Excel</h3><p>工程表＋詳細記述＋サマリの3シート・装飾付き（11KB）</p></a>
+      <a class="card" download href="assets/samples/sample_rcm.xlsx" style="text-decoration:none;color:inherit"><span class="ic">📋</span><h3>RCM Excel</h3><p>アサーション・キー統制・評価列つき（9KB）</p></a>
+      <a class="card" download href="assets/samples/sample_print.pdf" style="text-decoration:none;color:inherit"><span class="ic">🖨️</span><h3>印刷・PDF</h3><p>押印欄付きの調書スタイル・3ページ（276KB）</p></a>
+      <a class="card" download href="assets/samples/sample_flow.drawio" style="text-decoration:none;color:inherit"><span class="ic">🔀</span><h3>draw.io</h3><p>フロー図をdraw.ioで開いて編集続行できます（5KB）</p></a>
+      <a class="card" download href="assets/samples/sample_project.json" style="text-decoration:none;color:inherit"><span class="ic">💾</span><h3>プロジェクト JSON</h3><p>保存・復元・共有用の正本データ（13KB）</p></a>
+    </div>
+  </div>
+</section>
+
+<section class="sec pain" id="demo">
+  <div class="wrap">
+    <h2>30秒でわかる操作の流れ</h2>
+    <p class="sec-sub">サンプルを開く → 工程を編集 → 成果物へ反映 → フロー図が更新 → Excelを出力。</p>
+    <div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000;position:relative;max-width:860px">
+      <video id="demoVideo" poster="assets/screenshots/current/03-flow-generated.png" controls preload="none" playsinline muted loop style="width:100%;display:block">
+        <source src="assets/demo/demo.mp4" type="video/mp4" onerror="demoFallback()">
+      </video>
+    </div>
+    <p id="demoNote" style="font-size:12px;color:var(--mid);margin-top:10px">動画は準備中です。上の画像は実際のフロー図画面です。今すぐ試したい方は<a href="./jsox_flow_builder.html?start=sample">サンプルデータで開始</a>すると、画面右下のガイドが同じ4ステップを案内します。</p>
+  </div>
+</section>
+
 <section class="sec">
   <div class="wrap">
     <h2>AIとの役割分担</h2>
@@ -190,7 +222,7 @@
   <h2 class="sp-only" style="display:block">PCでお試しください</h2>
   <p>操作画面はPC向けです。スマートフォンではツールの概要と操作例をご覧いただけます。</p>
   <div class="cta pc-only" style="justify-content:center">
-    <a class="btn btn-s" href="./jsox_flow_builder.html" style="background:#fff;color:var(--pd)">アプリを開く（無料）</a>
+    <a class="btn btn-s" href="./jsox_flow_builder.html?start=sample" style="background:#fff;color:var(--pd)">サンプルデータで無料で試す</a>
   </div>
   <div class="cta sp-only sp-cta" style="margin:0 auto">
     <button class="btn btn-s" style="background:#fff;color:var(--pd)" onclick="copyUrl()">PC用URLをコピーする</button>
@@ -217,6 +249,15 @@ function shareUrl(){
   if(navigator.share)navigator.share({title:"J-SOX Flow Builder",text:"J-SOX三点セットを、ひとつのデータから作成・更新できる無料ツール（PC推奨）",url:APP_URL}).catch(()=>{});
   else copyUrl();
 }
+function demoFallback(){
+  const v=document.getElementById("demoVideo");
+  if(!v)return;
+  const img=document.createElement("img");
+  img.src=v.getAttribute("poster");img.alt="操作画面（デモ動画は準備中）";img.style.cssText="width:100%;display:block";
+  v.replaceWith(img);
+}
+// mp4が存在しない場合はポスター画像に置換（HEADで存在確認）
+fetch("assets/demo/demo.mp4",{method:"HEAD"}).then(r=>{if(!r.ok)demoFallback();}).catch(demoFallback);
 document.querySelectorAll(".shot img").forEach(img=>{
   img.parentElement.addEventListener("click",()=>{
     document.getElementById("lbImg").src=img.src;
