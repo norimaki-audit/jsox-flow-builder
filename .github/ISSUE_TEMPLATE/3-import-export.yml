@@ -1,0 +1,21 @@
+name: 📥 取込・出力の問題 (Import/Export problem)
+description: Excel/CSV取込、Excel/PDF/draw.io出力に関する問題
+labels: [import-export]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **実在の業務データ・ファイルを添付しないでください。** 可能であれば、同じ列構成のダミーデータで再現できるかをご確認ください。
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 種類
+      options: [Excel取込, CSV取込, 列マッピング, Excel出力, 印刷/PDF, draw.io出力, Mermaid出力, PNG/SVG出力, JSON保存/復元]
+    validations: { required: true }
+  - type: textarea
+    id: detail
+    attributes: { label: 問題の内容, placeholder: "どのファイル形式・列構成で、何が起きたか" }
+    validations: { required: true }
+  - type: textarea
+    id: structure
+    attributes: { label: ファイルの構成（ダミーで）, description: "例: 1行目タイトル・2行目ヘッダ（No/業務/部署/…）・データ50行" }

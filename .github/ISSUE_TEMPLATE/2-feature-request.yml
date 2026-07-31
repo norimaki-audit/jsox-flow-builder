@@ -1,0 +1,21 @@
+name: 💡 機能要望 (Feature request)
+description: 改善アイデア・欲しい機能の提案
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        現在の開発方針は「**新機能の追加より、既存導線（入力→反映→出力）の分かりやすさと安定性を優先する**」です。既存機能の使いにくさの改善提案を特に歓迎します。
+  - type: textarea
+    id: problem
+    attributes: { label: 困っていること（現状の課題）, description: "機能の前に、実務でどう困るかを教えてください" }
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes: { label: 提案内容 }
+    validations: { required: true }
+  - type: dropdown
+    id: area
+    attributes:
+      label: 関連する領域
+      options: [三点セット作成, Excel/CSV取込, 出力(Excel/PDF/draw.io), AI連携, 評価管理, 業務マニュアルモード, その他]

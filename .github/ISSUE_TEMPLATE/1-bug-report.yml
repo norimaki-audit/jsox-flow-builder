@@ -1,0 +1,41 @@
+name: 🐛 不具合報告 (Bug report)
+description: 動作がおかしい・エラーが出る等の報告
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ご報告ありがとうございます。**機密情報（実在の会社名・取引・統制内容・スクリーンショット内の業務データ等）を添付しないでください。** 再現にはサンプルデータのご利用を推奨します。
+  - type: input
+    id: browser
+    attributes: { label: 使用ブラウザ, placeholder: "Chrome 126 / Edge 126 など" }
+    validations: { required: true }
+  - type: input
+    id: os
+    attributes: { label: OS, placeholder: "Windows 11 / macOS 14 など" }
+    validations: { required: true }
+  - type: input
+    id: screen
+    attributes: { label: 発生した画面, placeholder: "業務記述書（編集） / フロー図 / Excel取込 など" }
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes: { label: 再現手順, placeholder: "1. サンプルデータで開始\n2. ...\n3. ..." }
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: 期待した結果 }
+    validations: { required: true }
+  - type: textarea
+    id: actual
+    attributes: { label: 実際の結果 }
+    validations: { required: true }
+  - type: dropdown
+    id: data
+    attributes:
+      label: 使用したデータの種類
+      options: [サンプルデータ, テンプレートから作成, 自社データ（Excel/CSV取込）, 自社データ（手入力）, 保存済みJSONの読込]
+    validations: { required: true }
+  - type: textarea
+    id: console
+    attributes: { label: コンソールエラー（あれば）, description: "F12 → Console タブの赤いエラーをコピー（業務データが含まれないか確認のうえ）" }

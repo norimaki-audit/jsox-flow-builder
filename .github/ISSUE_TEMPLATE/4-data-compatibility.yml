@@ -1,0 +1,25 @@
+name: 🔄 データ互換性の問題 (Data compatibility)
+description: 以前のバージョンで保存したJSON・自動保存データが正しく読めない等
+labels: [compatibility]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        後方互換は本ツールの最重要方針の一つです。**JSONファイル自体は添付せず**、構造や発生状況をお知らせください。
+  - type: input
+    id: saved
+    attributes: { label: データを保存した時期・バージョン, placeholder: "2026年7月頃 / v0.9.0-beta など（分かる範囲で）" }
+    validations: { required: true }
+  - type: dropdown
+    id: source
+    attributes:
+      label: データの種類
+      options: [プロジェクトJSON（保存ファイル）, ブラウザの自動保存, 証憑フォルダ格納]
+    validations: { required: true }
+  - type: textarea
+    id: symptom
+    attributes: { label: 症状, placeholder: "読み込むと〇〇が消えている／エラーになる 等" }
+    validations: { required: true }
+  - type: textarea
+    id: fields
+    attributes: { label: 影響を受けたデータ項目, placeholder: "評価結果 / 添付ファイル / カスタム列 など" }

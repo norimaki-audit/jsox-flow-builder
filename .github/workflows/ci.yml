@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JavaScript構文チェック（単一HTML内のメインスクリプト）
+        run: |
+          node -e '
+            const fs=require("fs");
+            const src=fs.readFileSync("jsox_flow_builder.html","utf8");
+            const m=[...src.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]).find(s=>s.includes("function renderFlow"));
+            if(!m){console.error("main script not found");process.exit(1);}
+            fs.writeFileSync("/tmp/main.js",m);
+          '
+          node --check /tmp/main.js
+          echo "✓ syntax OK"
+
+      - name: 必須ファイルの存在確認
+        run: |
+          for f in index.html manual.html jsox_flow_builder.html README.md CHANGELOG.md LICENSE.md docs/PRIVACY.md docs/USER_GUIDE.md docs/DEVELOPMENT.md assets/og/og.png; do
+            test -f "$f" || { echo "MISSING: $f"; exit 1; }
+          done
+          echo "✓ required files OK"
+
+      - name: HTML/READMEが参照するローカル画像・ファイルの存在確認
+        run: |
+          python3 - <<'PY'
+          import re,os,sys
+          missing=[]
+          def check(path, text):
+              for m in re.findall(r'(?:src|href)="(assets/[^"#?]+)"', text)+re.findall(r'\]\((assets/[^)#?]+)\)', text):
+                  if not os.path.isfile(m): missing.append(f"{path}: {m}")
+          for f in ["index.html","manual.html","README.md"]:
+              check(f, open(f,encoding="utf-8").read())
+          # デモ動画は未配置を許容
+          missing=[m for m in missing if "assets/demo/" not in m]
+          if missing:
+              print("\n".join(missing)); sys.exit(1)
+          print("✓ asset references OK")
+          PY
+
+      - name: 組み込みセルフテスト（headless Chrome）
+        run: |
+          python3 -m http.server 8807 &> /dev/null &
+          sleep 2
+          CHROME=$(which google-chrome || which chromium-browser || which chromium)
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --virtual-time-budget=20000 \
+            --dump-dom "http://localhost:8807/jsox_flow_builder.html?selftest=1" > /tmp/selftest.html 2>/dev/null
+          RESULT=$(grep -oP 'セルフテスト結果: \d+ / \d+' /tmp/selftest.html | head -1)
+          echo "selftest: $RESULT"
+          [ -n "$RESULT" ] || { echo "selftest result not found"; exit 1; }
+          OK=$(echo "$RESULT" | grep -oP '\d+' | sed -n 1p)
+          TOTAL=$(echo "$RESULT" | grep -oP '\d+' | sed -n 2p)
+          [ "$OK" = "$TOTAL" ] || { echo "selftest failed: $RESULT"; exit 1; }
+          echo "✓ selftest $RESULT"
+
+      - name: 主要画面の起動確認（コンソールエラー検出込み）
+        run: |
+          CHROME=$(which google-chrome || which chromium-browser || which chromium)
+          for pg in steps flow rcmdoc import; do
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --virtual-time-budget=12000 \
+              --dump-dom "http://localhost:8807/jsox_flow_builder.html?pg=$pg" > /tmp/pg.html 2>/tmp/pg.err
+            grep -q "J-SOX Flow Builder" /tmp/pg.html || { echo "page $pg failed to render"; exit 1; }
+            ! grep -iE "Uncaught|TypeError|ReferenceError" /tmp/pg.err || { echo "console error on $pg"; cat /tmp/pg.err; exit 1; }
+          done
+          echo "✓ pages render OK"
+
+      - name: 生成物サイズの記録
+        run: |
+          {
+            echo "## Build sizes"
+            echo "| file | size |"
+            echo "|---|---|"
+            for f in jsox_flow_builder.html index.html manual.html; do
+              echo "| $f | $(du -h "$f" | cut -f1) |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
