@@ -2624,6 +2624,25 @@ function aiCopy(){
 /* =================================================================
    スタート画面（初回3択）・スマホ案内・撮影/共有用ディープリンク
    ================================================================= */
+function demoMap(){
+  /* 撮影・デモ用: サンプルExcel相当のデータを実際の取込パイプラインに流し、列マッピング画面を表示 */
+  show("import");impReset();
+  const aoa=[
+    ["販売プロセス 業務記述書（サンプル・取込練習用 / 1行目はタイトル、2行目がヘッダ）"],
+    ["No.","業務","部署","担当者","区分","作業内容","使用システム","関連資料","Yes先","No先"],
+    ["10","受注","得意先","得意先","開始","注文","","","",""],
+    ["20","受注","営業部","営業担当","システム","受注入力","販売管理システム","注文書","",""],
+    ["30","承認","営業部","与信管理","判断","与信限度内か","販売管理システム","","50","40"],
+    ["40","承認","営業部","営業部長","手作業","与信超過分を承認","","与信承認記録","",""],
+    ["50","出荷","倉庫","出荷担当","手作業","出荷指図に基づき出荷","","出荷指図書","",""]
+  ];
+  _imp.sheets=[{name:"業務記述書",rows:aoa}];
+  document.getElementById("impFileName").textContent="監査サンプル.xlsx（7行）";
+  const sel=document.getElementById("impSheet");if(sel)sel.innerHTML='<option>業務記述書</option>';
+  document.getElementById("impSheetCard").style.display="";
+  document.getElementById("impHeaderRow").value=2;
+  impAfterSheet();
+}
 function ssHide(){const s=document.getElementById("startScreen");if(s)s.classList.remove("on");}
 function ssSample(){ssHide();loadExample();}
 function ssImport(){ssHide();startImportProject();}
@@ -4713,6 +4732,7 @@ document.addEventListener("keydown",e=>{
           document.getElementById("aiInText").value=ex;aiParse();}
         else if(demo==="xls")toggleXlsMenu(new MouseEvent("click"));
         else if(demo==="tmpl")openTmplModal();
+        else if(demo==="map")demoMap();
       }catch(e){}
     },600);
     return;
