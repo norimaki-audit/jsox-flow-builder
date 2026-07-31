@@ -4911,6 +4911,26 @@ document.addEventListener("keydown",e=>{
 // 起動（自動保存→復元 / URLパラメータ→デモ表示 / いずれもなければスタート画面）
 (function boot(){
   const q=urlParams();const pgParam=q.get("pg");const demo=q.get("demo");
+  if(q.get("gen")==="samples"){
+    /* 成果物サンプル生成モード（headless取得用・実出力パイプラインをそのまま使用） */
+    db=exampleDB();normalize();applyMode();syncProcSel();_applied={};applyAll();clearDirty();
+    (async()=>{
+      const enc=s=>btoa(unescape(encodeURIComponent(s)));
+      const out={};
+      out["sample_project.json"]=enc(JSON.stringify(db,null,2));
+      out["sample_flow.drawio"]=enc(buildDrawioXml(outProc()));
+      show("flow");renderFlow();
+      out["sample_flow.svg"]=enc(new XMLSerializer().serializeToString(document.querySelector("#flowCanvas svg")));
+      const grab=async fn=>{let cap=null;const od=window.download;window.download=(b,n)=>{cap=b;};await fn();await new Promise(r=>setTimeout(r,300));window.download=od;
+        const buf=await cap.arrayBuffer();let bin="";const u8=new Uint8Array(buf);
+        for(let i=0;i<u8.length;i+=0x8000)bin+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));
+        return btoa(bin);};
+      renderStepsDoc();out["sample_narrative.xlsx"]=await grab(()=>exportDocXlsx("stepsDocBody","x"));
+      renderRcmDoc();out["sample_rcm.xlsx"]=await grab(()=>exportDocXlsx("rcmDocBody","x"));
+      document.body.innerHTML="<pre id='GEN'>"+Object.entries(out).map(([k,v])=>"@@F@@"+k+"@@D@@"+v).join("\n")+"\n@@END@@</pre>";
+    })();
+    return;
+  }
   if(q.get("start")==="sample"){db=exampleDB();normalize();applyMode();
     const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
     syncProcSel();_applied={};applyAll();clearDirty();show("steps");tourStart();
