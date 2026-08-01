@@ -1297,7 +1297,9 @@ let db=null, dirty=false;
 function P(){return db.processes.find(p=>p.id===db.activeProcessId)||db.processes[0];}
 function markDirty(){dirty=true;document.getElementById("dirty").classList.add("on");window.onbeforeunload=()=>true;if(typeof updateApplyBtn==="function")updateApplyBtn();if(typeof scheduleAutosave==="function")scheduleAutosave();}
 function clearDirty(){dirty=false;document.getElementById("dirty").classList.remove("on");window.onbeforeunload=null;}
-function nextPid(){let m=0;db.processes.forEach(p=>{const n=parseInt((p.id||"").replace(/\D/g,""));if(!isNaN(n))m=Math.max(m,n);});return "P"+String(m+1).padStart(3,"0");}
+function procIdNum(id){const n=parseInt(String(id||"").replace(/\D/g,""),10);return isNaN(n)?0:n;}
+function fmtPid(n){return "P"+String(n).padStart(3,"0");}/* 基本3桁・1000以上は4桁のまま */
+function nextPid(){let m=0;db.processes.forEach(p=>{m=Math.max(m,procIdNum(p.id));});if(m+1>9999){alert("プロセスIDは最大4桁（P9999）までです。空き番号へのID変更で整理してください。");return null;}return fmtPid(m+1);}
 
 // =================================================================
 // 共通ユーティリティ
@@ -3060,7 +3062,7 @@ function updateProcSelView(){
   }
 }
 document.getElementById("projName").addEventListener("input",e=>{db.projectName=e.target.value;markDirty();});
-function addProcess(){pushUndo();const id=nextPid();db.processes.push({id,name:"新規プロセス",sub_process:"",in_scope:true,laneOrder:[],steps:[blankStep(10)],rcm:[]});db.activeProcessId=id;markDirty();syncProcSel();show("processes");}
+function addProcess(){const id=nextPid();if(!id)return;pushUndo();db.processes.push({id,name:"新規プロセス",sub_process:"",in_scope:true,laneOrder:[],steps:[blankStep(10)],rcm:[]});db.activeProcessId=id;markDirty();syncProcSel();show("processes");}
 function selectProcess(id){db.activeProcessId=id;syncProcSel();renderProcesses();}
 function delProcess(id){if(db.processes.length<=1){alert("最後の1プロセスは削除できません");return;}if(!confirm("このプロセスを削除しますか？"))return;pushUndo();db.processes=db.processes.filter(p=>p.id!==id);if(db.activeProcessId===id)db.activeProcessId=db.processes[0].id;markDirty();syncProcSel();renderProcesses();}
 function procHue(id){let h=0;for(const c of String(id))h=(h*31+c.charCodeAt(0))%360;return h;}
@@ -3120,23 +3122,46 @@ function attachLaneDrag(p){
     }
   });
 }
+function editProcId(oldId){
+  const p=db.processes.find(x=>x.id===oldId);if(!p)return;
+  const cur=String(procIdNum(oldId)||"");
+  const v=prompt("プロセスIDの番号を入力してください（1〜9999）\n例: 1 → P001 ／ 25 → P025 ／ 1000 → P1000",cur);
+  if(v==null)return;
+  const t=String(v).trim();
+  if(!/^\d{1,4}$/.test(t)){alert("1〜9999の半角数字で入力してください（最大4桁）。");return;}
+  const n=parseInt(t,10);
+  if(n<1||n>9999){alert("1〜9999の範囲で入力してください。");return;}
+  const newId=fmtPid(n);
+  if(newId===oldId)return;
+  if(db.processes.some(x=>x!==p&&x.id===newId)){alert(`ID「${newId}」は既に他のプロセスで使用されています。別の番号を指定してください。`);return;}
+  pushUndo();
+  p.id=newId;
+  if(db.activeProcessId===oldId)db.activeProcessId=newId;
+  if(_applied[oldId]){_applied[newId]=_applied[oldId];_applied[newId].id=newId;delete _applied[oldId];}
+  markDirty();syncProcSel();renderProcesses();
+  toast(`プロセスIDを ${oldId} → ${newId} に変更しました。`);
+}
 function renderProcesses(){
   const manual=(db&&db.mode)==="manual";
   const q=((document.getElementById("procSearch")||{}).value||"").trim().toLowerCase();
   const matchP=p=>{if(!q)return true;const hay=[p.name,p.sub_process].concat((p.steps||[]).map(s=>[s.label,s.detail,s.role,s.dept,s.point].join(" "))).join(" ").toLowerCase();return hay.includes(q);};
   const triBadge=v=>{if(!v||v==="低")return"";const c=v==="高"?"#B0413B":"#9A6614";return `<span class="chip" style="background:${c};color:#fff;border:none">属人化${esc(v)}</span>`;};
   const shown=db.processes.filter(matchP);
+  const idCount={};db.processes.forEach(p=>{idCount[p.id]=(idCount[p.id]||0)+1;});
   const list=shown.map(p=>{
     const active=p.id===db.activeProcessId;
+    const dupId=idCount[p.id]>1;
     const rv=reviewNeeded(p);
     return `<div class="proc-row${active?' active':''}"${active?"":` style="border-left-color:${procColor(p.id)}"`} onclick="selectProcess('${p.id}')" ondblclick="show('steps')" title="クリックでこのプロセスをアクティブにします（ダブルクリックで${manual?'業務マニュアル':'業務記述書'}へ）">`
       +`<span class="proc-dot" style="background:${procColor(p.id)}"></span>`
       +(manual?"":`<span class="chip${p.in_scope?'':' out'}">${p.in_scope?'評価対象':'対象外'}</span>`)
       +(manual?triBadge(p.attribution_risk):"")
       +(manual&&rv?`<span class="chip" style="background:#FBF1E0;color:#7A5510;border-color:#EBD9B4" title="改訂履歴が無い、または最終改訂が古い業務です">要見直し</span>`:"")
+      +(dupId?`<span class="chip" style="background:#B0413B;color:#fff;border:none" title="同じIDのプロセスが複数あります。ID変更で解消してください">ID重複</span>`:"")
       +`<span class="nm">${esc(p.id)}　${esc(p.name)}</span>`
       +`<span style="color:var(--muted);font-size:12px">${manual?"手順":"工程"}${p.steps.length}${manual?"":" / 統制"+p.rcm.filter(r=>r.control_id).length}</span>`
       +`<button class="sm" onclick="event.stopPropagation();selectProcess('${p.id}')">選択</button>`
+      +`<button class="sm ghost" onclick="event.stopPropagation();editProcId('${p.id}')" title="プロセスIDの番号を変更します（基本3桁・最大4桁）">ID変更</button>`
       +`<button class="sm ghost" onclick="event.stopPropagation();delProcess('${p.id}')">削除</button>`
       +`</div>`;
   }).join("");
@@ -4613,7 +4638,8 @@ function renderDash(){
   if(key==="status")rows.sort((a,b)=>(stOrder(a)-stOrder(b))*dir);
   else if(key==="gaps")rows.sort((a,b)=>((b.st.gErr*100+b.st.gWarn)-(a.st.gErr*100+a.st.gWarn))*dir);
   else if(key==="last")rows.sort((a,b)=>String(b.st.last).localeCompare(String(a.st.last))*dir);
-  else rows.sort((a,b)=>(stOrder(a)-stOrder(b))||String(a.p.id).localeCompare(String(b.p.id)));
+  else if(key==="id")rows.sort((a,b)=>(procIdNum(a.p.id)-procIdNum(b.p.id))*dir);
+  else rows.sort((a,b)=>procIdNum(a.p.id)-procIdNum(b.p.id));/* 既定はID番号順 */
   const th=(lb,k)=>`<th${k?` style="cursor:pointer" title="クリックで並べ替え" onclick="dashSort('${k}')"`:""}>${lb}${k&&_dashSort.key===k?(_dashSort.dir>0?" ▲":" ▼"):""}</th>`;
   const cell=(pid,pg,html,title)=>`<td style="text-align:center;cursor:pointer" title="${escAttr(title)}" onclick="dashOpen('${escAttr(pid)}','${pg}')">${html}</td>`;
   const docPill=(on,lb)=>on?`<span class="evalpill ep-ok" style="cursor:inherit">${lb||"生成済"}</span>`:`<span class="evalpill ep-na" style="cursor:inherit">${lb||"未着手"}</span>`;
@@ -4634,7 +4660,7 @@ function renderDash(){
     </tr>`;
   });
   h+=`<div class="card" style="margin:0 0 14px;padding:0;overflow:hidden"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px"><span style="font-size:13.5px;font-weight:700">プロセス別 作成状況</span><span style="font-size:11px;color:var(--c-text-faint)" title="${escAttr(DASH_ST_TIP)}"><i class="ph ph-info"></i> 状態の判定条件</span></div>
-    <div style="overflow:auto;max-height:420px"><table class="dr" style="width:100%;white-space:nowrap"><thead style="position:sticky;top:0;background:#fff;z-index:1"><tr>${th("ID")}${th("プロセス名")}${th("業務記述書")}${th("フロー図")}${th("RCM")}${th("未反映")}${th("ギャップ","gaps")}${th("最終更新","last")}${th("状態","status")}${th("")}</tr></thead><tbody>${tb}</tbody></table></div></div>`;
+    <div style="overflow:auto;max-height:420px"><table class="dr" style="width:100%;white-space:nowrap"><thead style="position:sticky;top:0;background:#fff;z-index:1"><tr>${th("ID","id")}${th("プロセス名")}${th("業務記述書")}${th("フロー図")}${th("RCM")}${th("未反映")}${th("ギャップ","gaps")}${th("最終更新","last")}${th("状態","status")}${th("")}</tr></thead><tbody>${tb}</tbody></table></div></div>`;
   /* ---- 下段: 優先して確認する項目 ＋ カバレッジ要約 ---- */
   const allActs=[];
   ag.rows.forEach(({p,st})=>{procActions(p,st).forEach(a=>allActs.push(Object.assign({pid:p.id,pname:p.name||p.id},a)));});
