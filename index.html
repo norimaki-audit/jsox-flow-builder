@@ -257,7 +257,11 @@ function demoFallback(){
   v.replaceWith(img);
 }
 // mp4が存在しない場合はポスター画像に置換（HEADで存在確認）
-fetch("assets/demo/demo.mp4",{method:"HEAD"}).then(r=>{if(!r.ok)demoFallback();}).catch(demoFallback);
+fetch("assets/demo/demo.mp4",{method:"HEAD"}).then(r=>{
+  if(!r.ok){demoFallback();return;}
+  const n=document.getElementById("demoNote");
+  if(n)n.innerHTML='実際の操作画面で構成した約30秒のダイジェストです。同じ流れを<a href="./jsox_flow_builder.html?start=sample">サンプルデータで開始</a>すると、画面右下のガイドが案内します。';
+}).catch(demoFallback);
 document.querySelectorAll(".shot img").forEach(img=>{
   img.parentElement.addEventListener("click",()=>{
     document.getElementById("lbImg").src=img.src;
