@@ -685,6 +685,7 @@
         <a data-pg="steps" tabindex="0" onclick="navSteps()" onkeydown="if(event.key==='Enter')navSteps()"><i class="ph ph-list-numbers"></i><span class="nav-lbl">業務記述書</span></a>
         <a data-pg="flow" tabindex="0" onclick="show('flow')" onkeydown="if(event.key==='Enter')show('flow')"><i class="ph ph-flow-arrow"></i><span class="nav-lbl">フロー図</span></a>
         <a data-pg="rcm" tabindex="0" onclick="navRcm()" onkeydown="if(event.key==='Enter')navRcm()"><i class="ph ph-table"></i><span class="nav-lbl">RCM（リスクと統制）</span></a>
+        <a class="jsox-only" data-pg="jnl" tabindex="0" onclick="show('jnl')" onkeydown="if(event.key==='Enter')show('jnl')"><i class="ph ph-receipt"></i><span class="nav-lbl">仕訳（会計処理）</span></a>
         <a class="manual-only" data-pg="manualout" tabindex="0" onclick="show('manualout')" onkeydown="if(event.key==='Enter')show('manualout')"><i class="ph ph-files"></i><span class="nav-lbl">マニュアル出力</span></a>
       </div>
       <div class="nav-group">
@@ -706,7 +707,6 @@
         <div class="grp">データ・出力</div>
         <a data-pg="import" tabindex="0" onclick="show('import')" onkeydown="if(event.key==='Enter')show('import')"><i class="ph ph-upload-simple"></i><span class="nav-lbl">取込（Excel / CSV）</span></a>
         <a data-pg="library" tabindex="0" onclick="show('library')" onkeydown="if(event.key==='Enter')show('library')"><i class="ph ph-folder"></i><span class="nav-lbl">規程・関連資料</span></a>
-        <a class="jsox-only" data-pg="jnl" tabindex="0" onclick="show('jnl')" onkeydown="if(event.key==='Enter')show('jnl')"><i class="ph ph-receipt"></i><span class="nav-lbl">仕訳 編集</span></a>
       </div>
     </div>
     <div class="nav-bottom">
@@ -4471,6 +4471,7 @@ function renderProcViewDocs(){
     fsKeys.forEach(fs=>{const d=cov[fs];h+=`<tr><td style="padding:5px 9px;border:1px solid var(--c-line)">${esc(fs)}</td><td style="text-align:center;border:1px solid var(--c-line)" class="num">${d.ctrls}</td>`+ASRT.map(a=>`<td style="text-align:center;border:1px solid var(--c-line)">${[...d.asserts].some(z=>z.includes(a)||a.includes(z))?'<span class="asrt-on"><i class="ph ph-check-bold" style="font-size:10px"></i></span>':'<span class="asrt-off">·</span>'}</td>`).join("")+`</tr>`;});
     h+=`</tbody></table></div></div>`;
   }
+  h+=jnlLinkHTML(p,op);
   h+=procNextHTML(p);
   h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>整備・運用評価や不備・証憑の管理を行う場合は、ファイルメニューの「評価・証憑管理機能」をオンにしてください（データは共通です）。</div>`;
   document.getElementById("procViewBody").innerHTML=h;
@@ -4536,6 +4537,7 @@ function renderProcView(){
   trip.forEach(t=>{const done=t[1]==="業務記述書"?active.length>0:(t[1]==="RCM"?totalCtl>0:active.length>0);
     h+=`<div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:12px 15px;border:1px solid #E6ECEA;border-radius:10px;background:#F9FBFA"><span style="width:38px;height:38px;border-radius:9px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${t[0]}" style="font-size:19px;color:var(--c-primary)"></i></span><div style="flex:1"><div style="font-size:13px;font-weight:600">${t[1]}</div><div style="font-size:11.5px;color:var(--c-text-faint)">${t[2]}</div></div><span class="evalpill ${done?"ep-ok":"ep-na"}"><i class="ph ${done?"ph-check":"ph-minus"}" style="font-size:12px"></i>${done?"作成済":"未作成"}</span></div>`;});
   h+=`</div></div>`;
+  h+=jnlLinkHTML(p,op);
   h+=procNextHTML(p);
   document.getElementById("procViewBody").innerHTML=h;
 }
@@ -4577,6 +4579,25 @@ function procActions(p,st){
   if(st.gErr===0&&st.gWarn>0)a.push({pr:6,msg:`ギャップチェックに警告が${st.gWarn}件あります`,btn:"ギャップを確認する",pg:"gap"});
   if(st.status==="未着手")a.push({pr:7,msg:"三点セットが未作成です",btn:"作成を開始する",pg:"steps"});
   return a;
+}
+function jnlLinkStats(p,op){
+  /* 仕訳と三点セット（工程・RCM勘定科目）の紐づけ状況 */
+  const jn=(p.journals||[]);
+  const src=op||p;
+  const rcmFS=new Set((src.rcm||[]).map(r=>(r.fs||"").trim()).filter(Boolean));
+  const stepNos=new Set((src.steps||[]).map(x=>(x.no||"").toString().trim()).filter(Boolean));
+  const linked=jn.filter(j=>stepNos.has((j.step_no||"").toString().trim())).length;
+  const acctsOnly=[...new Set(jn.map(j=>(j.account||"").trim()).filter(Boolean))].filter(a=>!rcmFS.has(a));
+  return {total:jn.length,linked,acctsOnly};
+}
+function jnlLinkHTML(p,op){
+  const st=jnlLinkStats(p,op);
+  const ok=v=>`<b class="mono" style="color:var(--c-ok)">${v}</b>`;
+  const warn=(v,c)=>`<b class="mono" style="color:${c||"#9A6614"}">${v}</b>`;
+  let body;
+  if(!st.total)body=`仕訳明細は未登録です。工程・勘定科目と紐づけて会計処理を記録できます。`;
+  else body=`仕訳明細 <b class="mono">${st.total}</b>件 ・ 工程に紐づけ済 ${st.linked===st.total?ok(st.linked):warn(st.linked)} / ${st.total} ・ RCMの対象勘定に無い科目 ${st.acctsOnly.length?warn(st.acctsOnly.length+"件","#B0413B"):ok("0件")}${st.acctsOnly.length?`<span style="color:var(--c-text-faint)">（${st.acctsOnly.slice(0,3).map(esc).join("・")}${st.acctsOnly.length>3?" ほか":""}）</span>`:""}`;
+  return `<div class="card" style="margin:14px 0 0"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:12.5px;font-weight:700"><i class="ph ph-receipt"></i> 仕訳との紐づけ</span><span style="flex:1;font-size:12px;color:var(--c-text-mid)">${body}</span><button class="sm" onclick="show('jnl')">仕訳を開く</button>${st.acctsOnly.length?`<button class="sm" onclick="show('gap')">ギャップで確認</button>`:""}</div></div>`;
 }
 function procNextHTML(p){
   /* プロセス概要用「次に行うこと」 */
@@ -4684,6 +4705,13 @@ function renderDash(){
   else{
     covH=`<div style="font-size:12.5px;margin-bottom:8px">未対応あり <b class="mono" style="color:#B0413B">${covRows.length}</b> プロセス</div>`;
     covRows.slice(0,4).forEach(r=>{covH+=`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px dashed var(--c-border)"><span style="flex:1;font-size:12.5px">${esc(r.pname)}</span><span class="mono" style="font-size:12px;color:#B0413B;font-weight:700">${r.miss}項目</span><button class="sm" onclick="dashOpen('${escAttr(r.pid)}','procview')">詳細を確認する</button></div>`;});
+  }
+  /* 仕訳の科目がRCMの対象勘定に無いプロセス */
+  const jnlRows=[];
+  ag.rows.forEach(({p})=>{const st=jnlLinkStats(p,_applied[p.id]||p);if(st.acctsOnly.length)jnlRows.push({pid:p.id,pname:p.name||p.id,n:st.acctsOnly.length});});
+  if(jnlRows.length){
+    covH+=`<div style="font-size:12px;margin-top:10px;padding-top:8px;border-top:1px solid var(--c-border);color:var(--c-text-mid)">仕訳のみに登場する勘定科目あり:</div>`;
+    jnlRows.slice(0,3).forEach(r=>{covH+=`<div style="display:flex;align-items:center;gap:10px;padding:6px 0"><span style="flex:1;font-size:12.5px">${esc(r.pname)}</span><span class="mono" style="font-size:12px;color:#9A6614;font-weight:700">${r.n}科目</span><button class="sm" onclick="dashOpen('${escAttr(r.pid)}','jnl')">仕訳を確認</button></div>`;});
   }
   /* 評価サマリ（評価機能ON時のみ・控えめに） */
   let evalH="";
