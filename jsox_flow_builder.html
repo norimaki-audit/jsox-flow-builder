@@ -1305,7 +1305,7 @@ function typeToShape(t){return t==="判断"?"decision":t==="書類"?"document":(
 // フローチャート描画エンジン（SVG・スイムレーン / JIS X 0121の記号体系を参考・§4）
 // =================================================================
 const LANE_W=234,HEADER_H=46,ROW_H=104,TITLE_H=40,LEGEND_H=46,PAD_B=14;
-const NODE_W=152,NODE_H=54,DEC_W=170,DEC_H=74,DOC_H=58;
+const NODE_W=152,NODE_H=54,DEC_W=170,DEC_H=74,DOC_H=58,SYS_W=148;
 const C_HDR="#F2F6F5",C_HDRTX="#3A4742",C_LINE="#EBF0EE",C_INK="#14201E",C_EDGE="#84938E";
 const C_CTRL="#0A5E57",C_RISK="#A8473F";
 const SVG_TYPE={
@@ -1367,7 +1367,7 @@ function renderEdge(e,L,sz){
   return m;
 }
 function renderFrame(def,mr){
-  const ls=def.lanes||[];const PW=phaseW(def);const W=PW+ls.length*LANE_W;const dh=HEADER_H+(mr+1)*ROW_H+PAD_B;
+  const ls=def.lanes||[];const PW=phaseW(def);const SW=def.hasSys?SYS_W:0;const W=PW+ls.length*LANE_W+SW;const dh=HEADER_H+(mr+1)*ROW_H+PAD_B;
   let s="";
   // フェーズ帯（キャンバス全幅の淡色帯 opacity .42 ＋ 左の縦書きラベル帯 / §4）
   (def.phases||[]).forEach((phs,k)=>{
@@ -1384,10 +1384,13 @@ function renderFrame(def,mr){
   ls.forEach((l,i)=>{s+=`<rect x="${PW+i*LANE_W}" y="0" width="${LANE_W}" height="${HEADER_H}" fill="${C_HDR}"/><text x="${PW+i*LANE_W+LANE_W/2}" y="${HEADER_H/2+4.5}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${C_HDRTX}">${esc(l.name)}</text>`;});
   if(PW){s+=`<rect x="0" y="0" width="${PW}" height="${HEADER_H}" fill="#EAEFED"/><text x="${PW/2}" y="${HEADER_H/2+4.5}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#56635F">業務</text>`;
     s+=`<line x1="${PW}" y1="0" x2="${PW}" y2="${dh}" stroke="#DCE5E2" stroke-width="1"/>`;}
+  if(SW){const sx=W-SW;
+    s+=`<rect x="${sx}" y="0" width="${SW}" height="${HEADER_H}" fill="#EAF0F7"/><text x="${sx+SW/2}" y="${HEADER_H/2+4.5}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#2D5A86">使用システム</text>`;
+    s+=`<line x1="${sx}" y1="0" x2="${sx}" y2="${dh}" stroke="#C9D8E8" stroke-width="1"/>`;}
   s+=`<line x1="0" y1="${HEADER_H}" x2="${W}" y2="${HEADER_H}" stroke="#DCE5E2" stroke-width="1.2"/><rect x="0.5" y="0.5" width="${W-1}" height="${dh-1}" fill="none" stroke="${C_LINE}"/>`;
   return {frame:s,dh:dh,W:W};
 }
-function renderLegend(W,y,showRC){
+function renderLegend(W,y,showRC,showSys){
   let x=14;const cy=y+LEGEND_H/2+2;
   let s=`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="${C_LINE}"/>`;
   const sp=w=>{const v=x;x+=w;return v;};const lbl=(bx,t)=>`<text x="${bx}" y="${cy+3}" font-size="10.5" fill="#5A6863">${t}</text>`;
@@ -1399,6 +1402,9 @@ function renderLegend(W,y,showRC){
   if(showRC!==false){
     b=sp(70);s+=`<rect x="${b}" y="${cy-8}" width="20" height="16" rx="5" fill="#F7ECEA" stroke="#ECCFCA"/><text x="${b+10}" y="${cy+3.5}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${C_RISK}">R</text>`+lbl(b+25,"リスク");
     b=sp(60);s+=`<rect x="${b}" y="${cy-8}" width="20" height="16" rx="5" fill="#E7F1EE" stroke="#BBD9D0"/><text x="${b+10}" y="${cy+3.5}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${C_CTRL}">C</text>`+lbl(b+25,"統制");
+  }
+  if(showSys){
+    b=sp(66);s+=`<rect x="${b}" y="${cy-8}" width="24" height="16" rx="6" fill="${SVG_TYPE.system.bg}" stroke="${SVG_TYPE.system.bd}"/><line x1="${b-8}" y1="${cy}" x2="${b-1}" y2="${cy}" stroke="#9FB9D8" stroke-dasharray="3 3"/>`+lbl(b+29,"使用システム");
   }
   return s;
 }
@@ -1414,7 +1420,7 @@ function buildDef(p){
     const id="n"+i,shp=typeToShape(s.type),d=(s.dept||"").trim()||(lanes[0]&&lanes[0].id)||"未設定";
     const linked=manual?[]:p.rcm.filter(r=>String(r.step_no).trim()===String(s.no).trim());
     const tags=manual?{}:{ctrls:[...new Set(linked.map(r=>r.control_id).filter(Boolean))],risks:[...new Set(linked.map(r=>r.risk_id).filter(Boolean))],key:linked.some(r=>r.key),ipe:linked.some(r=>r.ipe),itac:linked.some(r=>r.it_dep)};
-    nodes.push({id,no:s.no,lane:d,row:i,type:shp,label:(s.label||"").trim(),tags});
+    nodes.push({id,no:s.no,lane:d,row:i,type:shp,label:(s.label||"").trim(),tags,sys:(s.system||"").trim()});
     const nextId=(i+1<active.length)?("n"+(i+1)):null;
     if(shp==="decision"){const y=(s.yes||"").toString().trim(),nn=(s.no2||"").toString().trim();if(y&&byNo[y])edges.push({from:id,to:byNo[y],label:"はい"});if(nn&&byNo[nn])edges.push({from:id,to:byNo[nn],label:"いいえ"});if(!y&&!nn&&nextId)edges.push({from:id,to:nextId});}
     else{const jp=(s.jump||"").toString().trim();if(jp)jp.split(/[,、\s]+/).filter(Boolean).forEach(t=>{if(byNo[t])edges.push({from:id,to:byNo[t]});});else if(nextId)edges.push({from:id,to:nextId});}
@@ -1422,18 +1428,33 @@ function buildDef(p){
   const phases=[];let cur=null;
   active.forEach((s,i)=>{const g=(s.gyomu||"").trim();if(g){if(cur&&cur.label===g)cur.r1=i;else{if(cur)phases.push(cur);cur={r0:i,r1:i,label:g};}}else{if(cur){phases.push(cur);cur=null;}}});
   if(cur)phases.push(cur);
-  return {title:p.name,lanes,nodes,edges,phases,hasPhase:phases.length>0};
+  return {title:p.name,lanes,nodes,edges,phases,hasPhase:phases.length>0,hasSys:nodes.some(n=>n.sys)};
 }
 function phaseW(def){return (def&&def.hasPhase)?64:0;}
 function openDetailNo(no){const p=P();const i=p.steps.findIndex(s=>String(s.no).trim()===String(no).trim());if(i>=0)openDetail(i);}
 function renderFlow(){
   setBanner("flowBanner");const p=outProc();const def=buildDef(p);const L=buildLayout(def);const sz={};let nm="";
   const manual=((db&&db.mode)||"jsox")==="manual";
-  def.nodes.forEach(n=>{const ps=L.pos[n.id];if(!ps)return;const r=renderNode(n,ps);sz[n.id]={h:r.h};
+  def.nodes.forEach(n=>{const ps=L.pos[n.id];if(!ps)return;const r=renderNode(n,ps);sz[n.id]={h:r.h,w:r.w};
     nm+=`<g style="cursor:pointer" onclick="openDetailNo('${escAttr(String(n.no==null?"":n.no))}')"><title>クリックで${manual?"手順":"工程"}の詳細を表示</title>${r.markup}</g>`;});
   let em="";def.edges.forEach(e=>{em+=renderEdge(e,L,sz);});
-  const fr=renderFrame(def,L.mr);const W=Math.max(fr.W,360),H=TITLE_H+fr.dh+LEGEND_H;lastDims={w:W,h:H};
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="'IBM Plex Sans JP',system-ui,'Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${C_EDGE}"/></marker></defs><rect width="${W}" height="${H}" fill="#fff"/><text x="${W/2}" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="${C_INK}">${esc(def.title||"業務フロー図")}</text><g transform="translate(0,${TITLE_H})">${fr.frame}${em}${nm}</g><g transform="translate(0,${TITLE_H+fr.dh})">${renderLegend(W,0,!manual)}</g></svg>`;
+  const fr=renderFrame(def,L.mr);
+  // 使用システム列: 各工程のシステムをチップ表示し、ノードから点線で紐づけ
+  let sm="";
+  if(def.hasSys){
+    const sysX=fr.W-SYS_W;
+    def.nodes.forEach(n=>{
+      if(!n.sys)return;const ps=L.pos[n.id];if(!ps)return;
+      const lines=wrap(n.sys,8);const cw=SYS_W-26,ch=Math.max(24,lines.length*13+10);
+      const bx=sysX+13,by=ps.cy-ch/2;
+      const nodeRight=ps.cx+((sz[n.id]&&sz[n.id].w)||NODE_W)/2;
+      sm+=`<line x1="${nodeRight+4}" y1="${ps.cy}" x2="${bx-4}" y2="${ps.cy}" stroke="#9FB9D8" stroke-width="1.1" stroke-dasharray="3 3"/>`;
+      sm+=`<rect x="${bx}" y="${by}" width="${cw}" height="${ch}" rx="6" fill="${SVG_TYPE.system.bg}" stroke="${SVG_TYPE.system.bd}"/>`;
+      sm+=tblock(bx+cw/2,ps.cy,lines,{fs:10.5,lh:13,fill:SVG_TYPE.system.fg,bold:true});
+    });
+  }
+  const W=Math.max(fr.W,360),H=TITLE_H+fr.dh+LEGEND_H;lastDims={w:W,h:H};
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="'IBM Plex Sans JP',system-ui,'Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${C_EDGE}"/></marker></defs><rect width="${W}" height="${H}" fill="#fff"/><text x="${W/2}" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="${C_INK}">${esc(def.title||"業務フロー図")}</text><g transform="translate(0,${TITLE_H})">${fr.frame}${em}${sm}${nm}</g><g transform="translate(0,${TITLE_H+fr.dh})">${renderLegend(W,0,!manual,def.hasSys)}</g></svg>`;
   document.getElementById("flowCanvas").innerHTML=svg;
 }
 
