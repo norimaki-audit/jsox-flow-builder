@@ -1481,12 +1481,15 @@ function renderFlow(){
     const sysX=fr.W-SYS_W;
     def.nodes.forEach(n=>{
       if(!n.sys)return;const ps=L.pos[n.id];if(!ps)return;
-      const lines=wrap(n.sys,8);const cw=SYS_W-26,ch=Math.max(24,lines.length*13+10);
+      /* DBシリンダーアイコン付きの丸枠ノード（点線矢印で工程と紐づけ） */
+      const lines=wrap(n.sys,9);const cw=SYS_W-26,ch=26+lines.length*13;
       const bx=sysX+13,by=ps.cy-ch/2;
       const nodeRight=ps.cx+((sz[n.id]&&sz[n.id].w)||NODE_W)/2;
-      sm+=`<line x1="${nodeRight+4}" y1="${ps.cy}" x2="${bx-4}" y2="${ps.cy}" stroke="#9FB9D8" stroke-width="1.1" stroke-dasharray="3 3"/>`;
-      sm+=`<rect x="${bx}" y="${by}" width="${cw}" height="${ch}" rx="6" fill="${SVG_TYPE.system.bg}" stroke="${SVG_TYPE.system.bd}"/>`;
-      sm+=tblock(bx+cw/2,ps.cy,lines,{fs:10.5,lh:13,fill:SVG_TYPE.system.fg,bold:true});
+      sm+=`<line x1="${nodeRight+4}" y1="${ps.cy}" x2="${bx-3}" y2="${ps.cy}" stroke="#9FB9D8" stroke-width="1.1" stroke-dasharray="3 3" marker-end="url(#arr)"/>`;
+      sm+=`<rect x="${bx}" y="${by}" width="${cw}" height="${ch}" rx="${Math.min(18,ch/2)}" fill="${SVG_TYPE.system.bg}" stroke="${SVG_TYPE.system.bd}" stroke-width="1.2"/>`;
+      const icx=bx+cw/2,icy=by+9;
+      sm+=`<g fill="none" stroke="${SVG_TYPE.system.fg}" stroke-width="1.1"><ellipse cx="${icx}" cy="${icy}" rx="5.5" ry="2"/><path d="M${icx-5.5} ${icy} v5 a5.5 2 0 0 0 11 0 v-5"/></g>`;
+      sm+=tblock(icx,by+17+(lines.length*13)/2,lines,{fs:10.5,lh:13,fill:SVG_TYPE.system.fg,bold:true});
     });
   }
   const W=Math.max(fr.W,360),H=TITLE_H+fr.dh+LEGEND_H;lastDims={w:W,h:H};
