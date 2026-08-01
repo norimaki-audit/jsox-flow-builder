@@ -17,194 +17,235 @@
 <meta name="twitter:title" content="J-SOX三点セットを、ひとつのデータから。">
 <meta name="twitter:description" content="業務記述書・フロー図・RCMを一つの構造化データから同期作成・更新できる無料ツール。AIで作成した案も取り込み、人間が確認・確定して出力できます。">
 <meta name="twitter:image" content="https://norimaki-audit.github.io/jsox-flow-builder/assets/og/og.png">
-<meta name="theme-color" content="#0E7C73">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230E7C73'/%3E%3Cpath d='M6 7h12M6 12h12M6 17h7' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0F6B62">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='2' fill='%230F6B62'/%3E%3Cpath d='M6 7h12M6 12h12M6 17h7' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-  :root{--p:#0E7C73;--pd:#0A5E57;--tint:#EAF4F1;--bd:#C9E0D9;--bg:#F4F6F6;--line:#E2E8E7;--ink:#14201E;--mid:#56635F;--faint:#8A9794;}
+  :root{
+    --paper:#FAF8F4; --panel:#FFFFFF; --tone:#F3F0E9;
+    --ink:#1A1A17; --mid:#57574F; --faint:#8C8C82; --hint:#A9A49A;
+    --rule:#DCD8CE; --rule2:#C4BFB2; --acc:#0F6B62;
+  }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo",system-ui,sans-serif;color:var(--ink);background:#fff;line-height:1.75;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
-  h2{font-size:24px;letter-spacing:-.01em;margin-bottom:8px;}
-  .sec{padding:64px 0;}
-  .sec-sub{color:var(--mid);font-size:14.5px;margin-bottom:34px;}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:52px;padding:0 26px;border-radius:12px;font-size:15.5px;font-weight:700;text-decoration:none;cursor:pointer;border:none;font-family:inherit;transition:transform .12s,box-shadow .12s;}
-  .btn:hover{transform:translateY(-1px);}
-  .btn-p{background:var(--p);color:#fff;box-shadow:0 4px 14px rgba(14,124,115,.3);}
-  .btn-s{background:#fff;color:#33403C;border:1.5px solid #D5DEDB;}
-  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--pd);background:var(--tint);border:1px solid var(--bd);border-radius:20px;padding:5px 14px;}
-  svg.i{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.18em;}
+  body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic",Meiryo,system-ui,sans-serif;
+       font-size:14.5px;line-height:1.85;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 28px;}
+  .serif,h1,h2,blockquote,table.role th{font-family:"Hiragino Mincho ProN","Yu Mincho",YuMincho,serif;font-weight:600;letter-spacing:.01em;}
+  h1{font-size:clamp(29px,4.4vw,43px);line-height:1.42;}
+  h2{font-size:23px;margin-bottom:10px;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.1em;}
+  a{color:var(--acc);text-decoration:none;}
+  a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;height:46px;padding:0 24px;border-radius:2px;
+       font-size:14.5px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit;}
+  .btn:hover{text-decoration:none;}
+  .btn-p{background:var(--acc);color:#FAF8F4;border:1px solid var(--acc);}
+  .btn-p:hover{color:#FAF8F4;}
+  .btn-s{border:1px solid var(--rule2);background:transparent;color:var(--ink);}
+  .btn-s:hover{border-color:var(--ink);color:var(--ink);}
+  .sec{padding:66px 0;}
+  .secno{display:block;font-size:11.5px;color:var(--acc);letter-spacing:.12em;margin-bottom:10px;}
+  .sec-sub{color:var(--mid);font-size:14.5px;margin-bottom:36px;max-width:760px;}
+  /* ナビ帯 */
+  .topnav{border-bottom:1px solid var(--rule);}
+  .topnav .wrap{display:flex;align-items:center;gap:18px;height:52px;}
+  .topnav .brand{font-size:12px;letter-spacing:.16em;color:var(--ink);font-weight:600;}
+  .topnav nav{margin-left:auto;display:flex;gap:20px;flex-wrap:wrap;}
+  .topnav nav a{font-size:12.5px;color:var(--mid);}
   /* hero */
-  .hero{background:linear-gradient(165deg,#0E7C73 0%,#0A5E57 78%);color:#fff;padding:74px 0 66px;}
-  .hero .badge{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#D6EEEA;margin-bottom:22px;}
-  .hero h1{font-size:clamp(30px,5.4vw,46px);font-weight:800;letter-spacing:-.015em;line-height:1.35;margin-bottom:18px;}
-  .hero .lead{font-size:clamp(14.5px,1.8vw,17px);color:#D6EEEA;max-width:640px;margin-bottom:12px;}
-  .hero .note{font-size:13px;color:#A9D4CD;margin-bottom:30px;}
-  .cta{display:flex;gap:12px;flex-wrap:wrap;}
-  .cta .btn-s{border:none;}
-  .pc-only{display:flex;} .sp-only{display:none;}
-  @media (max-width:768px){.pc-only{display:none!important;}.sp-only{display:flex;}}
-  .pc-heading{display:block;} .sp-heading{display:none;}
-  @media (max-width:768px){.pc-heading{display:none;}.sp-heading{display:block;}}
-  .sp-cta{flex-direction:column;width:100%;max-width:380px;}
-  .sp-note{font-size:12px;color:#A9D4CD;margin-top:10px;}
-  /* hero 実機画面（PC=右カラム / スマホ=CTA下） */
-  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;}
+  .hero{padding:64px 0 60px;border-bottom:1px solid var(--rule);}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;}
   @media (max-width:979px){.hero-grid{display:block;}}
-  .hshot{border-radius:12px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);background:#fff;}
-  .hshot .hbar{height:26px;background:#E8EDEC;display:flex;align-items:center;gap:6px;padding:0 12px;}
-  .hshot .hbar i{width:9px;height:9px;border-radius:50%;background:#C9D4D1;display:block;}
+  .hero .tag{font-size:11px;color:var(--faint);letter-spacing:.1em;margin-bottom:20px;display:block;}
+  .hero h1{margin-bottom:20px;}
+  .hero .lead{font-size:15px;color:var(--mid);max-width:600px;margin-bottom:12px;}
+  .hero .note{font-size:12.5px;color:var(--faint);margin-bottom:30px;}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;}
+  .cta-note{font-size:11.5px;color:var(--faint);margin-top:12px;}
+  .hshot{border:1px solid var(--rule);background:var(--panel);}
   .hshot img{width:100%;height:auto;display:block;}
-  @media (max-width:979px){.hshot{margin-top:26px;max-width:560px;}}
-  /* pain */
-  .pain{background:var(--bg);}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
-  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;}
-  .card h3{font-size:15px;margin:10px 0 6px;}
-  .card p{font-size:13px;color:var(--mid);}
-  .card .ic{width:42px;height:42px;border-radius:11px;background:var(--tint);display:flex;align-items:center;justify-content:center;color:var(--p);font-size:20px;}
-  /* flow */
-  .steps{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;justify-content:center;}
-  .stp{flex:1;min-width:190px;max-width:240px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 18px;position:relative;margin:0 16px 16px 0;}
-  .stp .n{width:28px;height:28px;border-radius:50%;background:var(--p);color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
-  .stp h3{font-size:14.5px;margin-bottom:5px;}
+  .hcap{font-size:11px;color:var(--faint);letter-spacing:.06em;margin-top:10px;}
+  @media (max-width:979px){.hshot{margin-top:30px;max-width:560px;}}
+  /* 課題（罫線リスト） */
+  .plist{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 40px;}
+  .plist .row{display:grid;grid-template-columns:34px 1fr;border-top:1px solid var(--rule);padding:18px 0 16px;}
+  .plist .lbl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--hint);letter-spacing:.1em;padding-top:3px;}
+  .plist h3{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .plist p{font-size:13px;color:var(--mid);}
+  /* しくみ（罫線4分割） */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));border-top:1px solid var(--rule);}
+  .stp{border-right:1px solid var(--rule);padding:22px 20px 22px 0;margin-right:20px;}
+  .stp:last-child{border-right:none;margin-right:0;}
+  @media (max-width:519px){.stp{border-right:none;margin-right:0;border-bottom:1px solid var(--rule);}}
+  .stp .sn{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--hint);letter-spacing:.12em;display:block;margin-bottom:12px;}
+  .stp svg{display:block;margin-bottom:12px;}
+  .stp h3{font-size:14.5px;font-weight:700;margin-bottom:5px;}
   .stp p{font-size:12.5px;color:var(--mid);}
-  .stp::after{content:"→";position:absolute;right:-15px;top:50%;transform:translateY(-50%);color:#9FB5AD;font-size:18px;font-weight:700;}
-  .stp:last-child::after{content:"";}
-  /* gallery */
-  .shots{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
-  @media (max-width:768px){.shots{grid-template-columns:1fr;}}
-  .shot{cursor:zoom-in;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;transition:box-shadow .15s;}
-  .shot:hover{box-shadow:0 8px 26px rgba(20,40,35,.14);}
+  .fignote{font-size:11.5px;color:var(--faint);letter-spacing:.04em;margin-top:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  /* 操作画面 */
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px 30px;}
+  .shot{cursor:zoom-in;}
+  .shot .frame{border:1px solid var(--rule);background:var(--panel);}
+  .shot:hover .frame{border-color:var(--faint);}
   .shot img{width:100%;display:block;}
-  .shot figcaption{font-size:12.5px;color:var(--mid);padding:10px 14px;border-top:1px solid var(--line);}
-  #lightbox{position:fixed;inset:0;background:rgba(15,25,22,.88);display:none;align-items:center;justify-content:center;z-index:100;padding:22px;cursor:zoom-out;}
+  .shot figcaption{font-size:12.5px;color:var(--mid);padding-top:9px;}
+  .shot figcaption .no{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--hint);letter-spacing:.1em;margin-right:8px;}
+  #lightbox{position:fixed;inset:0;background:rgba(26,26,23,.9);display:none;align-items:center;justify-content:center;z-index:100;padding:22px;cursor:zoom-out;}
   #lightbox.on{display:flex;}
-  #lightbox img{max-width:100%;max-height:92vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
-  /* role table */
-  table.role{width:100%;border-collapse:collapse;font-size:14px;}
-  table.role th,table.role td{border:1px solid var(--line);padding:13px 16px;text-align:left;}
-  table.role th{background:var(--bg);width:110px;font-size:13px;}
-  table.role td b{color:var(--pd);}
-  blockquote{border-left:4px solid var(--p);background:var(--tint);padding:16px 20px;border-radius:0 10px 10px 0;font-size:14px;margin-top:22px;}
-  /* trust */
-  .trust li{list-style:none;display:flex;gap:11px;align-items:flex-start;padding:9px 0;font-size:14px;}
-  .trust li svg{color:var(--p);margin-top:5px;}
-  .trust small{display:block;color:var(--faint);font-size:12px;}
-  /* footer cta */
-  .fcta{background:linear-gradient(165deg,#0E7C73,#0A5E57);color:#fff;text-align:center;padding:64px 22px;}
-  .fcta h2{color:#fff;margin-bottom:10px;}
-  .fcta p{color:#C9E6E1;font-size:13.5px;margin-bottom:26px;}
-  footer{padding:34px 22px;text-align:center;font-size:12px;color:var(--faint);background:#0B1513;}
-  footer a{color:#8FB8B0;}
-  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#14201E;color:#fff;font-size:13px;padding:11px 20px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:110;}
+  #lightbox img{max-width:100%;max-height:92vh;border:1px solid #55534B;}
+  /* 成果物（表） */
+  .svgframe{border:1px solid var(--rule);background:var(--panel);margin-bottom:12px;}
+  .svgframe img{width:100%;display:block;}
+  table.dl{width:100%;border-collapse:collapse;margin-top:30px;}
+  table.dl th{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10.5px;font-weight:400;color:var(--faint);letter-spacing:.12em;text-align:left;padding:10px 14px 10px 0;border-top:1px solid var(--rule2);border-bottom:1px solid var(--rule2);}
+  table.dl td{padding:13px 14px 13px 0;border-bottom:1px solid var(--rule);font-size:13.5px;vertical-align:top;}
+  table.dl td.fmt{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;color:var(--hint);letter-spacing:.1em;white-space:nowrap;padding-top:16px;}
+  table.dl td.nm{font-weight:700;white-space:nowrap;}
+  table.dl td.ds{color:var(--mid);font-size:13px;}
+  table.dl th:last-child,table.dl td:last-child{text-align:right;padding-right:0;white-space:nowrap;}
+  .dlwrap{overflow-x:auto;}
+  /* AIとの役割 */
+  table.role{width:100%;border-collapse:collapse;font-size:14px;border-top:1px solid var(--rule2);}
+  table.role th{font-size:15px;width:120px;text-align:left;padding:14px 16px 14px 0;border-bottom:1px solid var(--rule);vertical-align:top;}
+  table.role td{padding:14px 0;border-bottom:1px solid var(--rule);color:var(--ink);}
+  blockquote{border-left:2px solid var(--acc);padding-left:18px;font-size:15.5px;line-height:1.95;margin-top:26px;color:var(--ink);}
+  /* 安心 */
+  .trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 40px;list-style:none;}
+  .trust li{display:grid;grid-template-columns:34px 1fr;border-top:1px solid var(--rule);padding:15px 0 13px;font-size:14px;}
+  .trust .no{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--hint);letter-spacing:.1em;padding-top:3px;}
+  .trust small{display:block;color:var(--faint);font-size:11.5px;margin-top:3px;}
+  /* 別バージョン */
+  .xover{border:1px solid var(--rule2);background:var(--tone);padding:24px 26px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:40px;}
+  .xover .xlbl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--faint);letter-spacing:.12em;display:block;margin-bottom:8px;}
+  .xover p{font-size:13.5px;color:var(--ink);flex:1;min-width:240px;}
+  /* 下部CTA・フッター（墨帯） */
+  .fcta{background:#1A1A17;color:#F7F4ED;padding:62px 0;}
+  .fcta .wrap{display:flex;gap:36px;align-items:center;flex-wrap:wrap;}
+  .fcta h2{color:#F7F4ED;font-size:24px;line-height:1.7;margin-bottom:8px;}
+  .fcta p{color:#8B877E;font-size:12.5px;}
+  .fcta .l{flex:1;min-width:280px;}
+  .fcta .btn-p{background:#F7F4ED;color:#1A1A17;border-color:#F7F4ED;}
+  .fcta .btn-s{border:1px solid #4A4842;color:#F7F4ED;}
+  .fcta .btn-s:hover{border-color:#F7F4ED;color:#F7F4ED;}
+  footer{background:#1A1A17;border-top:1px solid #33322D;padding:30px 0 38px;font-size:11.5px;color:#8B877E;}
+  footer a{color:#B6B1A6;}
+  footer a:hover{color:#F7F4ED;}
+  footer .cp{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em;margin-top:12px;}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1A1A17;color:#F7F4ED;font-size:12.5px;padding:11px 20px;border-radius:2px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:110;}
   .toast.on{opacity:1;}
 </style>
 </head>
 <body>
 
+<div class="topnav">
+  <div class="wrap">
+    <span class="brand mono">J-SOX FLOW BUILDER</span>
+    <nav>
+      <a href="#shots">操作画面</a>
+      <a href="#outputs">成果物</a>
+      <a href="#ai">AIとの役割</a>
+      <a href="https://github.com/norimaki-audit/jsox-flow-builder">GitHub</a>
+    </nav>
+  </div>
+</div>
+
 <header class="hero">
   <div class="wrap hero-grid">
   <div>
-    <span class="badge">無料 ・ ブラウザだけで動作 ・ ベータ版（開発中）</span>
+    <span class="tag mono">無料　/　ブラウザ完結　/　ベータ版（開発中）</span>
     <h1>J-SOX三点セットを、<br>ひとつのデータから。</h1>
     <p class="lead">業務記述書・業務フロー図・RCMを別々のExcelで管理するのではなく、工程・リスク・統制を一元管理し、整合した成果物として出力できる無料ツールです。</p>
     <p class="note">公認会計士が実務上の課題をもとに開発しています。インストール不要。入力した業務データはアプリから外部サーバーへ送信しません。</p>
-    <div class="cta pc-only">
-      <a class="btn btn-p" href="./jsox_flow_builder.html?start=sample"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>サンプルデータで無料で試す</a>
+    <div class="cta">
+      <a class="btn btn-p" href="./jsox_flow_builder.html?start=sample">サンプルデータで無料で試す</a>
       <a class="btn btn-s" href="#shots">操作画面を見る</a>
-      <a class="btn btn-s" href="https://github.com/norimaki-audit/jsox-flow-builder" style="background:transparent;border-color:rgba(255,255,255,.35);color:#D6EEEA">GitHubを見る</a>
+      <button class="btn btn-s" onclick="copyUrl()">PC用URLをコピー</button>
     </div>
-    <div class="cta sp-only sp-cta">
-      <button class="btn btn-p" onclick="copyUrl()"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>PC用URLをコピー</button>
-      <button class="btn btn-s" onclick="shareUrl()"><svg class="i" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>PCへ共有する</button>
-      <a class="btn btn-s" href="#shots">操作画面を見る</a>
-      <span class="sp-note">操作画面はPC向けです。スマートフォンではツールの概要と操作例をご覧いただけます。</span>
-    </div>
+    <p class="cta-note">操作画面はPC向けです。スマートフォンではツールの概要と操作例をご覧いただけます。</p>
   </div>
-  <div class="hshot">
-    <div class="hbar"><i></i><i></i><i></i></div>
-    <img src="assets/screenshots/current/03-flow-generated.png" width="1440" height="900" alt="実際の操作画面：業務記述書とRCMから自動生成された業務フロー図（スイムレーン・リスク統制タグ付き）">
+  <div>
+    <div class="hshot">
+      <img src="assets/screenshots/current/03-flow-generated.png" width="1440" height="900" alt="実際の操作画面：業務記述書とRCMから自動生成された業務フロー図（スイムレーン・リスク統制タグ付き）">
+    </div>
+    <p class="hcap mono">実機画面 — 工程データとRCMから生成した業務フロー図</p>
   </div>
   </div>
 </header>
 
-<section class="sec pain">
+<section class="sec">
   <div class="wrap">
+    <span class="secno mono">01</span>
     <h2>こんな管理になっていませんか</h2>
     <p class="sec-sub">三点セットは本来「同じ業務」を表す資料なのに、実務ではバラバラに壊れていきます。</p>
-    <div class="cards">
-      <div class="card"><span class="ic">📄</span><h3>三点セットが別ファイル</h3><p>業務記述書・フロー図・RCMを別々のExcel/PowerPointで更新している</p></div>
-      <div class="card"><span class="ic">⚠️</span><h3>直すたびに不整合</h3><p>1つ修正するたびに、他の資料との統制番号・工程のズレが発生する</p></div>
-      <div class="card"><span class="ic">🗂️</span><h3>前年度コピーの積み重ね</h3><p>毎期Excelをコピーし続け、構造や更新理由が誰にも分からなくなる</p></div>
-      <div class="card"><span class="ic">🤖</span><h3>AIの下書きの行き場がない</h3><p>AIで文章やRCM案を作っても、正式成果物として管理する場所がない</p></div>
+    <div class="plist">
+      <div class="row"><span class="lbl">a.</span><div><h3>三点セットが別ファイル</h3><p>業務記述書・フロー図・RCMを別々のExcel/PowerPointで更新している</p></div></div>
+      <div class="row"><span class="lbl">b.</span><div><h3>直すたびに不整合</h3><p>1つ修正するたびに、他の資料との統制番号・工程のズレが発生する</p></div></div>
+      <div class="row"><span class="lbl">c.</span><div><h3>前年度コピーの積み重ね</h3><p>毎期Excelをコピーし続け、構造や更新理由が誰にも分からなくなる</p></div></div>
+      <div class="row"><span class="lbl">d.</span><div><h3>AIの下書きの行き場がない</h3><p>AIで文章やRCM案を作っても、正式成果物として管理する場所がない</p></div></div>
     </div>
   </div>
 </section>
 
-<section class="sec">
+<section class="sec" style="padding-top:0">
   <div class="wrap">
+    <span class="secno mono">02</span>
     <h2>しくみ：構造化データが正本</h2>
     <p class="sec-sub">「1か所に入力すれば魔法のように全部完成」ではありません。<b>工程データとRCM（リスク・統制）データを構造化して管理</b>し、そこから3つの成果物を整合した状態で生成・更新する設計です。</p>
     <div class="steps">
-      <div class="stp"><span class="n">1</span><h3>工程を入力</h3><p>1行＝1工程。既存Excel/CSVの取込やテンプレートからも開始できます</p></div>
-      <div class="stp"><span class="n">2</span><h3>リスク・統制を関連付け</h3><p>RCMで対象工程No.を指定すると、工程×リスク×統制が紐づきます</p></div>
-      <div class="stp"><span class="n">3</span><h3>三点セットを生成</h3><p>業務記述書・フロー図（JIS記号）・RCMが同じデータから同期生成されます</p></div>
-      <div class="stp"><span class="n">4</span><h3>出力</h3><p>Excel（装飾付き）・draw.io・PDF/印刷・CSV・PNG/SVGへ</p></div>
+      <div class="stp"><span class="sn">STEP 01</span><svg viewBox="0 0 44 30" width="44" height="30" fill="none" stroke="var(--acc)" stroke-width="1.2"><rect x="1" y="1" width="42" height="28"/><path d="M1 9h42"/></svg><h3>工程を入力</h3><p>1行＝1工程。既存Excel/CSVの取込やテンプレートからも開始できます</p></div>
+      <div class="stp"><span class="sn">STEP 02</span><svg viewBox="0 0 44 30" width="44" height="30" fill="none" stroke="var(--acc)" stroke-width="1.2"><path d="M22 1 43 15 22 29 1 15Z"/></svg><h3>リスク・統制を関連付け</h3><p>RCMで対象工程No.を指定すると、工程×リスク×統制が紐づきます</p></div>
+      <div class="stp"><span class="sn">STEP 03</span><svg viewBox="0 0 44 30" width="44" height="30" fill="none" stroke="var(--acc)" stroke-width="1.2"><rect x="1" y="1" width="26" height="18"/><rect x="9" y="6" width="26" height="18"/><rect x="17" y="11" width="26" height="18"/></svg><h3>三点セットを生成</h3><p>業務記述書・フロー図（JIS記号）・RCMが同じデータから同期生成されます</p></div>
+      <div class="stp"><span class="sn">STEP 04</span><svg viewBox="0 0 44 30" width="44" height="30" fill="none" stroke="var(--acc)" stroke-width="1.2"><path d="M9 1H43L35 29H1Z"/></svg><h3>出力</h3><p>Excel（装飾付き）・draw.io・PDF/印刷・CSV・PNG/SVGへ</p></div>
     </div>
+    <p class="fignote">図形はJIS X 0121の記号体系を参考にした表示記号です</p>
   </div>
 </section>
 
-<section class="sec pain" id="shots">
+<section class="sec" id="shots" style="border-top:1px solid var(--rule2)">
   <div class="wrap">
+    <span class="secno mono">03</span>
     <h2>実際の操作画面</h2>
-    <p class="sec-sub">クリック（タップ）で拡大できます。すべて現行バージョンの実機画面・サンプルデータです。</p>
+    <p class="sec-sub">サンプルを開く → 工程を編集 → 成果物へ反映 → フロー図が更新 → Excelを出力、が基本の流れです。クリック（タップ）で拡大できます。すべて現行バージョンの実機画面・サンプルデータです。</p>
     <div class="shots">
-      <figure class="shot"><img src="assets/screenshots/current/01-start-options.png" alt="開始方法の選択画面：Excel/CSV取込・テンプレート・サンプルの3択" loading="lazy"><figcaption>① 開始方法を3つから選択（取込／テンプレート／サンプル）</figcaption></figure>
-      <figure class="shot"><img src="assets/screenshots/current/02-steps-edit.png" alt="業務記述書の編集画面：業務グループごとに工程を表形式で入力" loading="lazy"><figcaption>② 業務記述書：1行＝1工程。業務ごとに自動グルーピング</figcaption></figure>
-      <figure class="shot"><img src="assets/screenshots/current/03-flow-generated.png" alt="自動生成された業務フロー図：JIS X 0121の記号体系を参考にしたスイムレーン図にリスク・統制タグ" loading="lazy"><figcaption>③ フロー図は自動生成（JIS X 0121の記号体系を参考・R/C統制タグ付き）</figcaption></figure>
-      <figure class="shot"><img src="assets/screenshots/current/04-rcm-preview.png" alt="RCMのプレビュー画面：アサーション6区分とキーコントロール" loading="lazy"><figcaption>④ RCM：アサーション対応・キーコントロール・評価列</figcaption></figure>
-      <figure class="shot"><img src="assets/screenshots/current/05-excel-import-mapping.png" alt="Excel/CSV取込の列マッピング画面" loading="lazy"><figcaption>⑤ 既存Excelの列マッピング取込（各社様式に対応・保存可）</figcaption></figure>
-      <figure class="shot"><img src="assets/screenshots/current/06-ai-consult.png" alt="AI相談用データの生成画面：目的別プロンプトとコンテキストを整形" loading="lazy"><figcaption>⑥ AI相談用データを生成 → お使いのAIに貼り付け</figcaption></figure>
-      <figure class="shot"><img src="assets/screenshots/current/07-ai-import-preview.png" alt="AI回答の取込プレビュー画面：追加・更新内容を確認して適用" loading="lazy"><figcaption>⑦ AI回答は差分プレビューを確認してから取込（Undo可）</figcaption></figure>
-      <figure class="shot"><img src="assets/screenshots/current/08-excel-output.png" alt="Excel出力メニュー：画面に応じた出力を選択" loading="lazy"><figcaption>⑧ 画面に応じたExcel出力（装飾付き・フロー図込みも）</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/01-start-options.png" alt="開始方法の選択画面：Excel/CSV取込・テンプレート・サンプルの3択" loading="lazy"></div><figcaption><span class="no">01</span>開始方法を3つから選択（取込／テンプレート／サンプル）</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/02-steps-edit.png" alt="業務記述書の編集画面：業務グループごとに工程を表形式で入力" loading="lazy"></div><figcaption><span class="no">02</span>業務記述書：1行＝1工程。業務ごとに自動グルーピング</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/03-flow-generated.png" alt="自動生成された業務フロー図：JIS X 0121の記号体系を参考にしたスイムレーン図にリスク・統制タグ" loading="lazy"></div><figcaption><span class="no">03</span>フロー図は自動生成（JIS X 0121の記号体系を参考・R/C統制タグ付き）</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/04-rcm-preview.png" alt="RCMのプレビュー画面：アサーション6区分とキーコントロール" loading="lazy"></div><figcaption><span class="no">04</span>RCM：アサーション対応・キーコントロール・評価列</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/05-excel-import-mapping.png" alt="Excel/CSV取込の列マッピング画面" loading="lazy"></div><figcaption><span class="no">05</span>既存Excelの列マッピング取込（各社様式に対応・保存可）</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/06-ai-consult.png" alt="AI相談用データの生成画面：目的別プロンプトとコンテキストを整形" loading="lazy"></div><figcaption><span class="no">06</span>AI相談用データを生成 → お使いのAIに貼り付け</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/07-ai-import-preview.png" alt="AI回答の取込プレビュー画面：追加・更新内容を確認して適用" loading="lazy"></div><figcaption><span class="no">07</span>AI回答は差分プレビューを確認してから取込（Undo可）</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/screenshots/current/08-excel-output.png" alt="Excel出力メニュー：画面に応じた出力を選択" loading="lazy"></div><figcaption><span class="no">08</span>画面に応じたExcel出力（装飾付き・フロー図込みも）</figcaption></figure>
     </div>
-    <p style="font-size:13px;color:var(--mid);margin-top:18px">補足：必要に応じて、整備・運用評価、サンプリング調書、不備管理、証憑管理などの評価機能もオンにして利用できます（初期状態では非表示）。</p>
+    <p style="font-size:13px;color:var(--mid);margin-top:22px">補足：必要に応じて、整備・運用評価、サンプリング調書、不備管理、証憑管理などの評価機能もオンにして利用できます（初期状態では非表示）。</p>
   </div>
 </section>
 
-<section class="sec" id="outputs">
+<section class="sec" id="outputs" style="border-top:1px solid var(--rule2)">
   <div class="wrap">
+    <span class="secno mono">04</span>
     <h2>出力される成果物</h2>
-    <p class="sec-sub">操作画面だけでなく、最終的に手に入るものをご覧ください。すべてサンプルデータからの<b>実際の出力</b>です（クリックでダウンロード）。</p>
-    <div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;margin-bottom:18px">
-      <img src="assets/samples/sample_flow.svg" alt="実際に出力された業務フロー図（SVG）" style="width:100%;display:block" loading="lazy">
-      <div style="font-size:12.5px;color:var(--mid);padding:10px 14px;border-top:1px solid var(--line)">業務フロー図の実出力（SVG）— このままdraw.ioやPNGにも書き出せます</div>
+    <p class="sec-sub">操作画面だけでなく、最終的に手に入るものをご覧ください。すべてサンプルデータからの<b>実際の出力</b>です。</p>
+    <div class="svgframe">
+      <img src="assets/samples/sample_flow.svg" alt="実際に出力された業務フロー図（SVG）" loading="lazy">
     </div>
-    <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-      <a class="card" download href="assets/samples/sample_narrative.xlsx" style="text-decoration:none;color:inherit"><span class="ic">📊</span><h3>業務記述書 Excel</h3><p>工程表＋各工程の詳細記述の2シート・装飾付き（10KB）</p></a>
-      <a class="card" download href="assets/samples/sample_rcm.xlsx" style="text-decoration:none;color:inherit"><span class="ic">📋</span><h3>RCM Excel</h3><p>アサーション・キー統制対応の詳細様式（8KB）</p></a>
-      <a class="card" download href="assets/samples/sample_print.pdf" style="text-decoration:none;color:inherit"><span class="ic">🖨️</span><h3>印刷・PDF</h3><p>押印欄付きの調書スタイル・3ページ（276KB）</p></a>
-      <a class="card" download href="assets/samples/sample_flow.drawio" style="text-decoration:none;color:inherit"><span class="ic">🔀</span><h3>draw.io</h3><p>フロー図をdraw.ioで開いて編集続行できます（5KB）</p></a>
-      <a class="card" download href="assets/samples/sample_project.json" style="text-decoration:none;color:inherit"><span class="ic">💾</span><h3>プロジェクト JSON</h3><p>保存・復元・共有用の正本データ（13KB）</p></a>
+    <p class="hcap mono">業務フロー図の実出力（SVG）— このままdraw.ioやPNGにも書き出せます</p>
+    <div class="dlwrap">
+    <table class="dl">
+      <thead><tr><th>FORMAT</th><th>成果物</th><th>内容</th><th>DOWNLOAD</th></tr></thead>
+      <tbody>
+        <tr><td class="fmt">XLSX</td><td class="nm">業務記述書 Excel</td><td class="ds">工程表＋各工程の詳細記述の2シート・装飾付き（10KB）</td><td><a download href="assets/samples/sample_narrative.xlsx">ダウンロード</a></td></tr>
+        <tr><td class="fmt">XLSX</td><td class="nm">RCM Excel</td><td class="ds">アサーション・キー統制対応の詳細様式（8KB）</td><td><a download href="assets/samples/sample_rcm.xlsx">ダウンロード</a></td></tr>
+        <tr><td class="fmt">PDF</td><td class="nm">印刷・PDF</td><td class="ds">押印欄付きの調書スタイル・3ページ（276KB）</td><td><a download href="assets/samples/sample_print.pdf">ダウンロード</a></td></tr>
+        <tr><td class="fmt">DRAWIO</td><td class="nm">draw.io</td><td class="ds">フロー図をdraw.ioで開いて編集続行できます（5KB）</td><td><a download href="assets/samples/sample_flow.drawio">ダウンロード</a></td></tr>
+        <tr><td class="fmt">JSON</td><td class="nm">プロジェクト JSON</td><td class="ds">保存・復元・共有用の正本データ（13KB）</td><td><a download href="assets/samples/sample_project.json">ダウンロード</a></td></tr>
+      </tbody>
+    </table>
     </div>
   </div>
 </section>
 
-<section class="sec pain" id="demo">
+<section class="sec" id="ai" style="border-top:1px solid var(--rule2)">
   <div class="wrap">
-    <h2>30秒でわかる操作の流れ</h2>
-    <p class="sec-sub">サンプルを開く → 工程を編集 → 成果物へ反映 → フロー図が更新 → Excelを出力。</p>
-    <div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#000;position:relative;max-width:860px">
-      <video id="demoVideo" poster="assets/screenshots/current/03-flow-generated.png" controls preload="none" playsinline muted loop style="width:100%;display:block">
-        <source src="assets/demo/demo.mp4" type="video/mp4" onerror="demoFallback()">
-      </video>
-    </div>
-    <p id="demoNote" style="font-size:12px;color:var(--mid);margin-top:10px">動画は準備中です。上の画像は実際のフロー図画面です。今すぐ試したい方は<a href="./jsox_flow_builder.html?start=sample">サンプルデータで開始</a>すると、画面右下のガイドが同じ4ステップを案内します。</p>
-  </div>
-</section>
-
-<section class="sec">
-  <div class="wrap">
+    <span class="secno mono">05</span>
     <h2>AIとの役割分担</h2>
     <p class="sec-sub">AIによる完全自動化は目指していません。考えるのはAI、構造と整合を守るのはツール、決めるのは人間です。</p>
     <table class="role">
@@ -216,42 +257,48 @@
   </div>
 </section>
 
-<section class="sec pain">
+<section class="sec" style="border-top:1px solid var(--rule2)">
   <div class="wrap">
+    <span class="secno mono">06</span>
     <h2>安心してお使いいただくために</h2>
     <ul class="trust">
-      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>アカウント登録・インストール不要。ブラウザで開くだけ</span></li>
-      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>入力した業務データを、アプリから外部サーバーへ送信しません<small>※画面表示用のフォント・アイコン等はCDNから取得します（入力データとは無関係です）</small></span></li>
-      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>プロジェクトはJSONファイルとしてPCに保存・復元できます（自動保存つき）</span></li>
-      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>単一HTMLをダウンロードすれば、社内環境・オフラインでも利用できます</span></li>
-      <li><svg class="i" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>AIへの送信は自動では行いません。利用者が内容を確認してコピーし、回答も適用前にプレビューできます</span></li>
+      <li><span class="no">01</span><span>アカウント登録・インストール不要。ブラウザで開くだけ</span></li>
+      <li><span class="no">02</span><span>入力した業務データを、アプリから外部サーバーへ送信しません<small>※画面表示用のフォント・アイコン等はCDNから取得します（入力データとは無関係です）</small></span></li>
+      <li><span class="no">03</span><span>プロジェクトはJSONファイルとしてPCに保存・復元できます（自動保存つき）</span></li>
+      <li><span class="no">04</span><span>単一HTMLをダウンロードすれば、社内環境・オフラインでも利用できます</span></li>
+      <li><span class="no">05</span><span>AIへの送信は自動では行いません。利用者が内容を確認してコピーし、回答も適用前にプレビューできます</span></li>
+      <li><span class="no">06</span><span>想定利用者：上場企業の内部統制担当者／IPO準備企業／公認会計士／内部監査担当者／管理部門</span></li>
     </ul>
-    <p style="font-size:13px;color:var(--mid);margin-top:22px"><b>想定利用者：</b>上場企業の内部統制担当者／IPO準備企業／公認会計士／内部監査担当者／管理部門。</p>
-    <div style="margin-top:26px;border:1.5px solid var(--bd);background:var(--tint);border-radius:14px;padding:22px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-      <p style="font-size:13.5px;color:#2A3633;flex:1;min-width:240px"><b>J-SOXは不要ですか？</b> 中小企業・士業・バックオフィスの方には、同じエンジンで動く<b>業務マニュアル・業務フロー図作成ツール</b>（脱属人化・引継ぎ用）をご用意しています。手順を表に書くだけで、フロー図・チェックリスト・引継ぎ資料まで自動生成します。</p>
-      <a class="btn btn-s" href="./manual.html" style="flex:none">業務マニュアル版を見る →</a>
+    <div class="xover">
+      <div style="flex:1;min-width:240px">
+        <span class="xlbl">別バージョン</span>
+        <p><b>J-SOXは不要ですか？</b> 中小企業・士業・バックオフィスの方には、同じエンジンで動く<b>業務マニュアル・業務フロー図作成ツール</b>（脱属人化・引継ぎ用）をご用意しています。手順を表に書くだけで、フロー図・チェックリスト・引継ぎ資料まで自動生成します。</p>
+      </div>
+      <a class="btn btn-s" href="./manual.html" style="flex:none">業務マニュアル版を見る</a>
     </div>
   </div>
 </section>
 
 <div class="fcta">
-  <h2 class="pc-heading">サンプルデータで無料で試す</h2>
-  <h2 class="sp-heading">PCでお試しください</h2>
-  <p>操作画面はPC向けです。スマートフォンではツールの概要と操作例をご覧いただけます。</p>
-  <div class="cta pc-only" style="justify-content:center">
-    <a class="btn btn-s" href="./jsox_flow_builder.html?start=sample" style="background:#fff;color:var(--pd)">サンプルデータで無料で試す</a>
-  </div>
-  <div class="cta sp-only sp-cta" style="margin:0 auto">
-    <button class="btn btn-s" style="background:#fff;color:var(--pd)" onclick="copyUrl()">PC用URLをコピーする</button>
-    <button class="btn btn-s" style="background:rgba(255,255,255,.15);color:#fff" onclick="shareUrl()">PCに共有する</button>
+  <div class="wrap">
+    <div class="l">
+      <h2>サンプルデータで、<br>まず一度動かしてみてください。</h2>
+      <p>操作画面はPC向けです。スマートフォンではツールの概要と操作例をご覧いただけます。</p>
+    </div>
+    <div class="cta">
+      <a class="btn btn-p" href="./jsox_flow_builder.html?start=sample">サンプルデータで無料で試す</a>
+      <button class="btn btn-s" onclick="copyUrl()">PC用URLをコピー</button>
+    </div>
   </div>
 </div>
 
 <footer>
-  <p>J-SOX Flow Builder（ベータ版・開発中） ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder">GitHub</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder/blob/main/LICENSE.md">利用条件</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder/blob/main/docs/PRIVACY.md">プライバシー</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder/blob/main/THIRD_PARTY_NOTICES.md">第三者ライセンス</a></p>
-  <p style="margin-top:8px">無料で利用できます。本ツールはSource-Available（ソース公開型）です。再配布・再ホスティング・派生サービス化には許可が必要です。</p>
-  <p style="margin-top:8px">本ツールは内部統制文書の作成を支援するものであり、特定の様式・監査対応を保証するものではありません。</p>
-  <p style="margin-top:10px">&copy; 2026 norimaki audit</p>
+  <div class="wrap">
+    <p>J-SOX Flow Builder（ベータ版・開発中） ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder">GitHub</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder/blob/main/LICENSE.md">利用条件</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder/blob/main/docs/PRIVACY.md">プライバシー</a> ・ <a href="https://github.com/norimaki-audit/jsox-flow-builder/blob/main/THIRD_PARTY_NOTICES.md">第三者ライセンス</a></p>
+    <p style="margin-top:8px">無料で利用できます。本ツールはSource-Available（ソース公開型）です。再配布・再ホスティング・派生サービス化には許可が必要です。</p>
+    <p style="margin-top:8px">本ツールは内部統制文書の作成を支援するものであり、特定の様式・監査対応を保証するものではありません。</p>
+    <p class="cp">&copy; 2026 norimaki audit</p>
+  </div>
 </footer>
 
 <div id="lightbox" onclick="this.classList.remove('on')"><img id="lbImg" alt=""></div>
@@ -268,21 +315,8 @@ function shareUrl(){
   if(navigator.share)navigator.share({title:"J-SOX Flow Builder",text:"J-SOX三点セットを、ひとつのデータから作成・更新できる無料ツール（PC推奨）",url:APP_URL}).catch(()=>{});
   else copyUrl();
 }
-function demoFallback(){
-  const v=document.getElementById("demoVideo");
-  if(!v)return;
-  const img=document.createElement("img");
-  img.src=v.getAttribute("poster");img.alt="操作画面（デモ動画は準備中）";img.style.cssText="width:100%;display:block";
-  v.replaceWith(img);
-}
-// mp4が存在しない場合はポスター画像に置換（HEADで存在確認）
-fetch("assets/demo/demo.mp4",{method:"HEAD"}).then(r=>{
-  if(!r.ok){demoFallback();return;}
-  const n=document.getElementById("demoNote");
-  if(n)n.innerHTML='実際の操作画面で構成した約30秒のダイジェストです。同じ流れを<a href="./jsox_flow_builder.html?start=sample">サンプルデータで開始</a>すると、画面右下のガイドが案内します。';
-}).catch(demoFallback);
 document.querySelectorAll(".shot img").forEach(img=>{
-  img.parentElement.addEventListener("click",()=>{
+  img.parentElement.parentElement.addEventListener("click",()=>{
     document.getElementById("lbImg").src=img.src;
     document.getElementById("lbImg").alt=img.alt;
     document.getElementById("lightbox").classList.add("on");
