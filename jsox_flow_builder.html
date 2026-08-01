@@ -2044,7 +2044,7 @@ function addStepsDetailSheet(wb){
     const xr=ws.addRow([String(s.no==null?"":s.no),s.gyomu||"",s.label||"",s.dept||"",s.role||"",s.detail||""]);
     xr.eachCell((x,ci)=>{x.font={name:XL_FONT,size:10};x.alignment={vertical:"top",horizontal:ci===1?"center":"left",wrapText:true};x.border={top:thin,left:thin,bottom:thin,right:thin};});
   });
-  ws.columns=[{width:9},{width:12},{width:24},{width:12},{width:12},{width:88}];
+  ws.columns=[{width:9},{width:12},{width:24},{width:12},{width:12},{width:60}];
   ws.views=[{state:"frozen",ySplit:1}];
 }
 async function exportDocXlsx(containerId,fileBase){
@@ -2151,11 +2151,12 @@ function rgbToARGB(s){
 }
 function argbLuma(a){if(!a||a.length<8)return 255;const r=parseInt(a.slice(2,4),16),g=parseInt(a.slice(4,6),16),b=parseInt(a.slice(6,8),16);return 0.299*r+0.587*g+0.114*b;}
 const XL_FONT="Yu Gothic";
+function xlVisLen(str){let n=0;for(const ch of String(str)){n+=ch.charCodeAt(0)>255?2:1;}return n;}
 async function tableToExcel(ws,tableEl){
   const used={};let r=1;
   const thin={style:"thin",color:{argb:"FFE2E8E7"}};
   const hair={style:"hair",color:{argb:"FFD2DCD8"}};
-  const widths=[];
+  const widths=[];const cellsInfo=[];
   for(const tr of tableEl.rows){
     let c=1;
     const isHead=tr.parentElement&&tr.parentElement.tagName==="THEAD";
@@ -2163,9 +2164,11 @@ async function tableToExcel(ws,tableEl){
       while(used[r+"_"+c])c++;
       const rs=cell.rowSpan||1,cs=cell.colSpan||1;
       const cs0=getComputedStyle(cell);
+      const vert=(cs0.writingMode||"").indexOf("vertical")===0;
       const x=ws.getCell(r,c);
       x.value=(cell.innerText||cell.textContent||"").trim();
-      x.alignment={vertical:"middle",horizontal:(cs0.textAlign==="center"?"center":cs0.textAlign==="right"?"right":"left"),wrapText:true};
+      x.alignment={vertical:"middle",horizontal:(vert||cs0.textAlign==="center"?"center":cs0.textAlign==="right"?"right":"left"),wrapText:!vert};
+      if(vert)x.alignment.textRotation="vertical";/* Excelの縦書き */
       let bg=rgbToARGB(cs0.backgroundColor);
       if(!bg&&(cell.tagName==="TH"||isHead))bg="FFF2F6F5";/* UIヘッダ色 */
       if(bg)x.fill={type:"pattern",pattern:"solid",fgColor:{argb:bg}};
@@ -2176,13 +2179,32 @@ async function tableToExcel(ws,tableEl){
       x.font={name:XL_FONT,bold:bold,color:{argb:fontColor},size:10};
       x.border={top:isHead?thin:hair,left:thin,bottom:isHead?thin:hair,right:thin};
       if(rs>1||cs>1){ws.mergeCells(r,c,r+rs-1,c+cs-1);for(let i=0;i<rs;i++)for(let j=0;j<cs;j++)if(i||j)used[(r+i)+"_"+(c+j)]=true;}
-      const w=Math.min(40,Math.max(6,(x.value.length||2)+2));
-      widths[c-1]=Math.max(widths[c-1]||0,w);
+      const segs=x.value.split("\n");
+      const segLens=segs.map(xlVisLen);
+      if(vert){
+        widths[c-1]=Math.max(widths[c-1]||0,5);
+        /* 縦書きヘッダ分の行高さを確保 */
+        const hh=Math.min(95,(Math.max(...segLens)/2)*11+14);
+        const row=ws.getRow(r);row.height=Math.max(row.height||0,hh);
+      }else if(cs===1){
+        /* CJK=2幅で換算。長文列は40で折り返し */
+        const w=Math.min(40,Math.max(6,Math.max(...segLens)+2));
+        widths[c-1]=Math.max(widths[c-1]||0,w);
+      }
+      cellsInfo.push({r:r,c:c,cs:cs,segLens:segLens,head:isHead||cell.tagName==="TH",vert:vert});
       c+=cs;
     }
     r++;
   }
-  ws.columns=widths.map(w=>({width:w}));
+  ws.columns=widths.map(w=>({width:w||8}));
+  /* 折り返し行の高さを推定（本文セルのみ） */
+  for(const ci of cellsInfo){
+    if(ci.head||ci.vert)continue;
+    let wsum=0;for(let j=0;j<ci.cs;j++)wsum+=(widths[ci.c-1+j]||8);
+    const avail=Math.max(4,wsum-2);
+    const lines=ci.segLens.reduce((a,l)=>a+Math.max(1,Math.ceil(l/avail)),0);
+    if(lines>1){const row=ws.getRow(ci.r);row.height=Math.max(row.height||0,Math.min(120,lines*12.5+6));}
+  }
   const hrows=tableEl.tHead?tableEl.tHead.rows.length:0;
   if(hrows)ws.views=[{state:"frozen",ySplit:hrows}];
 }
@@ -3705,15 +3727,16 @@ function renderRcmDoc(){
   if(!detail){
     // 簡潔様式（画像準拠）
     h+=`<div style="overflow:auto"><table style="font-size:12px"><thead>`
-      +`<tr><th rowspan="2">業務</th><th rowspan="2">リスクの内容</th><th rowspan="2">統制の内容</th><th colspan="6" style="text-align:center">要件（アサーション）</th><th rowspan="2">評価</th><th rowspan="2" class="col-note">評価内容</th>`
+      +`<tr><th rowspan="2">業務</th><th rowspan="2">工程No.</th><th rowspan="2">リスクの内容</th><th rowspan="2">統制の内容</th><th colspan="6" style="text-align:center">要件（アサーション）</th><th rowspan="2">評価</th><th rowspan="2" class="col-note">評価内容</th>`
       +cc.map(c=>`<th rowspan="2">${esc(c.label)}</th>`).join("")
       +`</tr>`
       +`<tr>`+ASRT_LBL.map(l=>`<th style="writing-mode:vertical-rl;text-orientation:upright;white-space:nowrap;padding:6px 3px">${l}</th>`).join("")+`</tr></thead><tbody>`;
-    if(!p.rcm.length)h+=`<tr><td colspan="${11+cc.length}" style="color:var(--muted)">RCM未入力です</td></tr>`;
+    if(!p.rcm.length)h+=`<tr><td colspan="${12+cc.length}" style="color:var(--muted)">RCM未入力です</td></tr>`;
     rcmSorted(p.rcm).forEach(r=>{
       h+=`<tr class="${r.key?"kc":""}">`
         +`<td>${esc(r.gyomu)}</td>`
-        +`<td>${esc(r.risk_desc)}</td>`
+        +`<td style="text-align:center;white-space:nowrap">${esc(r.step_no||"")}</td>`
+        +`<td>${(r.risk_id||"").trim()?`<span class="idchip" style="margin-right:6px">${esc(r.risk_id)}</span>`:""}${esc(r.risk_desc)}</td>`
         +`<td>${(r.control_id||"").trim()?`<span class="idchip" style="margin-right:6px">${esc(r.control_id)}</span>`:""}${r.key?keyTag():""}<div style="margin-top:3px">${esc(r.control_desc)}</div></td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
         +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
@@ -3726,26 +3749,28 @@ function renderRcmDoc(){
     const vcol=`style="writing-mode:vertical-rl;text-orientation:upright;white-space:nowrap;padding:6px 3px"`;
     h+=`<div style="overflow:auto"><table style="font-size:12px"><thead>`
       +`<tr>`
-      +`<th rowspan="2">業務</th><th rowspan="2">リスクの内容</th><th rowspan="2">統制の内容</th>`
+      +`<th rowspan="2">業務</th><th rowspan="2">工程No.</th><th rowspan="2">リスクID</th><th rowspan="2">リスクの内容</th><th rowspan="2">統制ID</th><th rowspan="2">統制の内容</th>`
       +`<th colspan="6" style="text-align:center">要件（アサーション）</th>`
       +`<th rowspan="2">総合評価</th><th rowspan="2" class="col-note">評価内容</th>`
-      +`<th rowspan="2">統制ID</th><th rowspan="2" ${vcol}>予防・発見</th><th rowspan="2" ${vcol}>手動・自動</th><th rowspan="2" ${vcol}>IT依存</th>`
+      +`<th rowspan="2" ${vcol}>予防・発見</th><th rowspan="2" ${vcol}>手動・自動</th><th rowspan="2" ${vcol}>IT依存</th>`
       +`<th rowspan="2">頻度</th><th rowspan="2">統制責任者</th><th rowspan="2">関連文書・証跡</th><th rowspan="2" ${vcol}>キー</th>`
       +`<th rowspan="2" ${vcol}>整備評価</th><th rowspan="2">運用詳細<br><small style="font-weight:400">方法・件数・例外</small></th><th rowspan="2" ${vcol}>運用評価</th>`
       +cc.map(c=>`<th rowspan="2">${esc(c.label)}</th>`).join("")
       +`</tr>`
       +`<tr>`+ASRT_LBL.map(l=>`<th ${vcol}>${l}</th>`).join("")+`</tr></thead><tbody>`;
-    if(!p.rcm.length)h+=`<tr><td colspan="${22+cc.length}" style="color:var(--muted)">RCM未入力です</td></tr>`;
+    if(!p.rcm.length)h+=`<tr><td colspan="${24+cc.length}" style="color:var(--muted)">RCM未入力です</td></tr>`;
     rcmSorted(p.rcm).forEach(r=>{
       const oeDetail=[r.oe_method,(r.oe_n||"").toString().trim()?`件数:${r.oe_n}`:"",(r.oe_excns||"").toString().trim()?`例外:${r.oe_excns}`:""].filter(Boolean).join(" / ");
       h+=`<tr class="${r.key?"kc":""}">`
         +`<td>${esc(r.gyomu)}</td>`
+        +`<td style="text-align:center;white-space:nowrap">${esc(r.step_no||"")}</td>`
+        +`<td style="white-space:nowrap">${(r.risk_id||"").trim()?`<span class="idchip">${esc(r.risk_id)}</span>`:""}</td>`
         +`<td>${esc(r.risk_desc)}</td>`
+        +`<td style="white-space:nowrap">${(r.control_id||"").trim()?`<span class="idchip">${esc(r.control_id)}</span>`:""}</td>`
         +`<td>${esc(r.control_desc)}</td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
         +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
         +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
-        +`<td style="white-space:nowrap">${(r.control_id||"").trim()?`<span class="idchip">${esc(r.control_id)}</span>`:""}${r.key?" "+keyTag():""}</td>`
         +`<td style="text-align:center">${esc(r.prev_det||"")}</td>`
         +`<td style="text-align:center">${esc(r.man_auto||"")}</td>`
         +`<td style="text-align:center">${r.it_dep?"○":""}</td>`
