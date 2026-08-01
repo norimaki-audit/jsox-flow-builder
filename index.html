@@ -46,6 +46,14 @@
   @media (max-width:768px){.pc-heading{display:none;}.sp-heading{display:block;}}
   .sp-cta{flex-direction:column;width:100%;max-width:380px;}
   .sp-note{font-size:12px;color:#A9D4CD;margin-top:10px;}
+  /* hero 実機画面（PC=右カラム / スマホ=CTA下） */
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;}
+  @media (max-width:979px){.hero-grid{display:block;}}
+  .hshot{border-radius:12px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);background:#fff;}
+  .hshot .hbar{height:26px;background:#E8EDEC;display:flex;align-items:center;gap:6px;padding:0 12px;}
+  .hshot .hbar i{width:9px;height:9px;border-radius:50%;background:#C9D4D1;display:block;}
+  .hshot img{width:100%;height:auto;display:block;}
+  @media (max-width:979px){.hshot{margin-top:26px;max-width:560px;}}
   /* pain */
   .pain{background:var(--bg);}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
@@ -94,7 +102,8 @@
 <body>
 
 <header class="hero">
-  <div class="wrap">
+  <div class="wrap hero-grid">
+  <div>
     <span class="badge">無料 ・ ブラウザだけで動作 ・ ベータ版（開発中）</span>
     <h1>J-SOX三点セットを、<br>ひとつのデータから。</h1>
     <p class="lead">業務記述書・業務フロー図・RCMを別々のExcelで管理するのではなく、工程・リスク・統制を一元管理し、整合した成果物として出力できる無料ツールです。</p>
@@ -110,6 +119,11 @@
       <a class="btn btn-s" href="#shots">操作画面を見る</a>
       <span class="sp-note">操作画面はPC向けです。スマートフォンではツールの概要と操作例をご覧いただけます。</span>
     </div>
+  </div>
+  <div class="hshot">
+    <div class="hbar"><i></i><i></i><i></i></div>
+    <img src="assets/screenshots/current/03-flow-generated.png" width="1440" height="900" alt="実際の操作画面：業務記述書とRCMから自動生成された業務フロー図（スイムレーン・リスク統制タグ付き）">
+  </div>
   </div>
 </header>
 
