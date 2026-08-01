@@ -26,7 +26,7 @@ jobs:
 
       - name: 必須ファイルの存在確認
         run: |
-          for f in index.html manual.html jsox_flow_builder.html README.md CHANGELOG.md LICENSE.md docs/PRIVACY.md docs/USER_GUIDE.md docs/DEVELOPMENT.md assets/og/og.png; do
+          for f in index.html manual.html jsox_flow_builder.html README.md CHANGELOG.md LICENSE.md THIRD_PARTY_NOTICES.md docs/PRIVACY.md docs/USER_GUIDE.md docs/DEVELOPMENT.md assets/og/og.png assets/demo/demo.mp4; do
             test -f "$f" || { echo "MISSING: $f"; exit 1; }
           done
           echo "✓ required files OK"
@@ -41,12 +41,34 @@ jobs:
                   if not os.path.isfile(m): missing.append(f"{path}: {m}")
           for f in ["index.html","manual.html","README.md"]:
               check(f, open(f,encoding="utf-8").read())
-          # デモ動画は未配置を許容
-          missing=[m for m in missing if "assets/demo/" not in m]
           if missing:
               print("\n".join(missing)); sys.exit(1)
           print("✓ asset references OK")
           PY
+
+      - name: レスポンシブ見出しの再発防止チェック
+        run: |
+          ! grep -nE 'class="(sp|pc)-only" style="display:block"' index.html manual.html \
+            || { echo "NG: 見出しに pc-only/sp-only + inline display:block が残っています"; exit 1; }
+          grep -q 'class="pc-heading"' index.html && grep -q 'class="sp-heading"' index.html
+          grep -q 'class="pc-heading"' manual.html && grep -q 'class="sp-heading"' manual.html
+          echo "✓ responsive headings OK"
+
+      - name: 旧表記［反映］の再発防止チェック
+        run: |
+          # ユーザー向け文書のみ対象（CHANGELOGの変更履歴説明・内部関数名は除外）
+          ! grep -nE '上部の［反映］|→［反映］→|\[反映\]ボタン' README.md docs/USER_GUIDE.md docs/DEVELOPMENT.md index.html manual.html \
+            || { echo "NG: 旧表記［反映］が残っています"; exit 1; }
+          echo "✓ 成果物へ反映 wording OK"
+
+      - name: セルフテスト件数とドキュメントの一致
+        run: |
+          N=$(grep -oP 'const SELF_TEST_COUNT=\K\d+' jsox_flow_builder.html | head -1)
+          [ -n "$N" ] || { echo "SELF_TEST_COUNT not found"; exit 1; }
+          for f in README.md CHANGELOG.md docs/DEVELOPMENT.md; do
+            grep -q "${N}項目" "$f" || { echo "NG: $f に ${N}項目 の記載がありません"; exit 1; }
+          done
+          echo "✓ self-test count ($N) consistent"
 
       - name: 組み込みセルフテスト（headless Chrome）
         run: |

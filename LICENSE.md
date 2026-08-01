@@ -26,6 +26,8 @@ Copyright (c) 2026 norimaki-audit（IC Studio）
 - SheetJS Community Edition (Apache License 2.0)
 - ExcelJS (MIT License)
 
+バージョン・取得形態・CDN経由のフォント/アイコンを含む詳細は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
+
 ## 免責
 
 本ツールは現状有姿（AS IS）で提供され、明示または黙示を問わずいかなる保証も行いません。本ツールの利用により生じたいかなる損害についても、作者は責任を負いません。本ツールは内部統制文書の作成を支援するものであり、特定の様式・監査対応・法令適合を保証するものではありません。
