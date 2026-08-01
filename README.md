@@ -18,6 +18,7 @@ AIで作成したRCM案等も取り込み、人間が確認・確定したうえ
 - 🎬 [操作の流れ（デモ）](https://norimaki-audit.github.io/jsox-flow-builder/#demo)
 - 🐛 [不具合報告・要望はこちら](https://github.com/norimaki-audit/jsox-flow-builder/issues/new/choose)
 - ⚠️ 既知の制約: スマホでの編集操作は非対応（閲覧案内を表示）／証憑フォルダ格納は Chrome・Edge のみ／Excelの複雑な結合セルは取込時に列マッピングでの調整が必要
+- ⚖️ **License: Source-Available** — Free for internal and professional use / Redistribution and re-hosting require permission（[LICENSE.md](LICENSE.md)）
 
 - 💻 PC推奨（横長の表・フロー図を扱うため）
 - 📦 インストール不要・アカウント不要
@@ -121,5 +122,12 @@ AIへの送信は自動では行いません。ツール内で相談用データ
 
 ## ライセンス
 
-**利用は無料**（社内業務・商用の業務での利用を含む）。作成した成果物の権利は利用者に帰属します。
-ソースコードの再配布・派生ツールの公開・他製品への組み込みは**事前の許諾が必要**です。詳細は [LICENSE.md](LICENSE.md) をご覧ください。
+本ツールは**無料で利用できます**。個人利用、法人の社内利用（商用の業務を含む）、公認会計士・コンサルタント等の**専門家によるクライアント業務での利用**を含みます。
+
+本プロジェクトはオープンソースソフトウェアではなく、**Source-Available（ソース公開型）** ソフトウェアです（ライセンス: **J-SOX Flow Builder Source-Available License 1.0**）。
+
+- ソースコードの再配布、改変版の公開、再ホスティング、派生サービス・他製品への組込みには**事前の許諾**が必要です（[Issues](https://github.com/norimaki-audit/jsox-flow-builder/issues) でご相談ください）
+- 本ツールで作成した**成果物（業務記述書・フロー図・RCM・Excel等）は利用者に帰属**し、自由に利用・配布・納品できます
+- 同梱・参照する第三者ライブラリには各ライセンスが適用されます（[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) / [licenses/](licenses/)）
+
+詳細は [LICENSE.md](LICENSE.md) を、貢献の方針は [CONTRIBUTING.md](CONTRIBUTING.md) を、着想元は [ACKNOWLEDGEMENTS.md](ACKNOWLEDGEMENTS.md) をご覧ください。

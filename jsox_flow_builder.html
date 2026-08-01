@@ -1,4 +1,12 @@
 <!DOCTYPE html>
+<!--
+  J-SOX Flow Builder
+  Copyright (c) 2026 norimaki-audit / IC Studio
+  Licensed under the J-SOX Flow Builder Source-Available License 1.0 (LicenseRef-JSOX-Flow-Builder-1.0).
+  See LICENSE.md: https://github.com/norimaki-audit/jsox-flow-builder/blob/main/LICENSE.md
+  Free for internal and professional use. Redistribution / re-hosting / derivative services require permission.
+  Third-party libraries (SheetJS CE Apache-2.0, ExcelJS MIT, fonts/icons) keep their own licenses - see THIRD_PARTY_NOTICES.md.
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -661,6 +669,8 @@
       <button onclick="closeFileMenu();loadExampleConfirmed()"><i class="ph ph-flask"></i>サンプル読込<span class="fm-sub">現在の内容は破棄</span></button>
       <div class="fm-sep"></div>
       <button onclick="toggleEvalFeature()" title="整備・運用評価／サンプリング調書／評価結果／不備管理／証憑管理の表示を切り替えます。オフにしてもデータは保持されます"><i class="ph ph-list-checks"></i>評価・証憑管理機能<span class="fm-sub" id="evalFeatState">オフ</span></button>
+      <div class="fm-sep"></div>
+      <button onclick="closeFileMenu();window.open('https://github.com/norimaki-audit/jsox-flow-builder/blob/main/LICENSE.md','_blank')" title="無料で利用できます。本ツールはSource-Available（ソース公開型）です。再配布・再ホスティング・派生サービス化には許可が必要です"><i class="ph ph-scales"></i>利用条件（ライセンス）<span class="fm-sub">Source-Available</span></button>
       <div class="fm-sep"></div>
       <div class="fm-row" style="padding-bottom:2px"><label id="asInfo">自動保存: なし</label><label style="letter-spacing:.02em">J-SOX Flow Builder v0.9.0-beta ・ by IC Studio</label></div>
       <button onclick="closeFileMenu();restoreAutosave()"><i class="ph ph-clock-counter-clockwise"></i>自動保存から復元<span class="fm-sub">直近</span></button>

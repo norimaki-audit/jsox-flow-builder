@@ -61,6 +61,23 @@ jobs:
             || { echo "NG: 旧表記［反映］が残っています"; exit 1; }
           echo "✓ 成果物へ反映 wording OK"
 
+      - name: ライセンス整合チェック
+        run: |
+          for f in LICENSE.md THIRD_PARTY_NOTICES.md CONTRIBUTING.md ACKNOWLEDGEMENTS.md \
+            licenses/SheetJS-Apache-2.0.txt licenses/ExcelJS-MIT.txt licenses/Phosphor-Icons-MIT.txt \
+            licenses/IBM-Plex-OFL-1.1.txt licenses/Inter-OFL-1.1.txt; do
+            test -s "$f" || { echo "MISSING: $f"; exit 1; }
+          done
+          grep -q "J-SOX Flow Builder Source-Available License 1.0" LICENSE.md || { echo "NG: LICENSE名称"; exit 1; }
+          grep -q "J-SOX Flow Builder Source-Available License 1.0" README.md || { echo "NG: READMEにライセンス名なし"; exit 1; }
+          grep -q "Source-Available" README.md && grep -q "LICENSE.md" README.md || { echo "NG: README表示"; exit 1; }
+          grep -q "Source-Available License 1.0" jsox_flow_builder.html || { echo "NG: アプリのライセンス表示"; exit 1; }
+          grep -q "LICENSE.md" index.html || { echo "NG: LPから利用条件に到達できない"; exit 1; }
+          grep -q "LICENSE.md" manual.html || { echo "NG: manualから利用条件に到達できない"; exit 1; }
+          ! grep -nE "License: MIT|MITライセンスで公開|は(オープンソース|OSS)(ソフトウェア)?です" README.md \
+            || { echo "NG: 本体ライセンスの誤記（MIT/オープンソース）"; exit 1; }
+          echo "✓ license consistency OK"
+
       - name: セルフテスト件数とドキュメントの一致
         run: |
           N=$(grep -oP 'const SELF_TEST_COUNT=\K\d+' jsox_flow_builder.html | head -1)
