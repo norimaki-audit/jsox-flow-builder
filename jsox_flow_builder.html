@@ -21,27 +21,27 @@
 <style>
   :root{
     /* ===== リデザイン・トークン（teal基調 / 実装反映ガイド§1） ===== */
-    --c-primary:#0E7C73; --c-primary-d:#0A5E57; --c-primary-tint:#EAF4F1; --c-primary-bd:#C9E0D9;
-    --c-bg:#F4F6F6; --c-surface:#fff; --c-border:#E2E8E7; --c-line:#EFF3F1;
-    --c-text:#14201E; --c-text-mid:#56635F; --c-text-faint:#8A9794;
+    --c-primary:#0F6B62; --c-primary-d:#0B554E; --c-primary-tint:#EDF2EF; --c-primary-bd:#C9D6CF;
+    --c-bg:#F4F6F6; --c-surface:#fff; --c-border:#DCD8CE; --c-line:#E9E5DC;
+    --c-text:#1A1A17; --c-text-mid:#56635F; --c-text-faint:#8A9794;
     --c-ok:#157F5B; --c-ok-bg:#E6F2EC; --c-ok-bd:#C3E2D2;
     --c-warn:#9A6614; --c-warn-bg:#FBF1E0; --c-warn-bd:#EBD9B4;
     --c-err:#B0413B; --c-err-bg:#F7E9E7; --c-err-bd:#EDCBC6;
     --p-1:#3E8E86; --p-2:#5E84C0; --p-3:#4E9466; --p-4:#9E833F;
-    --r-card:12px; --r-ctrl:8px; --shadow:0 1px 3px rgba(20,40,35,.07);
+    --r-card:2px; --r-ctrl:2px; --shadow:none;
     /* 数値表示用フォント（プレゼン資料調・桁揃え） */
     --font-num:'Inter','IBM Plex Sans JP',sans-serif;
     /* ===== 旧トークン（既存セレクタ互換・新パレットへ再マップ） ===== */
     --bg:#F4F6F6; --panel:#ffffff; --panel-2:#F7FAF9;
     --line:#E2E8E7; --line-strong:#C9D6D2;
     --ink:#14201E; --text:#2A3633; --muted:#56635F;
-    --accent:#0E7C73; --accent-ink:#0A5E57; --accent-weak:#EAF4F1;
+    --accent:#0F6B62; --accent-ink:#0B554E; --accent-weak:#EAF4F1;
     --ctrl:#B0413B;
     --risk:#B0413B;
     --ok:#157F5B; --warn:#9A6614; --danger:#B0413B; --sug:#2D5A86;
-    --sidebar:#ffffff; --sidebar-2:#F7FAF9; --sidebar-ink:#54615C; --sidebar-active:#0A5E57;
+    --sidebar:#ffffff; --sidebar-2:#F7FAF9; --sidebar-ink:#54615C; --sidebar-active:#0B554E;
     --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
-    --r-sm:8px; --r-md:10px; --r-pill:999px;
+    --r-sm:8px; --r-md:10px; --r-pill:2px;
     --shadow-1:0 1px 3px rgba(20,40,35,.07);
     --shadow-2:0 4px 14px rgba(20,40,35,.10);
     --ease:160ms cubic-bezier(.2,.6,.2,1);
@@ -60,12 +60,12 @@
   .mono,.num{font-family:var(--font-num);font-feature-settings:'tnum' 1;}
   .id{font-family:'IBM Plex Mono',monospace;}
   ::-webkit-scrollbar{width:10px;height:10px;}
-  ::-webkit-scrollbar-thumb{background:#cdd8d5;border-radius:6px;border:2px solid transparent;background-clip:padding-box;}
+  ::-webkit-scrollbar-thumb{background:#cdd8d5;border-radius:2px;border:2px solid transparent;background-clip:padding-box;}
   ::-webkit-scrollbar-thumb:hover{background:#b4c3bf;background-clip:padding-box;border:2px solid transparent;}
   /* ===== アプリバー ===== */
   .appbar{background:var(--c-surface);border-bottom:1px solid var(--c-border);padding:8px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:relative;z-index:20;}
   .appbar .brand{display:flex;align-items:center;gap:10px;flex:none;}
-  .brand-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(150deg,#0E7C73,#0A5E57);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(14,124,115,.28);flex:none;}
+  .brand-logo{width:32px;height:32px;border-radius:2px;background:#0F6B62;display:flex;align-items:center;justify-content:center;box-shadow:none;flex:none;}
   .brand-logo i{font-size:18px;color:#fff;}
   .brand-txt{display:flex;flex-direction:column;line-height:1.15;white-space:nowrap;}
   .brand-txt .bt1{font-size:13.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink);}
@@ -75,18 +75,18 @@
   .dirty{color:var(--c-warn);font-size:12px;font-weight:700;display:none;flex:none;white-space:nowrap;}
   .dirty.on{display:inline;}
   /* セグメント切替（モード / 編集|プレビュー） */
-  .seg{display:inline-flex;padding:3px;border-radius:9px;background:#EFF2F1;border:1px solid #DCE5E3;flex:none;}
-  .seg button{height:27px;padding:0 12px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:#56635F;display:inline-flex;align-items:center;gap:6px;transition:background var(--ease),color var(--ease);}
+  .seg{display:inline-flex;padding:3px;border-radius:2px;background:#EFF2F1;border:1px solid #DCE5E3;flex:none;}
+  .seg button{height:27px;padding:0 12px;border:none;border-radius:2px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:transparent;color:#56635F;display:inline-flex;align-items:center;gap:6px;transition:background var(--ease),color var(--ease);}
   .seg button:hover{color:var(--c-primary-d);background:transparent;}
   .seg button.on{background:var(--c-primary);color:#fff;}
-  .seg.seg-view button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1);}
+  .seg.seg-view button.on{background:#fff;color:var(--ink);box-shadow:none;}
   /* プロセス選択ピル */
-  .proc-indicator{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:1px solid #DCE5E3;border-radius:8px;background:#F7FAF9;flex:0 1 auto;min-width:0;overflow:hidden;}
+  .proc-indicator{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:1px solid #DCE5E3;border-radius:2px;background:#F7FAF9;flex:0 1 auto;min-width:0;overflow:hidden;}
   .proc-indicator:hover{border-color:var(--c-primary);background:#fff;}
   .proc-indicator select{border:none;background:transparent;font-weight:600;color:var(--ink);font:inherit;min-width:0;max-width:260px;text-overflow:ellipsis;}
   .proc-dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block;background:var(--c-primary);}
   /* 反映ステータスピル */
-  .statuspill{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:20px;font-size:11.5px;font-weight:600;flex:none;white-space:nowrap;border:1px solid var(--c-ok-bd);background:var(--c-ok-bg);color:var(--c-ok);}
+  .statuspill{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:2px;font-size:11.5px;font-weight:600;flex:none;white-space:nowrap;border:1px solid var(--c-ok-bd);background:var(--c-ok-bg);color:var(--c-ok);}
   .statuspill .sdot{width:7px;height:7px;border-radius:50%;background:#1F9E6A;flex:none;}
   .statuspill.pend{background:var(--c-warn-bg);border-color:var(--c-warn-bd);color:var(--c-warn);}
   .statuspill.pend .sdot{background:#C8901C;}
@@ -103,7 +103,7 @@
     background:var(--panel); color:#33403C; font:inherit; cursor:pointer; display:inline-flex;
     align-items:center; gap:6px; transition:background var(--ease),border-color var(--ease);}
   button:hover{background:var(--panel-2);border-color:#B4C3BF;}
-  button.primary{background:var(--c-primary); border-color:var(--c-primary-d); color:#fff;box-shadow:0 1px 2px rgba(10,94,87,.25);}
+  button.primary{background:var(--c-primary); border-color:var(--c-primary-d); color:#fff;box-shadow:none;}
   button.primary:hover{background:var(--c-primary-d); border-color:var(--c-primary-d);}
   button.sm{height:28px; padding:0 10px; font-size:12px;}
   button:disabled{opacity:.5; cursor:not-allowed;}
@@ -114,9 +114,9 @@
     display:flex;flex-direction:column;align-self:stretch;min-height:0;overflow:hidden;}
   .side .nav-scroll{flex:1;overflow-y:auto;padding:8px 10px 16px;min-height:0;}
   .side .nav-bottom{flex:none;border-top:1px solid var(--c-line);padding:9px 10px;}
-  .side a{display:flex;align-items:center;gap:11px;padding:8px 10px;margin:1px 0;border-radius:8px;cursor:pointer;color:#54615C;font-size:13px;border-left:none;transition:background var(--ease),color var(--ease);}
+  .side a{display:flex;align-items:center;gap:11px;padding:8px 10px;margin:1px 0;border-radius:2px;cursor:pointer;color:#54615C;font-size:13px;border-left:none;transition:background var(--ease),color var(--ease);}
   .side a:hover{background:#EFF4F2;color:var(--c-primary-d);}
-  .side a.active{background:#E9F1EF;color:var(--c-primary-d);font-weight:600;box-shadow:inset 3px 0 0 var(--c-primary);}
+  .side a.active{background:#E9F1EF;color:var(--c-primary-d);font-weight:600;box-shadow:none;}
   .side a i.ph{font-size:17px;width:20px;text-align:center;flex:none;}
   .ic{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px;
       fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;}
@@ -124,18 +124,18 @@
   .side a .ic{width:18px;height:18px;text-align:center;opacity:.95;}
   .side .grp{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#9FABA7;padding:14px 8px 4px;text-transform:uppercase;}
   /* セクションのグループパネル（同一グループを視覚化） */
-  .nav-group{background:#F8FAF9;border:1px solid #ECF1EF;border-radius:11px;padding:2px 6px 7px;margin:10px 0 0;}
+  .nav-group{background:#F8FAF9;border:1px solid #ECF1EF;border-radius:2px;padding:2px 6px 7px;margin:10px 0 0;}
   .nav-group .grp{padding:9px 6px 5px;}
-  .grp-toggle{display:flex;align-items:center;cursor:pointer;user-select:none;border-radius:7px;}
+  .grp-toggle{display:flex;align-items:center;cursor:pointer;user-select:none;border-radius:2px;}
   .grp-toggle:hover{color:var(--c-primary-d);}
   .grp-toggle i{margin-left:auto;font-size:12px;color:#B4C3BF;}
   /* 三点セット作成グループの強調（雰囲気を保った淡tealパネル） */
-  .nav-feature{background:linear-gradient(180deg,#F1F8F5,#F8FBFA);border:1px solid #CFE3DC;border-radius:11px;padding:2px 6px 7px;margin:10px 0 0;box-shadow:0 1px 3px rgba(14,124,115,.08);}
+  .nav-feature{background:#F1F6F3;border:1px solid #CFE3DC;border-radius:2px;padding:2px 6px 7px;margin:10px 0 0;box-shadow:none;}
   .nav-feature .grp{color:var(--c-primary-d);padding:10px 6px 5px;}
   .nav-feature a{font-weight:500;color:#3A4742;}
   .nav-feature a i.ph{color:var(--c-primary);}
   .nav-feature a:hover{background:#E7F1ED;}
-  .nav-feature a.active{background:#DFEEE9;box-shadow:inset 3px 0 0 var(--c-primary);font-weight:600;color:var(--c-primary-d);}
+  .nav-feature a.active{background:#DFEEE9;box-shadow:none;font-weight:600;color:var(--c-primary-d);}
   .main{flex:1;overflow:auto;padding:0;min-width:0;}
   .page{display:none;}
   .page.active{display:block;}
@@ -157,11 +157,11 @@
   table.dr td.evalc{background:#F5FAF7;}
   table.dr th.custc{background:#EDE9F5;position:relative;padding-right:22px;color:#5B4E86;}
   table.dr td.custc{background:#F8F6FC;}
-  th.custc .cusdel{position:absolute;top:3px;right:3px;width:14px;height:14px;line-height:14px;font-size:10px;padding:0;border:none;background:rgba(0,0,0,.12);color:var(--ink);border-radius:3px;cursor:pointer;font-weight:700;}
+  th.custc .cusdel{position:absolute;top:3px;right:3px;width:14px;height:14px;line-height:14px;font-size:10px;padding:0;border:none;background:rgba(0,0,0,.12);color:var(--ink);border-radius:2px;cursor:pointer;font-weight:700;}
   th.custc .cusdel:hover{background:rgba(176,65,59,.65);color:#fff;}
   table.dr tbody tr:hover td{background:#F8FBFA;}
   table.dr input,table.dr select{border:none;background:transparent;font:inherit;padding:7px 9px;width:100%;color:var(--ink);}
-  table.dr input:focus,table.dr select:focus{outline:none;box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;border-radius:5px;}
+  table.dr input:focus,table.dr select:focus{outline:none;box-shadow:none;background:#fff;border-radius:2px;}
   table.dr td.rn{padding:0 8px;color:var(--c-text-faint);text-align:right;background:#FAFCFB;font-variant-numeric:tabular-nums;font-family:var(--font-num);font-size:11.5px;}
   .w-no input{width:52px;text-align:center;font-family:var(--font-num);font-feature-settings:'tnum' 1;}.w-sm input{width:56px;text-align:center;}.w-md{min-width:96px;}.w-wide{min-width:200px;}.w-xl{min-width:240px;}.dept{min-width:96px;}
   /* 業務グループ見出し行（§3） */
@@ -169,19 +169,19 @@
   tr.grp-row .gdot{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:8px;}
   tr.grp-row .gname{font-size:12.5px;font-weight:700;color:#2C3A35;}
   tr.grp-row .gcount{font-size:10.5px;font-weight:600;color:var(--c-text-faint);font-family:var(--font-num);margin-left:8px;}
-  .grp-btn{height:22px;padding:0 8px;font-size:11px;font-weight:600;margin-left:8px;border:1px solid rgba(20,40,35,.14);background:rgba(255,255,255,.7);border-radius:6px;color:#2C3A35;vertical-align:1px;}
+  .grp-btn{height:22px;padding:0 8px;font-size:11px;font-weight:600;margin-left:8px;border:1px solid rgba(20,40,35,.14);background:rgba(255,255,255,.7);border-radius:2px;color:#2C3A35;vertical-align:1px;}
   .grp-btn:hover{border-color:var(--c-primary);color:var(--c-primary-d);background:#fff;}
   .grp-btn i{font-size:11px;}
   td.phase-edge{border-left:3px solid var(--phase-c,transparent)!important;}
   /* 種類バッジ（§3）: 編集セレクトは背景色で種別を示す */
-  td.typecell select{border-radius:7px;font-size:12px;font-weight:600;padding:5px 8px;}
+  td.typecell select{border-radius:2px;font-size:12px;font-weight:600;padding:5px 8px;}
   td.typecell.t-start select{background:var(--c-ok-bg);color:var(--c-ok);}
   td.typecell.t-end select{background:#F3EDE8;color:#7A5C44;}
   td.typecell.t-manual select{background:#EFF3F2;color:#46534E;}
   td.typecell.t-system select{background:#E9F0F8;color:#2D5A86;}
   td.typecell.t-decision select{background:var(--c-warn-bg);color:#8A5A12;}
   td.typecell.t-doc select{background:#F5F2EF;color:#6A5C4F;}
-  .type-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:600;white-space:nowrap;}
+  .type-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:2px;font-size:10.5px;font-weight:600;white-space:nowrap;}
   .tb-start{background:var(--c-ok-bg);color:var(--c-ok);border:1px solid var(--c-ok-bd);}
   .tb-end{background:#F3EDE8;color:#7A5C44;border:1px solid #E2D4C8;}
   .tb-manual{background:#EFF3F2;color:#46534E;border:1px solid #DAE3E0;}
@@ -191,12 +191,12 @@
   /* 部署カラーチップ（§3） */
   .deptcell{display:flex;align-items:center;gap:0;}
   .deptcell .ddot{flex:none;width:7px;height:7px;border-radius:50%;margin-left:8px;}
-  /* 詳細📝ボタン（§8）: 詳細ありは塗り／なしは枠線 */
-  .detailbtn{width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;background:#fff;border:1px solid var(--c-border);color:#9AA6A2;}
+  /* 詳細ボタン（§8）: 詳細ありは塗り／なしは枠線 */
+  .detailbtn{width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer;background:#fff;border:1px solid var(--c-border);color:#9AA6A2;}
   .detailbtn:hover{border-color:var(--c-primary);color:var(--c-primary-d);background:#fff;}
   .detailbtn.on{background:var(--c-primary-tint);border:1px solid var(--c-primary-bd);color:var(--c-primary-d);}
   .detailbtn i{font-size:14px;}
-  .opbtn{height:auto;border:none;background:transparent;color:var(--muted);padding:2px 5px;border-radius:6px;cursor:pointer;font-size:13px;}
+  .opbtn{height:auto;border:none;background:transparent;color:var(--muted);padding:2px 5px;border-radius:2px;cursor:pointer;font-size:13px;}
   .opbtn:hover{background:var(--c-primary-tint);color:var(--c-err);border-color:transparent;}
   .keychk{display:flex;justify-content:center;}
   .hint{font-size:12px;color:var(--c-text-mid);background:var(--panel-2);border:1px solid var(--c-border);border-radius:var(--r-ctrl);padding:8px 10px;margin:6px 0 10px;}
@@ -208,22 +208,22 @@
   .flow-legend{display:flex;align-items:center;gap:12px;font-size:11px;color:#5A6863;flex-wrap:wrap;}
   .flow-legend .lg{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
   .flow-toolbar .vsep{width:1px;height:20px;background:#E6ECEA;flex:none;}
-  .flow-toolbar button{height:26px;padding:0 9px;font-size:11px;font-weight:600;border-radius:6px;color:#44514E;}
+  .flow-toolbar button{height:26px;padding:0 9px;font-size:11px;font-weight:600;border-radius:2px;color:#44514E;}
   .flow-toolbar button:hover{border-color:var(--c-primary);color:var(--c-primary-d);background:#fff;}
-  .rc-mini{padding:0 5px;border-radius:5px;font-size:9.5px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+  .rc-mini{padding:0 5px;border-radius:2px;font-size:9.5px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
   .rc-mini.r{background:#F7ECEA;border:1px solid #ECCFCA;color:#A8473F;}
-  .rc-mini.c{background:#E7F1EE;border:1px solid #BBD9D0;color:#0A5E57;}
+  .rc-mini.c{background:#E7F1EE;border:1px solid #BBD9D0;color:#0B554E;}
   .canvas-scroll{background:#FBFDFC;background-image:radial-gradient(#DEE7E3 1px,transparent 1px);background-size:22px 22px;border:none;border-radius:0 0 var(--r-card) var(--r-card);padding:16px;overflow:auto;max-height:72vh;}
   #flowCanvas{display:inline-block;transform-origin:top left;}
-  #flowCanvas svg{display:block;box-shadow:0 1px 6px rgba(20,40,35,.10);background:#fff;border-radius:6px;}
+  #flowCanvas svg{display:block;box-shadow:none;background:#fff;border-radius:2px;}
   /* rcm preview table */
   table.rcm{border-collapse:collapse;width:100%;font-size:12px;}
   table.rcm th,table.rcm td{border:1px solid var(--c-border);padding:5px 7px;vertical-align:top;text-align:left;}
   table.rcm th{background:#F2F6F5;white-space:nowrap;}
-  .pill{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;color:#fff;}
+  .pill{display:inline-block;padding:1px 7px;border-radius:2px;font-size:11px;font-weight:700;color:#fff;}
   .pill.c{background:var(--c-primary);}.pill.r{background:var(--c-err);}.pill.k{background:#9A6614;}
   /* 評価ピル（○△×） */
-  .evalpill{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:13px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+  .evalpill{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:2px;font-size:11.5px;font-weight:600;white-space:nowrap;}
   .ep-ok{background:var(--c-ok-bg);color:var(--c-ok);border:1px solid var(--c-ok-bd);}
   .ep-warn{background:var(--c-warn-bg);color:var(--c-warn);border:1px solid var(--c-warn-bd);}
   .ep-err{background:var(--c-err-bg);color:var(--c-err);border:1px solid var(--c-err-bd);}
@@ -232,16 +232,16 @@
   .asrt-on{display:inline-flex;width:19px;height:19px;border-radius:50%;background:#E3F1EB;align-items:center;justify-content:center;color:#157F5B;font-size:11px;font-weight:700;}
   .asrt-off{color:#D4DDDA;font-size:12px;}
   .kc-circle{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid var(--c-primary);vertical-align:middle;}
-  .keytag{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:5px;background:#FBF2DD;border:1px solid #EAD9B0;font-size:9.5px;font-weight:700;color:#9A6614;white-space:nowrap;}
+  .keytag{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:2px;background:#FBF2DD;border:1px solid #EAD9B0;font-size:9.5px;font-weight:700;color:#9A6614;white-space:nowrap;}
   /* KPIカード（§6） */
   .kpi-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
   .kpi{flex:1 1 150px;min-width:148px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-card);padding:14px 15px;display:flex;flex-direction:column;gap:8px;}
   .kpi .kh{display:flex;align-items:center;justify-content:space-between;}
   .kpi .kl{font-size:11.5px;font-weight:600;color:var(--c-text-mid);}
-  .kpi .kic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .kpi .kic{width:28px;height:28px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:15px;}
   .kpi .kv{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ink);font-family:var(--font-num);font-feature-settings:'tnum' 1;line-height:1.1;}
   .kpi .ks{font-size:11px;color:var(--c-text-faint);}
-  .stackbar{display:flex;height:12px;border-radius:7px;overflow:hidden;background:#EEF2F1;margin:6px 0 10px;}
+  .stackbar{display:flex;height:12px;border-radius:2px;overflow:hidden;background:#EEF2F1;margin:6px 0 10px;}
   .stackbar div{height:100%;}
   .lgd{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--c-text-mid);margin-right:12px;}
   .lgd .sw{width:9px;height:9px;border-radius:2px;display:inline-block;}
@@ -251,11 +251,11 @@
   .gap-sumcard{flex:1;min-width:140px;display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:var(--r-card);}
   .gap-sumcard .gn{font-size:24px;font-weight:700;font-family:var(--font-num);font-feature-settings:'tnum' 1;line-height:1;}
   .gap-sumcard .gl{font-size:11.5px;font-weight:600;margin-top:3px;}
-  .gap-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--c-border);border-radius:10px;margin-bottom:8px;background:#fff;}
+  .gap-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--c-border);border-radius:2px;margin-bottom:8px;background:#fff;}
   .gap-item.lv-error{border-left:3px solid var(--c-err);}
   .gap-item.lv-warning{border-left:3px solid var(--c-warn);}
   .gap-item.lv-suggestion{border-left:3px solid #2D5A86;}
-  .badge{font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 8px;white-space:nowrap;}
+  .badge{font-size:10.5px;font-weight:700;border-radius:2px;padding:2px 8px;white-space:nowrap;}
   .b-error{background:var(--c-err-bg);color:var(--c-err);border:1px solid var(--c-err-bd);}
   .b-warn{background:var(--c-warn-bg);color:var(--c-warn);border:1px solid var(--c-warn-bd);}
   .b-sug{background:#EAF1F8;color:#2D5A86;border:1px solid #CCDDEF;}
@@ -264,11 +264,11 @@
   .cov th,.cov td{border:1px solid var(--c-line);padding:5px 9px;text-align:center;}
   .cov td.l{text-align:left;}
   .y{color:var(--c-ok);font-weight:700;}.n{color:#CDD8D4;}
-  .cov-on{display:inline-flex;width:22px;height:22px;border-radius:6px;background:#E3F1EB;align-items:center;justify-content:center;color:#157F5B;font-weight:700;font-size:12px;}
-  .cov-gap{display:inline-flex;width:22px;height:22px;border-radius:6px;background:#FBEAE7;border:1px solid #EDCBC6;align-items:center;justify-content:center;color:#B0413B;font-weight:700;font-size:11px;}
+  .cov-on{display:inline-flex;width:22px;height:22px;border-radius:2px;background:#E3F1EB;align-items:center;justify-content:center;color:#157F5B;font-weight:700;font-size:12px;}
+  .cov-gap{display:inline-flex;width:22px;height:22px;border-radius:2px;background:#FBEAE7;border:1px solid #EDCBC6;align-items:center;justify-content:center;color:#B0413B;font-weight:700;font-size:11px;}
   /* walkthrough */
   pre.md{background:#14201E;color:#E2E8E7;border-radius:var(--r-card);padding:14px 16px;overflow:auto;max-height:66vh;font-size:12.5px;line-height:1.55;white-space:pre-wrap;font-family:'IBM Plex Mono',monospace;}
-  .proc-row{display:flex;gap:10px;align-items:center;padding:10px 14px;border:1px solid var(--c-border);border-left:4px solid var(--c-border);border-radius:10px;margin-bottom:8px;background:#fff;cursor:pointer;transition:background var(--ease),border-color var(--ease);}
+  .proc-row{display:flex;gap:10px;align-items:center;padding:10px 14px;border:1px solid var(--c-border);border-left:4px solid var(--c-border);border-radius:2px;margin-bottom:8px;background:#fff;cursor:pointer;transition:background var(--ease),border-color var(--ease);}
   .proc-row:hover{background:var(--panel-2);}
   .proc-row.active{background:var(--c-primary-tint);border-color:var(--c-primary);border-left-width:6px;border-left-color:var(--c-primary);}
   .proc-row .nm{font-weight:600;flex:1;}
@@ -277,11 +277,11 @@
   .lane-cell{flex:1;min-width:96px;padding:7px 4px;text-align:center;font-size:12px;font-weight:700;color:#3A4742;background:#F2F6F5;border-right:1px solid var(--c-border);cursor:grab;user-select:none;white-space:nowrap;display:flex;align-items:center;gap:4px;}
   .lane-cell:last-child{border-right:none;}
   .lane-cell.dragging{opacity:.4;cursor:grabbing;}
-  .lane-cell.drop-before{box-shadow:inset 3px 0 0 var(--c-primary);}
-  .lane-cell.drop-after{box-shadow:inset -3px 0 0 var(--c-primary);}
-  .lane-cell .lane-name{flex:1;min-width:0;background:transparent;border:1px solid transparent;color:#3A4742;font-size:12px;font-weight:700;text-align:center;padding:4px 2px;border-radius:4px;font-family:inherit;}
+  .lane-cell.drop-before{box-shadow:none;}
+  .lane-cell.drop-after{box-shadow:none;}
+  .lane-cell .lane-name{flex:1;min-width:0;background:transparent;border:1px solid transparent;color:#3A4742;font-size:12px;font-weight:700;text-align:center;padding:4px 2px;border-radius:2px;font-family:inherit;}
   .lane-cell .lane-name:hover,.lane-cell .lane-name:focus{background:#fff;border-color:var(--c-primary-bd);outline:none;}
-  .lane-cell .lane-del{flex:none;width:18px;height:18px;line-height:1;padding:0;border:none;border-radius:4px;background:rgba(20,40,35,.10);color:#3A4742;cursor:pointer;font-size:13px;font-weight:700;}
+  .lane-cell .lane-del{flex:none;width:18px;height:18px;line-height:1;padding:0;border:none;border-radius:2px;background:rgba(20,40,35,.10);color:#3A4742;cursor:pointer;font-size:13px;font-weight:700;}
   .lane-cell .lane-del:hover{background:rgba(176,65,59,.6);color:#fff;}
   .lane-add{flex:none;min-width:64px;padding:0 10px;font-size:12px;font-weight:700;color:var(--c-primary);background:#fff;border:1px dashed #C0CCC8;cursor:pointer;border-radius:0;}
   .lane-add:hover{background:var(--c-primary-tint);}
@@ -289,18 +289,18 @@
   @keyframes rowflash{0%{background:var(--c-primary-tint)}100%{background:transparent}}
   tr.row-flash>td{animation:rowflash .6s ease-out;}
   /* ヘルプセンター */
-  .help-search{width:100%;max-width:480px;padding:10px 14px;border:1px solid var(--c-border);border-radius:10px;font-size:13px;font-family:inherit;}
+  .help-search{width:100%;max-width:480px;padding:10px 14px;border:1px solid var(--c-border);border-radius:2px;font-size:13px;font-family:inherit;}
   .help-search:focus{outline:none;border-color:var(--c-primary);box-shadow:0 0 0 2px var(--c-primary-tint);}
   .breadcrumb{font-size:12px;color:var(--muted);margin:0 0 10px;}
   .breadcrumb a{color:var(--c-primary-d);text-decoration:none;}
   .breadcrumb a:hover{text-decoration:underline;}
   .help-cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:12px;}
-  .help-cat-card{border:1px solid var(--c-border);border-radius:11px;background:#fff;padding:15px 16px;cursor:pointer;transition:background var(--ease),border-color var(--ease);}
+  .help-cat-card{border:1px solid var(--c-border);border-radius:2px;background:#fff;padding:15px 16px;cursor:pointer;transition:background var(--ease),border-color var(--ease);}
   .help-cat-card:hover{background:#FAFCFB;border-color:var(--c-primary);}
   .help-cat-title{font-weight:700;margin-bottom:4px;}
   .help-cat-count{font-size:12px;color:var(--c-text-faint);}
   .help-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
-  .help-item{border:1px solid var(--c-border);border-radius:10px;background:#fff;padding:11px 14px;cursor:pointer;transition:background var(--ease),border-color var(--ease);}
+  .help-item{border:1px solid var(--c-border);border-radius:2px;background:#fff;padding:11px 14px;cursor:pointer;transition:background var(--ease),border-color var(--ease);}
   .help-item:hover{background:#FAFCFB;border-color:var(--c-primary);}
   .help-item-cat{font-size:11px;color:var(--c-text-faint);margin-bottom:2px;}
   .help-item-title{font-weight:600;}
@@ -311,7 +311,7 @@
   label.inl{display:inline-flex;gap:5px;align-items:center;font-size:12px;color:var(--muted);}
   .zoom{display:flex;gap:4px;align-items:center;}
   /* apply button + pending banner */
-  .applybtn{background:var(--c-primary);color:#fff;border-color:var(--c-primary-d);font-weight:700;box-shadow:0 1px 2px rgba(10,94,87,.25);}
+  .applybtn{background:var(--c-primary);color:#fff;border-color:var(--c-primary-d);font-weight:700;box-shadow:none;}
   .applybtn:hover{background:var(--c-primary-d);}
   .applybtn.pending{background:#C8901C;border-color:#9A6614;}
   .pend-banner{background:var(--c-warn-bg);border:1px solid var(--c-warn-bd);color:var(--c-warn);border-radius:var(--r-ctrl);padding:8px 12px;margin-bottom:12px;font-size:13px;display:flex;align-items:center;gap:10px;}
@@ -320,8 +320,8 @@
   .grip:hover{color:var(--c-primary);}
   .grip:active{cursor:grabbing;}
   tr.dragging{opacity:.4;}
-  tr.drop-above td{box-shadow:inset 0 2px 0 var(--c-primary);}
-  tr.drop-below td{box-shadow:inset 0 -2px 0 var(--c-primary);}
+  tr.drop-above td{box-shadow:none;}
+  tr.drop-below td{box-shadow:none;}
   /* output documents (成果物) */
   .doc{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-card);padding:30px 36px;max-width:1040px;}
   .doc h1{font-size:19px;margin:0 0 6px;}
@@ -337,7 +337,7 @@
   .doc .narr p{margin:0;white-space:pre-wrap;line-height:1.85;font-size:12.5px;color:#3A4742;}
   .doc tr.kc td{background:#F1F8F6;}
   .doc .doc-img{margin-top:8px;max-width:340px;}
-  .doc .doc-img img{max-width:100%;border:1px solid var(--c-border);border-radius:8px;}
+  .doc .doc-img img{max-width:100%;border:1px solid var(--c-border);border-radius:2px;}
   .doc .doc-img .cap{font-size:10.5px;color:var(--c-text-faint);margin-top:4px;}
   .tagmini{display:inline-block;font-size:10px;font-weight:600;color:#fff;border-radius:var(--r-pill);padding:1px 7px;margin:0 2px 2px 0;letter-spacing:.02em;}
   @media print{
@@ -371,7 +371,7 @@
     table.dr input{width:100% !important;min-width:0 !important;}
     table.dr{min-width:0 !important;width:100% !important;}
     /* 入力欄は値だけを印字（枠・矢印を消す） */
-    input,select,textarea{border:none !important;background:transparent !important;appearance:none;-webkit-appearance:none;box-shadow:none !important;font:inherit;color:#111;padding:1px 2px;}
+    input,select,textarea{border:none !important;background:transparent !important;appearance:none;-webkit-appearance:none;box-shadow:none;font:inherit;color:#111;padding:1px 2px;}
     textarea{overflow:visible;resize:none;}
     .evw-sec{border:0.5pt solid #999;border-radius:0;background:#fff;}
     .evw-note{min-height:0;}
@@ -409,34 +409,34 @@
   .revisions-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
   .revisions-table th,.revisions-table td{border:none;border-bottom:1px dashed #D2DCD8;padding:6px 9px;}
   .revisions-table th{background:#F2F6F5;color:#7A867F;font-size:11px;font-weight:700;border-bottom:1px solid var(--c-border);}
-  .manual-step-block{border:1px solid var(--c-border);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:#fff;}
+  .manual-step-block{border:1px solid var(--c-border);border-radius:2px;padding:14px 16px;margin-bottom:10px;background:#fff;}
   .manual-step-block h4{margin:0 0 6px;font-size:13px;font-weight:700;}
-  .manual-step-block .step-point{background:var(--c-warn-bg);border-left:3px solid #C8901C;padding:6px 10px;margin-top:6px;font-size:12px;border-radius:0 6px 6px 0;color:#7A5510;}
+  .manual-step-block .step-point{background:var(--c-warn-bg);border-left:3px solid #C8901C;padding:6px 10px;margin-top:6px;font-size:12px;border-radius:0 2px 2px 0;color:#7A5510;}
   /* ===== モーダル共通（詳細パネル / テンプレート選択） ===== */
   .modal-ovl{display:none;position:fixed;inset:0;background:rgba(20,32,30,.46);z-index:60;align-items:center;justify-content:center;padding:24px;}
-  .modal-box{background:#fff;border-radius:16px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden;}
+  .modal-box{background:#fff;border-radius:2px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:none;overflow:hidden;}
   .modal-head{display:flex;align-items:flex-start;gap:13px;padding:20px 24px 16px;border-bottom:1px solid var(--c-line);}
   .modal-body{flex:1;overflow-y:auto;padding:18px 24px;}
   .modal-foot{display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:14px 24px;border-top:1px solid var(--c-line);background:#F9FBFA;}
-  .modal-x{flex:none;width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;border:none;background:#F0F3F2;border-radius:8px;cursor:pointer;color:#6A756F;}
+  .modal-x{flex:none;width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;border:none;background:#F0F3F2;border-radius:2px;cursor:pointer;color:#6A756F;}
   .modal-x:hover{background:#E2E8E6;}
-  .idchip{font-size:12px;font-weight:700;color:var(--c-primary-d);font-family:'IBM Plex Mono',monospace;padding:2px 9px;border-radius:6px;background:var(--c-primary-tint);border:1px solid var(--c-primary-bd);white-space:nowrap;}
+  .idchip{font-size:12px;font-weight:700;color:var(--c-primary-d);font-family:'IBM Plex Mono',monospace;padding:2px 9px;border-radius:2px;background:var(--c-primary-tint);border:1px solid var(--c-primary-bd);white-space:nowrap;}
   .tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   @media (max-width:720px){.tmpl-grid{grid-template-columns:1fr;}}
-  .tmpl-card{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:11px;cursor:pointer;text-align:left;font-family:inherit;border:1px solid var(--c-border);background:#fff;height:auto;}
+  .tmpl-card{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:2px;cursor:pointer;text-align:left;font-family:inherit;border:1px solid var(--c-border);background:#fff;height:auto;}
   .tmpl-card:hover{border-color:var(--c-primary);background:#FAFCFB;}
-  .tmpl-card.sel{border:2px solid var(--c-primary);background:#F1F8F6;box-shadow:0 2px 10px rgba(14,124,115,.14);padding:13px;}
-  .tmpl-card .tic{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none;background:#ECF3F1;color:var(--c-primary);font-size:20px;}
+  .tmpl-card.sel{border:2px solid var(--c-primary);background:#F1F8F6;box-shadow:none;padding:13px;}
+  .tmpl-card .tic{width:38px;height:38px;border-radius:2px;display:flex;align-items:center;justify-content:center;flex:none;background:#ECF3F1;color:var(--c-primary);font-size:20px;}
   .tmpl-card.sel .tic{background:var(--c-primary);color:#fff;}
   .tmpl-card .tname{display:block;font-size:13.5px;font-weight:700;color:#1F2B27;margin-bottom:3px;}
   .tmpl-card .tdesc{display:block;font-size:11.5px;color:var(--c-text-mid);line-height:1.5;margin-bottom:7px;}
-  .tmpl-card .tstat{font-size:10.5px;font-weight:600;color:var(--c-primary-d);font-family:'IBM Plex Mono',monospace;padding:1px 7px;border-radius:5px;background:var(--c-primary-tint);border:1px solid var(--c-primary-bd);margin-right:6px;}
+  .tmpl-card .tstat{font-size:10.5px;font-weight:600;color:var(--c-primary-d);font-family:'IBM Plex Mono',monospace;padding:1px 7px;border-radius:2px;background:var(--c-primary-tint);border:1px solid var(--c-primary-bd);margin-right:6px;}
   .img-thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
   .img-thumb{position:relative;width:160px;}
-  .img-thumb img{width:100%;height:104px;object-fit:cover;border-radius:8px;border:1px solid var(--c-border);}
-  .img-thumb .del{position:absolute;top:5px;right:5px;width:20px;height:20px;padding:0;border:none;border-radius:5px;background:rgba(20,32,30,.55);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .img-thumb img{width:100%;height:104px;object-fit:cover;border-radius:2px;border:1px solid var(--c-border);}
+  .img-thumb .del{position:absolute;top:5px;right:5px;width:20px;height:20px;padding:0;border:none;border-radius:2px;background:rgba(20,32,30,.55);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .img-thumb .del:hover{background:rgba(176,65,59,.85);}
-  .img-add{width:160px;height:104px;border-radius:8px;border:1.5px dashed #C0CCC8;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--c-primary-d);cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
+  .img-add{width:160px;height:104px;border-radius:2px;border:1.5px dashed #C0CCC8;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--c-primary-d);cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;}
   .img-add:hover{border-color:var(--c-primary);background:#F2F8F6;}
   .img-add i{font-size:20px;}
   /* 狭幅ではステータス文言を省略しプロセス名を短縮（1段維持を優先） */
@@ -468,12 +468,12 @@
   table.oewp th.sub{background:#F2F6F5;color:#56635F;border-color:var(--c-border);width:96px;}
   table.oewp td{border:1px solid var(--c-border);padding:5px 8px;vertical-align:middle;}
   table.oewp input,table.oewp select,table.oewp textarea{border:none;background:transparent;font:inherit;font-size:12.5px;width:100%;padding:4px 6px;resize:vertical;}
-  table.oewp input:focus,table.oewp select:focus,table.oewp textarea:focus{outline:none;box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;border-radius:5px;}
+  table.oewp input:focus,table.oewp select:focus,table.oewp textarea:focus{outline:none;box-shadow:none;background:#fff;border-radius:2px;}
   table.oewp-res{width:100%;border-collapse:collapse;font-size:12px;margin-top:2px;}
   table.oewp-res th{background:#F2F6F5;color:#7A867F;border:1px solid var(--c-border);padding:6px 8px;font-size:11px;font-weight:700;}
   table.oewp-res td{border:1px solid var(--c-border);padding:2px 4px;}
   table.oewp-res input,table.oewp-res select{border:none;background:transparent;font:inherit;font-size:12px;width:100%;padding:4px 5px;}
-  table.oewp-res input:focus,table.oewp-res select:focus{outline:none;box-shadow:inset 0 0 0 1.5px #BBD9D0;background:#fff;border-radius:4px;}
+  table.oewp-res input:focus,table.oewp-res select:focus{outline:none;box-shadow:none;background:#fff;border-radius:2px;}
   .oewp-concl{border:1px solid var(--c-border);border-top:none;padding:12px 14px;font-size:13px;line-height:1.7;}
   .oewp-concl b.ok{color:var(--c-ok);}
   .oewp-concl b.ng{color:var(--c-err);}
@@ -488,7 +488,7 @@
     .oewp-concl{border:0.5pt solid #999;}}
   /* ===== 業務の棚卸・改善 ===== */
   .kz-card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-card);padding:16px 18px;margin-bottom:12px;}
-  .kz-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:6px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+  .kz-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:2px;font-size:10.5px;font-weight:700;white-space:nowrap;}
   .kz-eff{background:#E9F0F8;color:#2D5A86;border:1px solid #C9DBEE;}
   .kz-std{background:var(--c-warn-bg);color:var(--c-warn);border:1px solid var(--c-warn-bd);}
   .kz-doc{background:var(--c-primary-tint);color:var(--c-primary-d);border:1px solid var(--c-primary-bd);}
@@ -497,7 +497,7 @@
   .kz-item:last-child{border-bottom:none;}
   /* ===== ヘルプ: おすすめ・記事本文 ===== */
   .help-picks{display:flex;flex-direction:column;gap:8px;max-width:640px;}
-  .help-pick{display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1px solid var(--c-primary-bd);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:#1F2B27;transition:background var(--ease),border-color var(--ease);}
+  .help-pick{display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border:1px solid var(--c-primary-bd);border-radius:2px;cursor:pointer;font-size:13px;font-weight:600;color:#1F2B27;transition:background var(--ease),border-color var(--ease);}
   .help-pick:hover{background:#F2F8F6;border-color:var(--c-primary);}
   .help-pick .hp-n{width:24px;height:24px;border-radius:50%;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
   .doc.help-article{line-height:1.85;}
@@ -509,14 +509,14 @@
   .doc.help-article b{color:var(--c-primary-d);}
   /* 整備・運用評価: グループ区切りの明確化 */
   #evalWorkBody th.gs,#evalWorkBody td.gs{border-left:2px solid #9FC2B8 !important;}
-  #evalWorkBody thead th.ctl{background:#E1EEE9;color:#0A5E57;}
+  #evalWorkBody thead th.ctl{background:#E1EEE9;color:#0B554E;}
   #evalWorkBody thead th.evalc{background:#EAF3E3;color:#4A6B2F;}
   #evalWorkBody tbody td.ctl{background:#F4FAF7;}
   #evalWorkBody tbody td.evalc{background:#F7FBF2;}
   /* 評価内容セルの行高抑制 */
   td.col-note{max-width:300px;word-break:break-word;}
   /* ===== スタート画面（初回3択） ===== */
-  #startScreen{position:fixed;inset:0;background:linear-gradient(160deg,#F4F6F6 0%,#EAF2F0 100%);z-index:70;display:none;align-items:center;justify-content:center;padding:24px;overflow:auto;}
+  #startScreen{position:fixed;inset:0;background:#F4F6F6;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;overflow:auto;}
   #startScreen.on{display:flex;}
   .ss-box{width:880px;max-width:100%;}
   .ss-logo{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px;}
@@ -524,15 +524,15 @@
   .ss-sub{text-align:center;font-size:13px;color:var(--c-text-mid);margin:0 0 26px;}
   .ss-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
   @media (max-width:760px){.ss-cards{grid-template-columns:1fr;}}
-  .ss-card{background:#fff;border:1px solid var(--c-border);border-radius:14px;padding:22px 20px;cursor:pointer;text-align:center;transition:border-color var(--ease),box-shadow var(--ease),transform var(--ease);display:flex;flex-direction:column;align-items:center;gap:10px;height:auto;font:inherit;}
-  .ss-card:hover{border-color:var(--c-primary);box-shadow:0 6px 22px rgba(14,124,115,.14);transform:translateY(-2px);background:#fff;}
-  .ss-card .ic2{width:52px;height:52px;border-radius:13px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center;}
+  .ss-card{background:#fff;border:1px solid var(--c-border);border-radius:2px;padding:22px 20px;cursor:pointer;text-align:center;transition:border-color var(--ease),box-shadow var(--ease),transform var(--ease);display:flex;flex-direction:column;align-items:center;gap:10px;height:auto;font:inherit;}
+  .ss-card:hover{border-color:var(--c-primary);box-shadow:none;transform:translateY(-2px);background:#fff;}
+  .ss-card .ic2{width:52px;height:52px;border-radius:2px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center;}
   .ss-card .ic2 i{font-size:26px;color:var(--c-primary);}
   .ss-card .t{font-size:14.5px;font-weight:700;color:#1F2B27;}
   .ss-card .d{font-size:11.5px;color:var(--c-text-mid);line-height:1.6;}
-  .ss-card .rec{font-size:10px;font-weight:700;color:#fff;background:var(--c-primary);border-radius:9px;padding:2px 9px;}
+  .ss-card .rec{font-size:10px;font-weight:700;color:#fff;background:var(--c-primary);border-radius:2px;padding:2px 9px;}
   .ss-flow{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--c-text-mid);margin-bottom:18px;}
-  .ss-step{background:#fff;border:1px solid var(--c-border);border-radius:8px;padding:6px 13px;font-weight:600;color:#33403C;white-space:nowrap;}
+  .ss-step{background:#fff;border:1px solid var(--c-border);border-radius:2px;padding:6px 13px;font-weight:600;color:#33403C;white-space:nowrap;}
   .ss-flow i{color:#9FB5AD;}
   .ss-foot{text-align:center;font-size:11.5px;color:var(--c-text-faint);}
   .ss-foot a{color:var(--c-primary-d);}
@@ -543,30 +543,30 @@
   #mobileGate h2{font-size:19px;margin:14px 0 8px;}
   #mobileGate p{font-size:13px;color:var(--c-text-mid);line-height:1.8;margin:0 0 20px;}
   #mobileGate .mg-btns{display:flex;flex-direction:column;gap:10px;}
-  #mobileGate button,#mobileGate a.mg-a{height:46px;border-radius:11px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-family:inherit;}
+  #mobileGate button,#mobileGate a.mg-a{height:46px;border-radius:2px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-family:inherit;}
   #mobileGate .mg-primary{background:var(--c-primary);color:#fff;border:1px solid var(--c-primary-d);}
   #mobileGate .mg-sec{background:#fff;color:#33403C;border:1px solid #DCE5E3;}
   #mobileGate .mg-ghost{background:transparent;border:none;color:var(--c-text-faint);font-size:12px;height:auto;padding:6px;}
   /* ===== AI取込: 候補選択と差分表示 ===== */
-  .aic{border:1px solid var(--c-border);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fff;}
+  .aic{border:1px solid var(--c-border);border-radius:2px;padding:10px 12px;margin-bottom:8px;background:#fff;}
   .aic.off{opacity:.5;}
   .aic-h{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;cursor:pointer;}
   .aic-h input{width:15px;height:15px;accent-color:var(--c-primary);}
-  .aic-tag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:5px;}
+  .aic-tag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:2px;}
   .aic-add{background:var(--c-ok-bg);color:var(--c-ok);border:1px solid var(--c-ok-bd);}
   .aic-upd{background:#E9F0F8;color:#2D5A86;border:1px solid #C9DBEE;}
   .aic-na{background:var(--c-err-bg);color:var(--c-err);border:1px solid var(--c-err-bd);}
   .aic-d{margin:7px 0 0 24px;font-size:11.5px;line-height:1.7;}
   .aic-d .fld{color:var(--c-text-mid);font-weight:600;}
-  .aic-d del{background:#FBEAE7;color:#8C2F29;text-decoration:line-through;border-radius:3px;padding:0 3px;}
-  .aic-d ins{background:#E3F1EB;color:#0F5E42;text-decoration:none;border-radius:3px;padding:0 3px;}
+  .aic-d del{background:#FBEAE7;color:#8C2F29;text-decoration:line-through;border-radius:2px;padding:0 3px;}
+  .aic-d ins{background:#E3F1EB;color:#0F5E42;text-decoration:none;border-radius:2px;padding:0 3px;}
   .ai-mark{cursor:pointer;font-size:12px;margin-right:2px;}
   .ai-mark:hover{filter:brightness(1.2);}
   /* ===== 初回4ステップガイド ===== */
-  #tourCard{position:fixed;right:20px;bottom:20px;width:290px;background:#fff;border:1px solid var(--c-primary-bd);border-radius:14px;box-shadow:0 10px 34px rgba(14,124,115,.22);z-index:65;display:none;overflow:hidden;}
+  #tourCard{position:fixed;right:20px;bottom:20px;width:290px;background:#fff;border:1px solid var(--c-primary-bd);border-radius:2px;box-shadow:none;z-index:65;display:none;overflow:hidden;}
   #tourCard.on{display:block;}
-  .tc-h{display:flex;align-items:center;gap:9px;padding:12px 14px;background:linear-gradient(150deg,#0E7C73,#0A5E57);color:#fff;font-size:12.5px;font-weight:700;}
-  .tc-h button{margin-left:auto;width:24px;height:24px;padding:0;border:none;background:rgba(255,255,255,.16);border-radius:6px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .tc-h{display:flex;align-items:center;gap:9px;padding:12px 14px;background:#0F6B62;color:#fff;font-size:12.5px;font-weight:700;}
+  .tc-h button{margin-left:auto;width:24px;height:24px;padding:0;border:none;background:rgba(255,255,255,.16);border-radius:2px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .tc-b{padding:10px 14px 12px;}
   .tc-s{display:flex;align-items:flex-start;gap:9px;padding:7px 0;font-size:12.5px;border-bottom:1px dashed var(--c-line);}
   .tc-s:last-child{border-bottom:none;}
@@ -579,33 +579,33 @@
   .tc-s .tl small{display:block;font-weight:400;color:var(--c-text-faint);font-size:11px;}
   @media print{#tourCard{display:none!important;}}
   /* ===== トースト通知 ===== */
-  #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(20,40,35,.3);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
+  #toastBox{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:#14201E;color:#fff;font-size:12.5px;line-height:1.6;padding:10px 18px;border-radius:2px;box-shadow:none;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:120;max-width:80vw;}
   #toastBox.on{opacity:1;transform:translate(-50%,0);}
   /* ===== ファイルメニュー（アプリバー集約） ===== */
   .filemenu-wrap{position:relative;flex:none;}
-  .filemenu{display:none;position:absolute;top:36px;right:0;z-index:80;width:250px;background:#fff;border:1px solid var(--c-border);border-radius:12px;box-shadow:0 10px 32px rgba(20,40,35,.16);padding:8px;}
+  .filemenu{display:none;position:absolute;top:36px;right:0;z-index:80;width:250px;background:#fff;border:1px solid var(--c-border);border-radius:2px;box-shadow:none;padding:8px;}
   .filemenu.open{display:block;}
-  .filemenu button{display:flex;align-items:center;gap:9px;width:100%;height:34px;padding:0 10px;border:none;background:transparent;border-radius:8px;font-size:12.5px;color:#2A3633;text-align:left;}
+  .filemenu button{display:flex;align-items:center;gap:9px;width:100%;height:34px;padding:0 10px;border:none;background:transparent;border-radius:2px;font-size:12.5px;color:#2A3633;text-align:left;}
   .filemenu button:hover{background:#EFF4F2;border:none;}
   .filemenu button i.ph:first-child{font-size:16px;color:#5A6863;width:18px;text-align:center;}
   .filemenu .fm-sub{margin-left:auto;font-size:10.5px;color:var(--c-text-faint);}
   .filemenu .fm-sep{height:1px;background:var(--c-line);margin:6px 4px;}
   .filemenu .fm-row{display:flex;flex-direction:column;gap:4px;padding:6px 10px 10px;}
   .filemenu .fm-row label{font-size:10.5px;font-weight:700;color:#9FABA7;letter-spacing:.06em;}
-  .filemenu .fm-row input{height:30px;padding:0 9px;border:1px solid #DCE5E3;border-radius:7px;font:inherit;font-size:12.5px;width:100%;}
+  .filemenu .fm-row input{height:30px;padding:0 9px;border:1px solid #DCE5E3;border-radius:2px;font:inherit;font-size:12.5px;width:100%;}
   /* ===== 整備・運用評価ページ ===== */
   .evw-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   @media (max-width:960px){.evw-grid{grid-template-columns:1fr;}}
-  .evw-sec{border:1px solid var(--c-border);border-radius:10px;padding:14px 16px;background:#FAFCFB;}
+  .evw-sec{border:1px solid var(--c-border);border-radius:2px;padding:14px 16px;background:#FAFCFB;}
   .evw-sec h4{margin:0 0 10px;font-size:12.5px;font-weight:700;color:#44514E;display:flex;align-items:center;gap:7px;}
   .evw-row{display:flex;gap:12px;align-items:center;margin-bottom:9px;flex-wrap:wrap;}
   .evw-row label{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--c-text-mid);font-weight:600;flex:none;}
-  .evw-row input,.evw-row select{height:30px;padding:0 9px;border:1px solid #DCE5E3;border-radius:7px;font:inherit;font-size:12.5px;background:#fff;}
-  .evw-note{width:100%;min-height:62px;font:inherit;font-size:12.5px;line-height:1.6;padding:9px 11px;border:1px solid #DCE5E3;border-radius:8px;resize:vertical;background:#fff;box-sizing:border-box;}
-  @keyframes cardflash{0%{box-shadow:0 0 0 3px rgba(14,124,115,.5);}100%{box-shadow:0 0 0 0 rgba(14,124,115,0);}}
+  .evw-row input,.evw-row select{height:30px;padding:0 9px;border:1px solid #DCE5E3;border-radius:2px;font:inherit;font-size:12.5px;background:#fff;}
+  .evw-note{width:100%;min-height:62px;font:inherit;font-size:12.5px;line-height:1.6;padding:9px 11px;border:1px solid #DCE5E3;border-radius:2px;resize:vertical;background:#fff;box-sizing:border-box;}
+  @keyframes cardflash{0%{box-shadow:0 0 0 3px rgba(15,107,98,.5);}100%{box-shadow:0 0 0 0 rgba(15,107,98,0);}}
   .card-flash{animation:cardflash 1.3s ease-out;}
   a.linkpill{cursor:pointer;text-decoration:none;}
-  a.linkpill:hover .evalpill,a.linkpill:hover .idchip{box-shadow:0 0 0 2px rgba(14,124,115,.18);}
+  a.linkpill:hover .evalpill,a.linkpill:hover .idchip{box-shadow:0 0 0 2px rgba(15,107,98,.18);}
   /* ページヘッダーの.phがPhosphorアイコンCSSの.ph（font-family:Phosphor !important）と衝突するため打ち消す。
      div.ph内のアイコン<i class="ph ...">はPhosphorに戻す */
   div.ph,div.ph *{font-family:'IBM Plex Sans JP',system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP","Meiryo",sans-serif !important;font-variant:normal !important;font-feature-settings:normal !important;}
@@ -646,7 +646,7 @@
   <button id="applyBtn" class="sm applybtn" onclick="applyAll()" title="編集内容を業務記述書・フロー図・RCMへ反映します"><i class="ph ph-check-circle"></i>成果物へ反映</button>
   <span class="ab-sep"></span>
   <button class="sm" onclick="saveProject()" title="現在のプロジェクトを .json ファイルに保存します"><i class="ph ph-floppy-disk" style="color:#5A6863"></i>保存</button>
-  <button class="sm" onclick="aiOpen()" title="いま見ている画面の内容を、お使いのAIツールに貼り付けられる形で整形コピーします（自動送信はしません）"><i class="ph ph-sparkle" style="color:#0E7C73"></i><span class="ai-lbl">AIに相談</span></button>
+  <button class="sm" onclick="aiOpen()" title="いま見ている画面の内容を、お使いのAIツールに貼り付けられる形で整形コピーします（自動送信はしません）"><i class="ph ph-sparkle" style="color:#0F6B62"></i><span class="ai-lbl">AIに相談</span></button>
   <div class="filemenu-wrap">
     <button class="sm" id="xlsMenuBtn" onclick="toggleXlsMenu(event)" title="Excel出力（いま見ている画面に対応した出力を選べます）"><i class="ph ph-microsoft-excel-logo" style="color:#1D7044"></i>Excel出力<i class="ph ph-caret-down" style="font-size:11px;color:#9AA6A2"></i></button>
     <div class="filemenu" id="xlsMenu" style="width:270px">
@@ -738,7 +738,7 @@
     <!-- PROCESSES -->
     <section class="page" id="page-processes"><div class="pad">
       <div class="ph"><h2>プロセス</h2><span class="sub">評価対象の業務プロセスを管理します</span><span class="sp"></span>
-        <select id="tmplSel" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;min-width:220px"></select>
+        <select id="tmplSel" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px;min-width:220px"></select>
         <button class="sm" onclick="createFromTemplate()">テンプレートから作成</button>
         <button class="primary" onclick="addProcess()">＋ プロセスを追加</button></div>
       <div class="toolrow no-print" style="margin:6px 0"><input type="text" id="procSearch" class="help-search" style="max-width:300px" placeholder="業務名・手順・担当で検索" oninput="renderProcesses()" aria-label="業務を検索"></div>
@@ -867,10 +867,10 @@
       <input type="file" id="evFileInput" multiple style="display:none">
       <input type="file" id="stepAttInput" multiple style="display:none">
       <div id="stepAttModal" style="display:none;position:fixed;inset:0;background:rgba(15,25,22,.45);z-index:120;align-items:center;justify-content:center" onclick="if(event.target===this)stepAttClose()">
-        <div style="background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(560px,92vw);max-height:80vh;display:flex;flex-direction:column">
+        <div style="background:#fff;border-radius:2px;box-shadow:none;width:min(560px,92vw);max-height:80vh;display:flex;flex-direction:column">
           <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--c-border)">
             <b id="stepAttTitle" style="font-size:14px;flex:1">証跡ファイル</b>
-            <button class="opbtn" onclick="stepAttClose()" aria-label="閉じる">✕</button>
+            <button class="opbtn" onclick="stepAttClose()" aria-label="閉じる">×</button>
           </div>
           <div id="stepAttInfo" style="padding:10px 18px;font-size:11.5px;color:var(--c-text-mid);border-bottom:1px dashed var(--c-border)"></div>
           <div id="stepAttList" style="padding:8px 18px;overflow:auto;flex:1"></div>
@@ -955,13 +955,13 @@
       <div class="card">
         <div class="toolrow">
           <label class="inl">取込種別
-            <select id="impType" onchange="impReset()" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px">
+            <select id="impType" onchange="impReset()" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px">
               <option value="steps">業務記述書（工程）</option>
               <option value="rcm">RCM（リスク・統制）</option>
             </select>
           </label>
           <label class="inl">取込先
-            <select id="impMode" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px">
+            <select id="impMode" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px">
               <option value="replace">現在のプロセスを置換</option>
               <option value="append">現在のプロセスに追記</option>
             </select>
@@ -980,16 +980,16 @@
       </div>
       <div class="card" id="impSheetCard" style="display:none">
         <div class="toolrow">
-          <label class="inl">シート <select id="impSheet" onchange="impAfterSheet()" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;min-width:160px"></select></label>
-          <label class="inl">ヘッダ行 <input type="number" id="impHeaderRow" value="1" min="1" style="width:64px;padding:5px;border:1px solid var(--line);border-radius:6px" onchange="impAfterSheet()"></label>
+          <label class="inl">シート <select id="impSheet" onchange="impAfterSheet()" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px;min-width:160px"></select></label>
+          <label class="inl">ヘッダ行 <input type="number" id="impHeaderRow" value="1" min="1" style="width:64px;padding:5px;border:1px solid var(--line);border-radius:2px" onchange="impAfterSheet()"></label>
           <span style="font-size:12px;color:var(--muted)">※タイトル行がある場合はヘッダ行の番号を指定</span>
         </div>
       </div>
       <div class="card" id="impMapCard" style="display:none">
         <h3 style="margin:0 0 10px;font-size:14px">列マッピング</h3>
-        <div class="toolrow" style="background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px 10px">
+        <div class="toolrow" style="background:#f8fafc;border:1px solid var(--line);border-radius:2px;padding:8px 10px">
           <span style="font-size:12px;font-weight:600">マッピング表（各社様式）</span>
-          <select id="impProfile" style="padding:5px;border:1px solid var(--line);border-radius:6px;min-width:180px"></select>
+          <select id="impProfile" style="padding:5px;border:1px solid var(--line);border-radius:2px;min-width:180px"></select>
           <button class="sm" onclick="applyProfile()">適用</button>
           <button class="sm" onclick="saveProfile()">現在のマッピングを保存</button>
           <button class="sm ghost" onclick="deleteProfile()">削除</button>
@@ -1027,7 +1027,7 @@
         <button class="sm" onclick="window.print()">印刷 / PDF</button></div>
       <div class="card no-print" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <label class="inl" style="font-size:12px">カテゴリ
-          <select id="libCatFilter" onchange="renderLibrary()" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px">
+          <select id="libCatFilter" onchange="renderLibrary()" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px">
             <option value="">すべて</option><option>規程</option><option>規則</option><option>様式・フォーム</option><option>マニュアル</option><option>その他</option>
           </select></label>
         <input type="text" id="libSearch" class="help-search" style="flex:1;min-width:180px" placeholder="タイトル・メモで検索" oninput="renderLibrary()" aria-label="規程・資料を検索">
@@ -1059,7 +1059,7 @@
     <div class="modal-body">
       <div style="font-size:12px;font-weight:700;color:#44514E;margin-bottom:8px;display:flex;align-items:center;gap:7px"><i class="ph ph-article" style="font-size:15px;color:var(--c-primary)"></i>詳細な手順・記述</div>
       <div class="hint" style="margin-top:0">フロー図には簡潔な「業務内容」を表示し、ここに書いた詳細は業務記述書・ウォークスルーに反映されます。担当者・タイミング・使用帳票・例外処理・統制ポイントまで具体的に記述してください。</div>
-      <textarea id="dmText" style="width:100%;min-height:250px;font:inherit;font-size:13px;line-height:1.75;padding:12px 14px;border:1px solid var(--c-border);border-radius:10px;resize:vertical;background:#FAFCFB"></textarea>
+      <textarea id="dmText" style="width:100%;min-height:250px;font:inherit;font-size:13px;line-height:1.75;padding:12px 14px;border:1px solid var(--c-border);border-radius:2px;resize:vertical;background:#FAFCFB"></textarea>
       <div class="manual-only">
         <div style="font-size:12px;font-weight:700;color:#44514E;margin:16px 0 8px;display:flex;align-items:center;gap:7px"><i class="ph ph-image-square" style="font-size:15px;color:var(--c-primary)"></i>添付画像（操作画面・帳票など）</div>
         <div class="img-thumbs" id="dmImgs"></div>
@@ -1075,21 +1075,21 @@
 
 <!-- 新規作成：用途選択モーダル -->
 <div id="npModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:12px;width:min(640px,94vw);max-height:90vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.3)">
+  <div style="background:#fff;border-radius:2px;width:min(640px,94vw);max-height:90vh;overflow:auto;box-shadow:none">
     <div style="padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
       <strong style="flex:1;font-size:15px">新規作成 — 用途を選んでください</strong>
       <button class="sm" onclick="closeNpModal()">閉じる</button>
     </div>
     <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px">
-      <button class="np-choice" onclick="startProject('manual')" style="text-align:left;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:#f0fdf4;cursor:pointer;font:inherit">
+      <button class="np-choice" onclick="startProject('manual')" style="text-align:left;border:1px solid var(--line);border-radius:2px;padding:14px 16px;background:#f0fdf4;cursor:pointer;font:inherit">
         <div style="font-weight:700;font-size:14px;color:#15803d">業務マニュアル・業務フローを作る</div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px">中小企業・士業・バックオフィス向け。属人化の解消・引継ぎ・教育に。評価や内部統制報告書は扱いません。</div>
       </button>
-      <button class="np-choice" onclick="startProject('jsox')" style="text-align:left;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:#fff3f3;cursor:pointer;font:inherit">
+      <button class="np-choice" onclick="startProject('jsox')" style="text-align:left;border:1px solid var(--line);border-radius:2px;padding:14px 16px;background:#fff3f3;cursor:pointer;font:inherit">
         <div style="font-weight:700;font-size:14px;color:var(--ctrl)">J-SOX三点セットを作る</div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px">上場／IPO準備・内部統制担当向け。業務記述書・フロー図・RCM＋整備/運用評価・不備・報告書まで。</div>
       </button>
-      <button class="np-choice" onclick="startImportProject()" style="text-align:left;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--panel-2);cursor:pointer;font:inherit">
+      <button class="np-choice" onclick="startImportProject()" style="text-align:left;border:1px solid var(--line);border-radius:2px;padding:14px 16px;background:var(--panel-2);cursor:pointer;font:inherit">
         <div style="font-weight:700;font-size:14px">既存のExcel/CSVを取り込んで整理する</div>
         <div style="font-size:12px;color:var(--muted);margin-top:3px">手持ちの資料から始めます。取込後に業務マニュアル系／J-SOX系のどちらかを選びます。</div>
       </button>
@@ -1101,7 +1101,7 @@
 <div id="tmplModal" class="modal-ovl">
   <div class="modal-box" style="width:760px">
     <div class="modal-head" style="align-items:flex-start">
-      <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,#0E7C73,#0A5E57);display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ph-files" style="font-size:21px;color:#fff"></i></div>
+      <div style="width:40px;height:40px;border-radius:2px;background:#0F6B62;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ph-files" style="font-size:21px;color:#fff"></i></div>
       <div style="flex:1">
         <h2 style="margin:0 0 3px;font-size:17px;font-weight:700">新規プロセスを作成</h2>
         <p style="margin:0;font-size:12.5px;color:var(--c-text-mid)">業種・取引別のひな形から始めると、標準的な工程・リスク・統制があらかじめ用意されます。</p>
@@ -1123,7 +1123,7 @@
 <div id="aiModal" class="modal-ovl">
   <div class="modal-box" style="width:740px">
     <div class="modal-head">
-      <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(150deg,#0E7C73,#0A5E57);display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ph-sparkle" style="font-size:20px;color:#fff"></i></div>
+      <div style="width:40px;height:40px;border-radius:2px;background:#0F6B62;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ph-sparkle" style="font-size:20px;color:#fff"></i></div>
       <div style="flex:1">
         <h2 style="margin:0 0 3px;font-size:16px;font-weight:700">AIに相談用としてコピー</h2>
         <p style="margin:0;font-size:12px;color:#6A756F">いま見ている画面の内容を、お使いのAIツール（ChatGPT / Claude / Copilot 等）へ貼り付けられる形に整形します。<b>このツールがデータを送信することはありません。</b></p>
@@ -1148,7 +1148,7 @@
         <span id="aiCount" style="font-size:11px;color:var(--c-text-faint)"></span>
       </div>
       <textarea id="aiText" class="evw-note" style="min-height:300px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.6"></textarea>
-      <div class="hint" style="margin-top:10px">⚠ 貼り付け先は<b>会社で承認されたAIツール（入力が学習に使用されない契約のもの）</b>をご利用ください。送信前にプレビューを確認し、機密性の高い固有名詞等は編集・削除してください。AIの回答はあくまで下書き・参考であり、<b>評価判断と結論は評価者自身が行い、調書に記録</b>してください。 <a href="#" onclick="aiClose();helpShowByTitle('AI活用ガイド — なぜ「AI任せ」にせず、このツールと組み合わせるのか');return false" style="color:var(--c-primary-d)">→ AI活用ガイド（なぜAI任せにしないのか）</a></div>
+      <div class="hint" style="margin-top:10px">注意: 貼り付け先は<b>会社で承認されたAIツール（入力が学習に使用されない契約のもの）</b>をご利用ください。送信前にプレビューを確認し、機密性の高い固有名詞等は編集・削除してください。AIの回答はあくまで下書き・参考であり、<b>評価判断と結論は評価者自身が行い、調書に記録</b>してください。 <a href="#" onclick="aiClose();helpShowByTitle('AI活用ガイド — なぜ「AI任せ」にせず、このツールと組み合わせるのか');return false" style="color:var(--c-primary-d)">→ AI活用ガイド（なぜAI任せにしないのか）</a></div>
       </div>
       <div id="aiPaneImp" style="display:none">
         <textarea id="aiInText" class="evw-note" style="min-height:240px;font-size:12px" placeholder="AIの回答をここにそのまま貼り付けてください（回答に含まれる ```json コードブロックを自動で認識します）" oninput="aiParse()"></textarea>
@@ -1165,7 +1165,7 @@
 <!-- スタート画面（初回） -->
 <div id="startScreen">
   <div class="ss-box">
-    <div class="ss-logo"><span class="brand-logo" style="width:44px;height:44px;border-radius:12px"><i class="ph ph-shield-check" style="font-size:24px"></i></span></div>
+    <div class="ss-logo"><span class="brand-logo" style="width:44px;height:44px;border-radius:2px"><i class="ph ph-shield-check" style="font-size:24px"></i></span></div>
     <h1 class="ss-title">J-SOX三点セットを、ひとつのデータから。</h1>
     <p class="ss-sub">業務記述書・フロー図・RCMを、構造化した工程・リスク・統制データから整合した状態で作成・更新します。<br>まずは始め方を選んでください。</p>
     <div class="ss-cards">
@@ -1198,7 +1198,7 @@
 <!-- スマホ向けPC推奨案内 -->
 <div id="mobileGate">
   <div class="mg-box">
-    <span class="brand-logo" style="width:52px;height:52px;border-radius:14px;margin:0 auto;display:flex"><i class="ph ph-shield-check" style="font-size:28px"></i></span>
+    <span class="brand-logo" style="width:52px;height:52px;border-radius:2px;margin:0 auto;display:flex"><i class="ph ph-shield-check" style="font-size:28px"></i></span>
     <h2>このツールはPCでの利用を推奨しています</h2>
     <p>J-SOX Flow Builder は横長の表・業務フロー図・Excel取込を扱うため、画面の広いPCでの操作を前提に設計されています。<br>スマートフォンでは、まず概要をご覧いただき、URLをPCへ共有してお試しください。</p>
     <div class="mg-btns">
@@ -1343,7 +1343,7 @@ function typeToShape(t){return t==="判断"?"decision":t==="書類"?"document":(
 const LANE_W=234,HEADER_H=46,ROW_H=104,TITLE_H=40,LEGEND_H=46,PAD_B=14;
 const NODE_W=152,NODE_H=54,DEC_W=170,DEC_H=74,DOC_H=58,SYS_W=148;
 const C_HDR="#F2F6F5",C_HDRTX="#3A4742",C_LINE="#EBF0EE",C_INK="#14201E",C_EDGE="#84938E";
-const C_CTRL="#0A5E57",C_RISK="#A8473F";
+const C_CTRL="#0B554E",C_RISK="#A8473F";
 const SVG_TYPE={
   terminal:{bg:"#E6F2EC",bd:"#8FBCA4",fg:"#157F5B"},
   system:{bg:"#E9F0F8",bd:"#9FB9D8",fg:"#2D5A86"},
@@ -1376,7 +1376,7 @@ function renderNode(n,pos){
   let g=shape+tblock(cx,cy,wrap(n.label,maxc),{fill:M.fg,bold:true});
   // R/C ミニタグ（統制=teal・リスク=red / マニュアルモードでは buildDef で除去）
   const tg=n.tags||{};
-  if(tg.ctrls&&tg.ctrls.length){const id=tg.ctrls[0]+(tg.ctrls.length>1?` +${tg.ctrls.length-1}`:"")+(tg.key?" ✦":"");const bw=Math.max(34,id.length*7.2+12),bh=18,bx=cx+w/2-bw+10,by=cy-h/2-bh/2-1;g+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="5" fill="#E7F1EE" stroke="#BBD9D0"/><text x="${bx+bw/2}" y="${by+bh/2+3.5}" text-anchor="middle" font-size="10" font-weight="700" fill="${C_CTRL}">${esc(id)}</text>`;}
+  if(tg.ctrls&&tg.ctrls.length){const id=tg.ctrls[0]+(tg.ctrls.length>1?` +${tg.ctrls.length-1}`:"")+(tg.key?" *":"");const bw=Math.max(34,id.length*7.2+12),bh=18,bx=cx+w/2-bw+10,by=cy-h/2-bh/2-1;g+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="5" fill="#E7F1EE" stroke="#BBD9D0"/><text x="${bx+bw/2}" y="${by+bh/2+3.5}" text-anchor="middle" font-size="10" font-weight="700" fill="${C_CTRL}">${esc(id)}</text>`;}
   if(tg.risks&&tg.risks.length){const id=tg.risks[0];const bw=Math.max(30,id.length*7.2+10),bh=18,bx=cx-w/2-10,by=cy-h/2-bh/2-1;g+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="5" fill="#F7ECEA" stroke="#ECCFCA"/><text x="${bx+bw/2}" y="${by+bh/2+3.5}" text-anchor="middle" font-size="10" font-weight="700" fill="${C_RISK}">${esc(id)}</text>`;}
   const chips=[];if(tg.ipe)chips.push("IPE");if(tg.itac)chips.push("ITAC");
   if(chips.length){let cxp=cx-(chips.length*40)/2;chips.forEach(c=>{g+=`<rect x="${cxp}" y="${cy+h/2+3}" width="36" height="15" rx="7" fill="#fff" stroke="#C4D0CC"/><text x="${cxp+18}" y="${cy+h/2+14}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#56635F">${c}</text>`;cxp+=40;});}
@@ -1544,15 +1544,15 @@ function renderSteps(){
     +`<td class="w-wide">${inp("steps",i,"label",s.label)}</td>`
     +`<td style="text-align:center;padding:4px 8px"><button class="detailbtn${hasDetail?" on":""}" title="詳細な手順を入力／閲覧" aria-label="詳細記述を編集" onclick="openDetail(${i})"><i class="ph ${hasDetail?"ph-note":"ph-note-pencil"}"></i></button></td>`
     +`<td>${inp("steps",i,"system",s.system)}</td>`
-    +`<td style="white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px;width:100%">${inp("steps",i,"evidence",s.evidence)}<button class="opbtn" onclick="stepAttOpen(${i})" title="証跡ファイルを添付（参考資料の格納）" aria-label="証跡ファイルを添付" style="flex:none${(s.atts||[]).length?";color:var(--c-primary);font-weight:700":""}">📎${(s.atts||[]).length||""}</button></span></td>`
+    +`<td style="white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px;width:100%">${inp("steps",i,"evidence",s.evidence)}<button class="opbtn" onclick="stepAttOpen(${i})" title="証跡ファイルを添付（参考資料の格納）" aria-label="証跡ファイルを添付" style="flex:none${(s.atts||[]).length?";color:var(--c-primary);font-weight:700":""}"><i class="ph ph-paperclip"></i>${(s.atts||[]).length||""}</button></span></td>`
     +`<td class="w-sm">${inp("steps",i,"yes",s.yes)}</td>`
     +`<td class="w-sm">${inp("steps",i,"no2",s.no2)}</td>`
     +`<td class="w-md">${inp("steps",i,"jump",s.jump)}</td>`
     +`<td class="w-wide">${inp("steps",i,"point",s.point||"")}</td>`
     +`<td class="w-sm">${inp("steps",i,"dur",s.dur||"")}</td>`
-    +`<td class="manual-only" style="text-align:center;white-space:nowrap;padding:4px 8px">${s.img?`<img src="${s.img}" style="max-width:64px;max-height:46px;border:1px solid var(--line);border-radius:4px;cursor:pointer;vertical-align:middle" onclick="attachStepImg(${i})" title="クリックで差替え"> <a href="#" onclick="delStepImg(${i});return false" style="color:var(--c-err);text-decoration:none" title="削除">✕</a>`:`<button class="sm" onclick="attachStepImg(${i})" title="手順の画像を添付（自動で縮小）">＋図</button>`}</td>`
+    +`<td class="manual-only" style="text-align:center;white-space:nowrap;padding:4px 8px">${s.img?`<img src="${s.img}" style="max-width:64px;max-height:46px;border:1px solid var(--line);border-radius:2px;cursor:pointer;vertical-align:middle" onclick="attachStepImg(${i})" title="クリックで差替え"> <a href="#" onclick="delStepImg(${i});return false" style="color:var(--c-err);text-decoration:none" title="削除">×</a>`:`<button class="sm" onclick="attachStepImg(${i})" title="手順の画像を添付（自動で縮小）">＋図</button>`}</td>`
     +cc.map(c=>`<td class="custc"><input data-g="steps" data-i="${i}" data-cf="${escAttr(c.id)}" value="${escAttr((s.custom||{})[c.id]||"")}"></td>`).join("")
-    +`<td style="white-space:nowrap;padding:0 6px">${s.ai_meta?`<span class="ai-mark" title="AI提案から取込（${escAttr(s.ai_meta.at)}・${escAttr(s.ai_meta.type)}）。クリックで印を解除" onclick="clearAiMark('steps',${i})">✨</span>`:""}<button class="opbtn" data-g="steps" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><i class="ph ph-copy"></i></button><button class="opbtn" data-g="steps" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">✕</button></td>`
+    +`<td style="white-space:nowrap;padding:0 6px">${s.ai_meta?`<span class="ai-mark" title="AI提案から取込（${escAttr(s.ai_meta.at)}・${escAttr(s.ai_meta.type)}）。クリックで印を解除" onclick="clearAiMark('steps',${i})">AI</span>`:""}<button class="opbtn" data-g="steps" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><i class="ph ph-copy"></i></button><button class="opbtn" data-g="steps" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">×</button></td>`
     +"</tr>";});
   if(!p.steps.length)h=`<tr><td colspan="${totalCols}" style="color:var(--muted);padding:10px">業務記述書の工程はまだ登録されていません。「＋行」から追加するか、取込ページからExcel/CSVを取り込めます。</td></tr>`;
   document.getElementById("stepBody").innerHTML=h;updateDeptList();
@@ -1603,7 +1603,7 @@ function renderRcm(){
     +`<td class="evalc jsox-only">${sel("rcm",i,"oe_result",r.oe_result,["","有効","不備","対象外"])}</td>`
     +`<td class="evalc jsox-only w-wide">${inp("rcm",i,"oe_note",r.oe_note)}</td>`
     +cc.map(c=>`<td class="custc"><input data-g="rcm" data-i="${i}" data-cf="${escAttr(c.id)}" value="${escAttr((r.custom||{})[c.id]||"")}"></td>`).join("")
-    +`<td style="white-space:nowrap">${r.ai_meta?`<span class="ai-mark" title="AI提案から取込（${escAttr(r.ai_meta.at)}・${escAttr(r.ai_meta.type)}）。クリックで印を解除" onclick="clearAiMark('rcm',${i})">✨</span>`:""}<button class="opbtn" data-g="rcm" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><svg class="ic"><use href="#i-copy"/></svg></button><button class="opbtn" data-g="rcm" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">✕</button></td>`
+    +`<td style="white-space:nowrap">${r.ai_meta?`<span class="ai-mark" title="AI提案から取込（${escAttr(r.ai_meta.at)}・${escAttr(r.ai_meta.type)}）。クリックで印を解除" onclick="clearAiMark('rcm',${i})">AI</span>`:""}<button class="opbtn" data-g="rcm" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><svg class="ic"><use href="#i-copy"/></svg></button><button class="opbtn" data-g="rcm" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">×</button></td>`
     +"</tr>";});
   if(!p.rcm.length)h=`<tr><td colspan="${35+cc.length}" style="color:var(--muted);padding:10px">RCM（リスク・コントロール・マトリクス）の行はまだ登録されていません。「＋行」から追加するか、取込ページからExcel/CSVを取り込めます。</td></tr>`;
   document.getElementById("rcmBody").innerHTML=h;
@@ -1628,7 +1628,7 @@ function renderJournals(){
     +`<td class="w-wide"><input list="${dlId}" data-g="jnl" data-i="${i}" data-f="account" value="${escAttr(j.account)}"></td>`
     +`<td>${inp("jnl",i,"sub",j.sub)}</td>`
     +`<td class="w-wide">${inp("jnl",i,"note",j.note)}</td>`
-    +`<td style="white-space:nowrap"><button class="opbtn" data-g="jnl" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><svg class="ic"><use href="#i-copy"/></svg></button><button class="opbtn" data-g="jnl" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">✕</button></td>`
+    +`<td style="white-space:nowrap"><button class="opbtn" data-g="jnl" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><svg class="ic"><use href="#i-copy"/></svg></button><button class="opbtn" data-g="jnl" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">×</button></td>`
     +`</tr>`;});
   if(!p.journals.length)h=`<tr><td colspan="12" style="color:var(--muted);padding:10px">仕訳明細がまだ登録されていません。「＋仕訳（借貸）」から追加できます。</td></tr>`;
   document.getElementById("jnlBody").innerHTML=h;
@@ -1754,7 +1754,7 @@ function renderOewp(){
             <td><input value="${escAttr(s2.desc||"")}" onfocus="evwPush()" oninput="oewpSet(${i},${j},'desc',this.value)"></td>
             <td><select onfocus="evwPush()" onchange="oewpSet(${i},${j},'res',this.value)"><option value=""${!s2.res?" selected":""}>　</option><option value="○"${s2.res==="○"?" selected":""}>○</option><option value="×"${s2.res==="×"?" selected":""}>×</option></select></td>
             <td><input value="${escAttr(s2.note||"")}" onfocus="evwPush()" oninput="oewpSet(${i},${j},'note',this.value)"></td>
-            <td class="no-print" style="text-align:center"><button class="opbtn" onclick="oewpDelRow(${i},${j})" title="行を削除">✕</button></td></tr>`).join("")
+            <td class="no-print" style="text-align:center"><button class="opbtn" onclick="oewpDelRow(${i},${j})" title="行を削除">×</button></td></tr>`).join("")
           +`</tbody></table>`
           :`<div style="font-size:12px;color:var(--c-text-faint);padding:8px 2px">「件数分の行を作成」でサンプル別の結果表を作成できます（作成しない場合は評価内容の記載のみで運用可）。</div>`}
       </td></tr></table>
@@ -1814,8 +1814,8 @@ function renderKaizen(){
   const pct=(a,b)=>b?Math.round(a/b*100)+"%":"—";
   const kpi=(lb,v,sub,icon,tint,accent)=>`<div class="kpi"><div class="kh"><span class="kl">${lb}</span><span class="kic" style="background:${tint}"><i class="ph ${icon}" style="color:${accent}"></i></span></div><div class="kv">${v}</div><div class="ks">${sub}</div></div>`;
   let h=`<div class="kpi-row">`
-    +kpi("業務プロセス",procs.length,"登録済み","ph-squares-four","#E8F3F1","#0E7C73")
-    +kpi("総工程数",tSteps,"全プロセス合計","ph-list-numbers","#E8F3F1","#0E7C73")
+    +kpi("業務プロセス",procs.length,"登録済み","ph-squares-four","#E8F3F1","#0F6B62")
+    +kpi("総工程数",tSteps,"全プロセス合計","ph-list-numbers","#E8F3F1","#0F6B62")
     +kpi("手作業比率",pct(tMan,tSteps),`手動処理 ${tMan}工程`,"ph-hand","#FBF2DD","#B7791F")
     +kpi("システム化率",pct(tSys,tSteps),`システム処理 ${tSys}工程`,"ph-monitor","#E9F0F8","#2D5A86")
     +kpi("文書化率",pct(tDet,tSteps),"詳細手順の記載済み","ph-article","#E6F2EC","#157F5B")
@@ -1987,7 +1987,7 @@ function renderGap(){
   let c=`<table class="cov"><thead><tr><th class="l">勘定科目</th><th>統制数</th><th>キー統制</th>`+ASRT.map(a=>`<th>${a}</th>`).join("")+`</tr></thead><tbody>`;
   if(!fss.length)c+=`<tr><td class="l" colspan="${3+ASRT.length}" style="color:var(--muted)">RCMに勘定科目を入力すると表示されます</td></tr>`;
   fss.forEach(fs=>{const d=cov[fs];c+=`<tr><td class="l">${esc(fs)}</td><td>${d.ctrls}</td><td>${d.keys||'<span class="n">0</span>'}</td>`+ASRT.map(a=>{const hit=[...d.asserts].some(x=>x.includes(a)||a.includes(x));return `<td>${hit?'<span class="cov-on"><i class="ph ph-check-bold"></i></span>':'<span class="cov-gap"><i class="ph ph-x-bold"></i></span>'}</td>`;}).join("")+`</tr>`;});
-  c+="</tbody></table><div class='hint'>✓＝そのアサーションをカバーする統制あり。✕＝カバーが確認できない（要検討）。組合せ記載のアサーションは部分一致で判定しています。</div>";
+  c+="</tbody></table><div class='hint'>○＝そのアサーションをカバーする統制あり。×＝カバーが確認できない（要検討）。組合せ記載のアサーションは部分一致で判定しています。</div>";
   document.getElementById("covBody").innerHTML=c;
 }
 
@@ -2115,7 +2115,7 @@ async function exportDocXlsx(containerId,fileBase){
   const tables=[...cont.querySelectorAll("table")];
   if(!tables.length){alert("出力できる表がありません。");return;}
   const loadingEl=document.createElement("div");
-  loadingEl.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--c-border);border-radius:10px;padding:18px 30px;box-shadow:0 8px 30px rgba(20,40,35,.18);z-index:9999;font-size:13.5px;font-weight:600;";
+  loadingEl.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--c-border);border-radius:2px;padding:18px 30px;box-shadow:none;z-index:9999;font-size:13.5px;font-weight:600;";
   loadingEl.textContent="Excelを生成中…";
   document.body.appendChild(loadingEl);
   try{
@@ -2309,7 +2309,7 @@ async function addFlowImage(wb){
 async function exportXlsxRich(){
   if(typeof ExcelJS==="undefined"){alert("ExcelJSライブラリが見つかりません。");return;}
   const loadingEl=document.createElement("div");
-  loadingEl.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px 32px;box-shadow:0 4px 24px rgba(0,0,0,.15);z-index:9999;font-size:14px;font-weight:600;";
+  loadingEl.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:1px solid var(--line);border-radius:2px;padding:20px 32px;box-shadow:none;z-index:9999;font-size:14px;font-weight:600;";
   loadingEl.textContent="Excelを生成中…";
   document.body.appendChild(loadingEl);
   try{
@@ -2727,7 +2727,7 @@ function aiParse(){
     +_aiCands.map((c,i)=>`<div class="aic${c.ok?"":" off"}" id="aic-${i}">
       <label class="aic-h"><input type="checkbox" ${c.ok?"checked":""} ${(c.kind!=="rcm_add"&&!c.tgt)?"disabled":""} onchange="aiTgl(${i},this.checked)">${kindTag(c)}<span style="flex:1">${esc(c.label)}</span></label>
       ${diffHtml(c)}</div>`).join("")
-    +'<div style="font-size:11px;color:var(--c-text-faint);margin-top:6px">適用は元に戻せます（Ctrl+Z）。取込行には ✨ マーク（AI提案・日付つき）が付き、クリックで解除できます。</div>';
+    +'<div style="font-size:11px;color:var(--c-text-faint);margin-top:6px">適用は元に戻せます（Ctrl+Z）。取込行には 「AI」マーク（AI提案・日付つき）が付き、クリックで解除できます。</div>';
   aiUpdBtn();
 }
 function aiTgl(i,v){if(_aiCands[i]){_aiCands[i].ok=v;const el=document.getElementById("aic-"+i);if(el)el.classList.toggle("off",!v);aiUpdBtn();}}
@@ -2758,7 +2758,7 @@ function aiApply(){
   markDirty();
   if(curPage==="steps")renderSteps();else if(curPage==="rcm")renderRcm();else if(curPage==="evalwork")renderEvalWork();
   aiClose();
-  toast(`AI回答を取り込みました: 追加 ${added}件・更新 ${updated}件（✨マーク付き）。内容を確認し、問題なければ［成果物へ反映］を押してください。`,7000);
+  toast(`AI回答を取り込みました: 追加 ${added}件・更新 ${updated}件（AIマーク付き）。内容を確認し、問題なければ［成果物へ反映］を押してください。`,7000);
 }
 function aiClose(){document.getElementById("aiModal").style.display="none";}
 function aiBuild(){
@@ -2902,10 +2902,10 @@ async function runSelfTest(){
   window.__selftest={ok,total:results.length,results};
   console.table(results);
   const h=`<div style="position:fixed;inset:0;background:rgba(15,25,22,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px" onclick="this.remove()">
-    <div style="background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:22px 26px" onclick="event.stopPropagation()">
+    <div style="background:#fff;border-radius:2px;max-width:640px;width:100%;max-height:86vh;overflow:auto;padding:22px 26px" onclick="event.stopPropagation()">
     <h2 style="margin:0 0 4px;font-size:17px">セルフテスト結果: ${ok} / ${results.length} 合格</h2>
     <div style="font-size:11.5px;color:#8A9794;margin-bottom:14px">実データには影響しません（テスト後に復元済み）。閉じるには背景をクリック。</div>
-    ${results.map(x=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed #D2DCD8;font-size:12.5px"><span style="flex:none;font-weight:700;color:${x.pass?"#157F5B":"#B0413B"}">${x.pass?"✓":"✕"}</span><span style="flex:1">${esc(x.name)}</span><span style="color:#8A9794;max-width:280px;text-align:right">${esc(x.detail)}</span></div>`).join("")}
+    ${results.map(x=>`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed #D2DCD8;font-size:12.5px"><span style="flex:none;font-weight:700;color:${x.pass?"#157F5B":"#B0413B"}">${x.pass?"○":"×"}</span><span style="flex:1">${esc(x.name)}</span><span style="color:#8A9794;max-width:280px;text-align:right">${esc(x.detail)}</span></div>`).join("")}
     </div></div>`;
   const d=document.createElement("div");d.innerHTML=h;document.body.appendChild(d.firstChild);
   show("dash");
@@ -3224,11 +3224,11 @@ function renderProcesses(){
   const p=P();
   document.getElementById("procDetail").innerHTML=
     `<h3 style="margin:0 0 10px;font-size:14px">${manual?"業務":"プロセス"}詳細：${esc(p.id)}</h3>`
-    +`<div class="toolrow"><label class="inl">${manual?"業務名":"プロセス名"} <input id="pdName" value="${escAttr(p.name)}" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;min-width:240px"></label>`
-    +`<label class="inl">${manual?"概要・サブ業務":"サブプロセス"} <input id="pdSub" value="${escAttr(p.sub_process)}" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;min-width:200px"></label>`
+    +`<div class="toolrow"><label class="inl">${manual?"業務名":"プロセス名"} <input id="pdName" value="${escAttr(p.name)}" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px;min-width:240px"></label>`
+    +`<label class="inl">${manual?"概要・サブ業務":"サブプロセス"} <input id="pdSub" value="${escAttr(p.sub_process)}" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px;min-width:200px"></label>`
     +(manual?"":`<label class="inl"><input type="checkbox" id="pdScope"${p.in_scope?" checked":""}> 評価範囲に含める</label>`)
-    +(manual?`<label class="inl">標準化の優先度 <select id="pdStd" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px">${["","高","中","低"].map(o=>`<option${(p.std_priority||"")===o?" selected":""}>${o}</option>`).join("")}</select></label>`
-        +`<label class="inl">属人化リスク <select id="pdAttr" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px">${["","高","中","低"].map(o=>`<option${(p.attribution_risk||"")===o?" selected":""}>${o}</option>`).join("")}</select></label>`:"")
+    +(manual?`<label class="inl">標準化の優先度 <select id="pdStd" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px">${["","高","中","低"].map(o=>`<option${(p.std_priority||"")===o?" selected":""}>${o}</option>`).join("")}</select></label>`
+        +`<label class="inl">属人化リスク <select id="pdAttr" style="padding:5px 8px;border:1px solid var(--line);border-radius:2px">${["","高","中","低"].map(o=>`<option${(p.attribution_risk||"")===o?" selected":""}>${o}</option>`).join("")}</select></label>`:"")
     +`</div>`
     +(manual?`<div class="hint">「標準化の優先度」「属人化リスク」は、どの業務から手をつけるべきか（標準化トリアージ）の目安になります。ダッシュボード・抜け漏れチェックと連動します。</div>`:"")
     +`<div class="hint">部門（レーン）の並びはフロー図のスイムレーン順になります。各列をドラッグして並べ替えてください（未設定時は工程の登場順）。</div>`
@@ -3645,7 +3645,7 @@ function bestGuess(field,used){
 function buildMapUI(){
   const fields=IMPORT_FIELDS[document.getElementById("impType").value];const used=new Set();let h="";
   fields.forEach(fd=>{const g=bestGuess(fd,used);if(g>=0)used.add(g);
-    h+=`<label class="inl" style="justify-content:space-between;gap:8px"><span style="color:var(--ink)">${esc(fd.label)}</span><select data-field="${fd.f}" style="padding:5px;border:1px solid var(--line);border-radius:6px;min-width:150px"><option value="-1">（なし）</option>`
+    h+=`<label class="inl" style="justify-content:space-between;gap:8px"><span style="color:var(--ink)">${esc(fd.label)}</span><select data-field="${fd.f}" style="padding:5px;border:1px solid var(--line);border-radius:2px;min-width:150px"><option value="-1">（なし）</option>`
      +_imp.headers.map((hd,i)=>`<option value="${i}"${i===g?" selected":""}>${esc(hd||("列"+(i+1)))}</option>`).join("")+`</select></label>`;});
   document.getElementById("impMap").innerHTML=h;
   document.getElementById("impMapCard").style.display="";document.getElementById("impPreviewCard").style.display="none";refreshProfileList();
@@ -3730,7 +3730,7 @@ function tagMini(t,c){return `<span class="tagmini" style="background:${c}">${es
 /* ===== §5-6 リデザイン補助: 評価ピル / アサーション○ ===== */
 function evalPill(sym){const m={"○":["ep-ok","有効"],"△":["ep-warn","一部不備"],"×":["ep-err","不備"]}[sym];if(!m)return `<span class="evalpill ep-na">－ 未評価</span>`;return `<span class="evalpill ${m[0]}">${sym} ${m[1]}</span>`;}
 function resPill(v){v=(v||"").trim();if(!v)return `<span style="color:var(--c-text-faint)">-</span>`;const c=v==="有効"?"ep-ok":v==="不備"?"ep-err":"ep-na";return `<span class="evalpill ${c}">${esc(v)}</span>`;}
-function asrtMark(on){return on?`<span class="asrt-on">✓</span>`:`<span class="asrt-off">·</span>`;}
+function asrtMark(on){return on?`<span class="asrt-on">○</span>`:`<span class="asrt-off">·</span>`;}
 function kcMark(key){return key?`<span class="kc-circle" title="キー統制"></span>`:"";}
 function keyTag(){return `<span class="keytag"><i class="ph ph-star-fill"></i>キー統制</span>`;}
 function renderStepsDoc(){
@@ -3746,7 +3746,7 @@ function renderStepsDocJsox(p,cc){
     +cc.map(c=>`<th>${esc(c.label)}</th>`).join("")
     +`</tr></thead><tbody>`;
   if(!active.length)h+=`<tr><td colspan="${9+cc.length}" style="color:var(--muted)">工程が未入力です</td></tr>`;
-  active.forEach(s=>{const linked=p.rcm.filter(r=>String(r.step_no).trim()===String(s.no).trim());let tags="";linked.forEach(r=>{if(r.risk_id)tags+=tagMini(r.risk_id,C_RISK);if(r.control_id)tags+=tagMini(r.control_id+(r.key?"★":""),C_CTRL);});
+  active.forEach(s=>{const linked=p.rcm.filter(r=>String(r.step_no).trim()===String(s.no).trim());let tags="";linked.forEach(r=>{if(r.risk_id)tags+=tagMini(r.risk_id,C_RISK);if(r.control_id)tags+=tagMini(r.control_id+(r.key?"*":""),C_CTRL);});
     h+=`<tr><td>${esc(s.no)}</td><td>${esc(s.gyomu)}</td><td>${esc(s.dept)}</td><td>${esc(s.role)}</td><td>${esc(s.type)}</td><td>${esc(s.label)}</td><td>${esc(s.system)}</td><td>${esc(s.evidence)}</td><td>${tags||"-"}</td>`
       +cc.map(c=>`<td>${esc((s.custom||{})[c.id]||"")}</td>`).join("")
       +`</tr>`;});
@@ -3787,8 +3787,8 @@ function renderManual(p,cc){
       if(s.system||s.evidence||s.dur)h+=`<div style="font-size:12px;color:var(--muted);margin-bottom:4px">${s.system?`使用システム: ${esc(s.system)}　`:""}${s.evidence?`使用帳票: ${esc(s.evidence)}　`:""}${s.dur?`所要時間: ${esc(s.dur)}`:""}</div>`;
       if(s.detail)h+=`<p style="font-size:12.5px;margin:4px 0 6px;white-space:pre-wrap">${esc(s.detail)}</p>`;
       if(s.point)h+=`<div class="step-point">ポイント・注意点: ${esc(s.point)}</div>`;
-      if(s.img)h+=`<div style="margin-top:6px"><img src="${s.img}" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:6px"></div>`;
-      (s.images||[]).forEach(d=>{h+=`<div style="margin-top:6px"><img src="${d}" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:6px"></div>`;});
+      if(s.img)h+=`<div style="margin-top:6px"><img src="${s.img}" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:2px"></div>`;
+      (s.images||[]).forEach(d=>{h+=`<div style="margin-top:6px"><img src="${d}" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:2px"></div>`;});
       if(rules.length)h+=`<div style="margin-top:6px;font-size:12px"><b>ルール・チェックポイント:</b> ${rules.map(r=>esc(r.control_desc)).join(" / ")}</div>`;
       h+=`</div>`;
     });
@@ -3912,7 +3912,7 @@ function renderRcmDoc(){
         +`<td style="text-align:center">${resPill(r.oe_result)}</td>`
         +cc.map(c=>`<td>${esc((r.custom||{})[c.id]||"")}</td>`).join("")
         +`</tr>`;});
-    h+=`</tbody></table></div><div class="hint" style="margin-top:8px">○＝該当するアサーション。総合評価＝整備・運用評価を踏まえた総合判定（○適切／△一部不備／×不備）。網掛け＝キーコントロール（★）。整備評価・運用評価の詳細は「評価結果（評価調書）」ページを参照。</div>`;
+    h+=`</tbody></table></div><div class="hint" style="margin-top:8px">○＝該当するアサーション。総合評価＝整備・運用評価を踏まえた総合判定（○適切／△一部不備／×不備）。網掛け＝キーコントロール（*）。整備評価・運用評価の詳細は「評価結果（評価調書）」ページを参照。</div>`;
   }
   h+=prnNotesBlock(rcmSorted(p.rcm));
   document.getElementById("rcmDocBody").innerHTML=h;
@@ -4033,7 +4033,7 @@ function renderEvalWork(){
     }
   });
   h+=`</tbody></table></div>`;
-  h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>行の 📝 ボタンで、手続種類（質問・観察・閲覧・再実施）・対象期間・母集団・評価内容・調書番号・査閲欄を記入できます。評価主体（業務部門の自己評価／内部監査／会計監査人等）を選ぶことで、経営者評価・内部監査・外部監査のいずれの調書としても利用できます。様式は「財務報告に係る内部統制の評価及び監査の基準・実施基準」および監基報230（監査調書）・330（運用評価手続）の記録要素を参考に構成しています。</div>`;
+  h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>行の［詳細］ボタンで、手続種類（質問・観察・閲覧・再実施）・対象期間・母集団・評価内容・調書番号・査閲欄を記入できます。評価主体（業務部門の自己評価／内部監査／会計監査人等）を選ぶことで、経営者評価・内部監査・外部監査のいずれの調書としても利用できます。様式は「財務報告に係る内部統制の評価及び監査の基準・実施基準」および監基報230（監査調書）・330（運用評価手続）の記録要素を参考に構成しています。</div>`;
   el.innerHTML=h;
 }
 function renderEvalDoc(){
@@ -4122,7 +4122,7 @@ function renderDef(){
     +`<td class="w-sm">${inp("def",i,"due",d.due,"YYYY-MM-DD")}</td>`
     +`<td>${sel("def",i,"status",d.status,["未対応","対応中","是正済"])}</td>`
     +`<td class="w-md">${inp("def",i,"retest",d.retest)}</td>`
-    +`<td style="white-space:nowrap"><button class="opbtn" data-g="def" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><svg class="ic"><use href="#i-copy"/></svg></button><button class="opbtn" data-g="def" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">✕</button></td>`
+    +`<td style="white-space:nowrap"><button class="opbtn" data-g="def" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><svg class="ic"><use href="#i-copy"/></svg></button><button class="opbtn" data-g="def" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">×</button></td>`
     +"</tr>";});
   if(!p.deficiencies.length)h=`<tr><td colspan="16" style="color:var(--muted);padding:10px">不備は登録されていません。「＋不備を追加」から登録できます。</td></tr>`;
   document.getElementById("defBody").innerHTML=h;
@@ -4140,8 +4140,8 @@ function renderDefSummary(){
   else if(open>0){verdict="未是正の不備があります：是正と再評価を進めてください（現時点で開示すべき重要な不備はなし）。";vc="#9A6614";}
   else if(total>0){verdict="登録された不備はすべて是正済みです。";vc="#157F5B";}
   else{verdict="登録された不備はありません。";vc="#8A9794";}
-  const card=(lb,v,c)=>`<div style="flex:1;min-width:96px;border:1px solid var(--line);border-radius:8px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">${lb}</div><div style="font-size:20px;font-weight:800;color:${c||"var(--ink)"}">${v}</div></div>`;
-  el.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap">${card("不備 合計",total)}${card("開示すべき重要な不備",mat,mat>0?"#B0413B":"")}${card("不備",minor)}${card("未是正",open,open>0?"#9A6614":"")}${card("是正済",fixed,"#157F5B")}</div><div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:${vc}1a;border:1px solid ${vc}55;color:${vc};font-weight:700;font-size:13px">${verdict}</div>`;
+  const card=(lb,v,c)=>`<div style="flex:1;min-width:96px;border:1px solid var(--line);border-radius:2px;padding:8px 10px"><div style="font-size:11px;color:var(--muted)">${lb}</div><div style="font-size:20px;font-weight:800;color:${c||"var(--ink)"}">${v}</div></div>`;
+  el.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap">${card("不備 合計",total)}${card("開示すべき重要な不備",mat,mat>0?"#B0413B":"")}${card("不備",minor)}${card("未是正",open,open>0?"#9A6614":"")}${card("是正済",fixed,"#157F5B")}</div><div style="margin-top:8px;padding:8px 10px;border-radius:2px;background:${vc}1a;border:1px solid ${vc}55;color:${vc};font-weight:700;font-size:13px">${verdict}</div>`;
 }
 /* ---- 証憑（格納・依頼） ---- */
 function evOf(cid){const p=P();p.evidence=p.evidence||{};if(!p.evidence[cid])p.evidence[cid]={req_to:"",req_due:"",req_status:"未依頼",files:[]};const o=p.evidence[cid];o.files=o.files||[];return o;}
@@ -4261,7 +4261,7 @@ function stepAttRender(){
       <i class="ph ${f.store==="dir"?"ph-folder-open":"ph-file"}" style="font-size:16px;color:var(--c-primary);flex:none"></i>
       <a href="#" onclick="stepAttOpenFile(${j});return false" style="flex:1;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="クリックで開く">${esc(f.name)}</a>
       <span class="mono" style="font-size:11px;color:var(--c-text-faint);flex:none">${f.size?Math.ceil(f.size/1024)+"KB":""}${f.store==="dir"?" ・ フォルダ":""}</span>
-      <button class="opbtn" onclick="stepAttDel(${j})" title="添付を解除" aria-label="添付を解除">✕</button></div>`;
+      <button class="opbtn" onclick="stepAttDel(${j})" title="添付を解除" aria-label="添付を解除">×</button></div>`;
   });
   document.getElementById("stepAttList").innerHTML=h||`<div style="font-size:12px;color:var(--c-text-faint);padding:14px 0">添付ファイルはありません。「ファイルを添付」から参考資料（帳票の例・画面コピー等）を格納できます。</div>`;
 }
@@ -4349,7 +4349,7 @@ function renderEv(){
   let h="";
   if(!ctrls.length)h=`<tr><td colspan="8" style="color:var(--muted);padding:10px">統制ID付きのRCM行がありません。RCM編集で統制IDを入力してください。</td></tr>`;
   ctrls.forEach(r=>{const cid=(r.control_id||"").trim();const o=evOf(cid);
-    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:${f.store==="dir"?"#3E6B63":"#56635F"}" title="${escAttr(f.store==="dir"?(f.path||f.name)+"（フォルダ格納）":f.name)} (${fmtSize(f.size)})　クリックで開く">${f.store==="dir"?'<i class="ph ph-folder" style="font-size:10px"></i> ':""}<a href="#" onclick="openEvidence('${escAttr(cid)}',${idx});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlEvidence('${escAttr(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escAttr(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">✕</a></span>`).join(" ");
+    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:${f.store==="dir"?"#3E6B63":"#56635F"}" title="${escAttr(f.store==="dir"?(f.path||f.name)+"（フォルダ格納）":f.name)} (${fmtSize(f.size)})　クリックで開く">${f.store==="dir"?'<i class="ph ph-folder" style="font-size:10px"></i> ':""}<a href="#" onclick="openEvidence('${escAttr(cid)}',${idx});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlEvidence('${escAttr(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escAttr(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">×</a></span>`).join(" ");
     h+=`<tr>`
       +`<td class="w-no"><b>${esc(cid)}</b>${r.key?'<span class="tagmini" style="background:'+C_CTRL+'">KC</span>':""}</td>`
       +`<td>${esc(r.gyomu||"")}</td>`
@@ -4375,9 +4375,9 @@ function renderManualOut(){
   h+=`<h2>チェックリスト</h2>`;
   if(!real.length)h+=`<div class="hint">手順がありません。</div>`;
   else{
-    h+=`<table class="dr" style="white-space:normal"><thead><tr><th style="width:34px">✓</th><th style="width:50px">No</th><th>担当</th><th>手順</th><th>使用システム・資料</th><th>チェックポイント・注意点</th></tr></thead><tbody>`;
+    h+=`<table class="dr" style="white-space:normal"><thead><tr><th style="width:34px">□</th><th style="width:50px">No</th><th>担当</th><th>手順</th><th>使用システム・資料</th><th>チェックポイント・注意点</th></tr></thead><tbody>`;
     real.forEach(s=>{const sysres=[s.system,s.evidence].map(x=>(x||"").trim()).filter(Boolean).join(" / ");
-      h+=`<tr><td style="text-align:center">☐</td><td style="text-align:center">${esc(String(s.no||""))}</td><td>${esc(s.role||s.dept||"")}</td><td><b>${esc(s.label||"")}</b>${(s.detail||"").trim()?`<div style="font-size:11px;color:var(--muted)">${esc(s.detail)}</div>`:""}</td><td>${esc(sysres)}</td><td>${esc(s.point||"")}</td></tr>`;});
+      h+=`<tr><td style="text-align:center">□</td><td style="text-align:center">${esc(String(s.no||""))}</td><td>${esc(s.role||s.dept||"")}</td><td><b>${esc(s.label||"")}</b>${(s.detail||"").trim()?`<div style="font-size:11px;color:var(--muted)">${esc(s.detail)}</div>`:""}</td><td>${esc(sysres)}</td><td>${esc(s.point||"")}</td></tr>`;});
     h+=`</tbody></table>`;
   }
   // 2) 使用資料一覧
@@ -4482,8 +4482,8 @@ function renderLibrary(){
   const body=document.getElementById("libBody");if(!body)return;
   if(!rows.length){body.innerHTML=`<tr><td colspan="6" style="color:var(--muted);padding:10px">${all.length?"条件に一致する資料がありません。":"まだ規程・資料が登録されていません。「＋資料を追加」から登録できます。"}</td></tr>`;return;}
   body.innerHTML=rows.map(it=>{
-    const links=(it.links||[]).map((u,i)=>`<span class="tagmini" style="background:#56635F"><a href="${escAttr(u)}" target="_blank" rel="noopener" style="color:#cde;text-decoration:none" title="${escAttr(u)}">🔗リンク</a> <a href="#" onclick="delLibLink('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">✕</a></span>`).join(" ");
-    const files=(it.files||[]).map((f,i)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})　クリックで開く"><a href="#" onclick="openLibFile('${escAttr(it.id)}',${i});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlLibFile('${escAttr(it.id)}',${i});return false" style="color:#cde;text-decoration:none" title="ダウンロード">⤓</a> <a href="#" onclick="delLibFile('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">✕</a></span>`).join(" ");
+    const links=(it.links||[]).map((u,i)=>`<span class="tagmini" style="background:#56635F"><a href="${escAttr(u)}" target="_blank" rel="noopener" style="color:#cde;text-decoration:none" title="${escAttr(u)}">リンク</a> <a href="#" onclick="delLibLink('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">×</a></span>`).join(" ");
+    const files=(it.files||[]).map((f,i)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})　クリックで開く"><a href="#" onclick="openLibFile('${escAttr(it.id)}',${i});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlLibFile('${escAttr(it.id)}',${i});return false" style="color:#cde;text-decoration:none" title="ダウンロード">⤓</a> <a href="#" onclick="delLibFile('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">×</a></span>`).join(" ");
     return `<tr>`
       +`<td class="w-md"><b>${esc(it.title||"")}</b></td>`
       +`<td class="w-sm">${esc(it.category||"")}</td>`
@@ -4522,7 +4522,7 @@ function renderDashManual(){
   const needReview=procs.filter(p=>{const rv=p.revisions||[];if(!rv.length)return true;const last=rv.map(r=>Date.parse(r.date||"")).filter(n=>!isNaN(n)).sort().pop();return last==null||(now-last)>oldMs;}).length;
   const libN=(db.library||[]).length;
   const hiTri=procs.filter(p=>p.attribution_risk==="高").length;
-  const card=(lb,v,sub,c)=>`<div style="flex:1;min-width:140px;border:1px solid var(--line);border-radius:10px;padding:10px 12px"><div style="font-size:11px;color:var(--muted)">${lb}</div><div style="font-size:24px;font-weight:800;color:${c||"var(--ink)"}">${v}</div>${sub?`<div style="font-size:11px;color:var(--muted)">${sub}</div>`:""}</div>`;
+  const card=(lb,v,sub,c)=>`<div style="flex:1;min-width:140px;border:1px solid var(--line);border-radius:2px;padding:10px 12px"><div style="font-size:11px;color:var(--muted)">${lb}</div><div style="font-size:24px;font-weight:800;color:${c||"var(--ink)"}">${v}</div>${sub?`<div style="font-size:11px;color:var(--muted)">${sub}</div>`:""}</div>`;
   let h=`<div class="doc"><h1>ダッシュボード（業務マニュアル）</h1><div class="meta">作成日: ${today()}　／　登録業務 ${procs.length} 件</div>`;
   h+=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">`
     +card("業務数",procs.length,"登録されている業務")
@@ -4562,9 +4562,9 @@ function renderProcViewDocs(){
   const kpi=(lb,v,sub,icon,tint,accent)=>`<div class="kpi"><div class="kh"><span class="kl">${lb}</span><span class="kic" style="background:${tint}"><i class="ph ${icon}" style="color:${accent}"></i></span></div><div class="kv">${v}</div><div class="ks">${sub}</div></div>`;
   let h=`<h1 style="font-size:19px;margin:0 0 4px">${esc(op.name||"プロセス")} — 概要</h1><div class="meta" style="border:none;padding-bottom:0;margin-bottom:14px">作成日: ${today()}${(typeof isPending==="function"&&isPending())?'　／　<span style="color:var(--c-warn);font-weight:700">未反映の編集あり</span>':""}</div>`;
   h+=`<div class="kpi-row">`
-    +kpi("工程数",act.length,"業務記述書","ph-list-numbers","#E8F3F1","#0E7C73")
+    +kpi("工程数",act.length,"業務記述書","ph-list-numbers","#E8F3F1","#0F6B62")
     +kpi("リスク",op.rcm.filter(r=>(r.risk_id||"").trim()).length,"RCM登録","ph-warning","#F7E9E7","#B0413B")
-    +kpi("統制",ctrls.length,`うちキー ${ctrls.filter(r=>r.key).length}`,"ph-shield-check","#E8F3F1","#0E7C73")
+    +kpi("統制",ctrls.length,`うちキー ${ctrls.filter(r=>r.key).length}`,"ph-shield-check","#E8F3F1","#0F6B62")
     +kpi("文書化率",act.length?Math.round(det/act.length*100)+"%":"—","詳細手順の記載","ph-article","#E6F2EC","#157F5B")
     +kpi("勘定科目",fsKeys.length,"アサーション対応","ph-grid-four","#E9F0F8","#2D5A86")
     +`<div onclick="show('gap')" style="display:contents;cursor:pointer" title="クリックでギャップチェックへ">`+kpi("ギャップ指摘",gErr+gWarn,`エラー${gErr}・警告${gWarn} — クリックで確認`,"ph-magnifying-glass",gErr?"#F7E9E7":"#E6F2EC",gErr?"#B0413B":"#157F5B")+`</div>`
@@ -4573,8 +4573,8 @@ function renderProcViewDocs(){
   [["ph-list-numbers","業務記述書",`${act.length}工程 ・ 詳細記述 ${det}件`,act.length>0],
    ["ph-flow-arrow","フロー図",`${[...new Set(act.map(s=>(s.dept||"").trim()).filter(Boolean))].length}レーン ・ 自動生成`,act.length>0],
    ["ph-table","RCM",`リスク${op.rcm.filter(r=>(r.risk_id||"").trim()).length} ・ 統制${ctrls.length}`,ctrls.length>0]]
-  .forEach(([ic,nm,dt,ok])=>{h+=`<div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid #E6ECEA;border-radius:10px;background:#F9FBFA">
-    <span style="width:38px;height:38px;border-radius:9px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${ic}" style="font-size:19px;color:#0E7C73"></i></span>
+  .forEach(([ic,nm,dt,ok])=>{h+=`<div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid #E6ECEA;border-radius:2px;background:#F9FBFA">
+    <span style="width:38px;height:38px;border-radius:2px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${ic}" style="font-size:19px;color:#0F6B62"></i></span>
     <div style="flex:1"><div style="font-size:13px;font-weight:600">${nm}</div><div style="font-size:11.5px;color:#8A9794">${dt}</div></div>
     ${ok?'<span class="evalpill ep-ok"><i class="ph ph-check"></i>作成済</span>':'<span class="evalpill ep-na">未作成</span>'}</div>`;});
   h+=`</div></div>`;
@@ -4607,7 +4607,7 @@ function renderProcView(){
   const kpi=(icon,label,value,sub,accent,tint)=>`<div class="kpi"><div class="kh"><span class="kl">${label}</span><span class="kic" style="background:${tint};color:${accent}"><i class="ph ${icon}"></i></span></div><div class="kv">${value}</div><div class="ks">${sub||""}</div></div>`;
   let h=`<p style="margin:0 0 14px;font-size:13px;color:var(--c-text-mid)">${esc(op.name||"")} — 評価範囲: ${op.in_scope?"対象":"対象外"} ・ 作成日 ${today()}</p>`+pendNote;
   h+=`<div class="kpi-row">`
-    +kpi("ph-shield-check","統制数",totalCtl,`うちキー統制 ${keys}`,"#0E7C73","#E8F3F1")
+    +kpi("ph-shield-check","統制数",totalCtl,`うちキー統制 ${keys}`,"#0F6B62","#E8F3F1")
     +kpi("ph-star","キー統制",keys,totalCtl?`全統制の${Math.round(keys/totalCtl*100)}%`:"—","#B7791F","#FBF2DD")
     +kpi("ph-chart-pie-slice","整備・運用評価",okPct+"%",`有効 ○${ok} / 一部 △${tri} / 不備 ×${x}`,"#157F5B","#E6F2EC")
     +kpi("ph-grid-four","アサーション網羅",`${filled} / ${cells||"—"}`,"勘定科目 × アサーション","#2D5A86","#E9F0F8")
@@ -4632,10 +4632,10 @@ function renderProcView(){
     +`</div>`;
   // ---- 不備管理 3段階 + 証憑格納 ----
   const tiers=[["不備",minor,"#9A6614","#FBF7EE","#EBDFC4"],["開示すべき重要な不備",mat,"#7A1F1A","#F7EEED","#E6CBC6"],["未是正",openD,"#B0413B","#FBEEEC","#EFD3CE"]];
-  let tierH=`<div style="display:flex;gap:10px;margin-bottom:14px">`;tiers.forEach(t=>{tierH+=`<div style="flex:1;padding:12px;border-radius:10px;background:${t[3]};border:1px solid ${t[4]}"><div class="mono" style="font-size:24px;font-weight:700;color:${t[2]};line-height:1">${t[1]}</div><div style="font-size:10.5px;font-weight:600;color:${t[2]};margin-top:5px;line-height:1.3">${t[0]}</div></div>`;});tierH+=`</div>`;
-  let defH="";ds.filter(d=>d.status!=="是正済").slice(0,3).forEach(d=>{defH+=`<div onclick="gotoDefById('${escAttr(d.def_id)}')" title="クリックで不備管理の該当行へ" style="display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #EFD3CE;border-radius:10px;background:#FDF7F6;margin-bottom:8px;cursor:pointer"><i class="ph ph-warning-circle" style="font-size:18px;color:var(--c-err);flex:none;margin-top:1px"></i><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap"><span class="mono" style="font-size:11px;font-weight:600;color:#7A1F1A">${esc(d.def_id)}</span><span style="font-size:10px;font-weight:600;color:var(--c-err);padding:1px 7px;border-radius:5px;background:#F7E2DF">${esc(d.type)}</span><span style="font-size:11px;color:var(--c-text-faint)">統制 ${esc(d.control_id||"—")}</span></div><div style="font-size:12.5px;color:#2A3633;line-height:1.5">${esc(d.desc||"")}</div>${d.due?`<div style="margin-top:5px;font-size:11px;color:var(--c-text-mid)">是正期限 <b class="mono" style="color:var(--c-err)">${esc(d.due)}</b></div>`:""}</div></div>`;});
+  let tierH=`<div style="display:flex;gap:10px;margin-bottom:14px">`;tiers.forEach(t=>{tierH+=`<div style="flex:1;padding:12px;border-radius:2px;background:${t[3]};border:1px solid ${t[4]}"><div class="mono" style="font-size:24px;font-weight:700;color:${t[2]};line-height:1">${t[1]}</div><div style="font-size:10.5px;font-weight:600;color:${t[2]};margin-top:5px;line-height:1.3">${t[0]}</div></div>`;});tierH+=`</div>`;
+  let defH="";ds.filter(d=>d.status!=="是正済").slice(0,3).forEach(d=>{defH+=`<div onclick="gotoDefById('${escAttr(d.def_id)}')" title="クリックで不備管理の該当行へ" style="display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #EFD3CE;border-radius:2px;background:#FDF7F6;margin-bottom:8px;cursor:pointer"><i class="ph ph-warning-circle" style="font-size:18px;color:var(--c-err);flex:none;margin-top:1px"></i><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap"><span class="mono" style="font-size:11px;font-weight:600;color:#7A1F1A">${esc(d.def_id)}</span><span style="font-size:10px;font-weight:600;color:var(--c-err);padding:1px 7px;border-radius:2px;background:#F7E2DF">${esc(d.type)}</span><span style="font-size:11px;color:var(--c-text-faint)">統制 ${esc(d.control_id||"—")}</span></div><div style="font-size:12.5px;color:#2A3633;line-height:1.5">${esc(d.desc||"")}</div>${d.due?`<div style="margin-top:5px;font-size:11px;color:var(--c-text-mid)">是正期限 <b class="mono" style="color:var(--c-err)">${esc(d.due)}</b></div>`:""}</div></div>`;});
   let evH="";ctrls.slice(0,6).forEach(r=>{const cid=(r.control_id||"").trim();const o=(p.evidence||{})[cid];const n=o&&o.files?o.files.length:0;const st=n>0?["格納済","ep-ok","ph-check-circle"]:(o&&o.req_status&&o.req_status!=="未依頼"?[o.req_status==="依頼済"?"依頼中":o.req_status,"ep-warn","ph-clock"]:["未依頼","ep-na","ph-circle-dashed"]);
-    evH+=`<div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid #E6ECEA;border-radius:10px;margin-bottom:8px"><span class="mono" style="font-size:11px;font-weight:600;color:var(--c-primary-d);flex:none;width:44px">${esc(cid)}</span><span style="flex:1;font-size:12px;color:#2A3633;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.control_desc||"")}</span><span class="mono" style="font-size:11px;color:var(--c-text-faint);flex:none">${n}件</span><span class="evalpill ${st[1]}"><i class="ph ${st[2]}" style="font-size:12px"></i>${st[0]}</span></div>`;});
+    evH+=`<div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid #E6ECEA;border-radius:2px;margin-bottom:8px"><span class="mono" style="font-size:11px;font-weight:600;color:var(--c-primary-d);flex:none;width:44px">${esc(cid)}</span><span style="flex:1;font-size:12px;color:#2A3633;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.control_desc||"")}</span><span class="mono" style="font-size:11px;color:var(--c-text-faint);flex:none">${n}件</span><span class="evalpill ${st[1]}"><i class="ph ${st[2]}" style="font-size:12px"></i>${st[0]}</span></div>`;});
   h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px">`
     +`<div class="card" style="flex:1 1 440px;margin:0"><div style="font-size:13.5px;font-weight:700;margin-bottom:12px">不備管理</div>${tierH}${defH||'<div style="font-size:12px;color:var(--c-text-faint)">未是正の不備はありません。</div>'}</div>`
     +`<div class="card" style="flex:1 1 340px;margin:0"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span style="font-size:13.5px;font-weight:700">証憑 格納状況</span><span class="mono" style="font-size:12px;font-weight:600;color:var(--c-text-mid)">${stored} / ${totalCtl} 格納済</span></div>${evH||'<div style="font-size:12px;color:var(--c-text-faint)">統制が未登録です。</div>'}</div>`
@@ -4647,7 +4647,7 @@ function renderProcView(){
   const trip=[["ph-list-numbers","業務記述書",`${active.length}工程 ・ 詳細記述 ${dcount}件`],["ph-flow-arrow","フロー図",`${lanes.length}レーン ・ 判断 ${active.filter(s=>s.type==="判断").length}`],["ph-table","RCM",`リスク${[...new Set(op.rcm.map(r=>r.risk_id).filter(Boolean))].length} ・ 統制${totalCtl}（キー${keys}）`]];
   h+=`<div class="card" style="margin:0"><div style="font-size:13.5px;font-weight:700;margin-bottom:12px">三点セット 作成状況</div><div style="display:flex;flex-wrap:wrap;gap:12px">`;
   trip.forEach(t=>{const done=t[1]==="業務記述書"?active.length>0:(t[1]==="RCM"?totalCtl>0:active.length>0);
-    h+=`<div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:12px 15px;border:1px solid #E6ECEA;border-radius:10px;background:#F9FBFA"><span style="width:38px;height:38px;border-radius:9px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${t[0]}" style="font-size:19px;color:var(--c-primary)"></i></span><div style="flex:1"><div style="font-size:13px;font-weight:600">${t[1]}</div><div style="font-size:11.5px;color:var(--c-text-faint)">${t[2]}</div></div><span class="evalpill ${done?"ep-ok":"ep-na"}"><i class="ph ${done?"ph-check":"ph-minus"}" style="font-size:12px"></i>${done?"作成済":"未作成"}</span></div>`;});
+    h+=`<div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:12px 15px;border:1px solid #E6ECEA;border-radius:2px;background:#F9FBFA"><span style="width:38px;height:38px;border-radius:2px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${t[0]}" style="font-size:19px;color:var(--c-primary)"></i></span><div style="flex:1"><div style="font-size:13px;font-weight:600">${t[1]}</div><div style="font-size:11.5px;color:var(--c-text-faint)">${t[2]}</div></div><span class="evalpill ${done?"ep-ok":"ep-na"}"><i class="ph ${done?"ph-check":"ph-minus"}" style="font-size:12px"></i>${done?"作成済":"未作成"}</span></div>`;});
   h+=`</div></div>`;
   h+=jnlLinkHTML(p,op);
   h+=procNextHTML(p);
@@ -4680,7 +4680,7 @@ function procStats(p){
 }
 const DASH_ST={"要確認":{c:"#B0413B",bg:"#F7E9E7",o:0},"未反映":{c:"#B7791F",bg:"#FBF2DD",o:1},"作業中":{c:"#2D5A86",bg:"#E9F0F8",o:2},"未着手":{c:"#7A867F",bg:"#EFF3F2",o:3},"完了":{c:"#157F5B",bg:"#E6F2EC",o:4}};
 const DASH_ST_TIP="状態の判定 ─ 未着手: 工程・リスク・統制が未登録 ／ 作業中: 三点セットのいずれかが未作成（工程または統制が0件） ／ 要確認: エラー相当のギャップ（ID重複・分岐先不明など）あり ／ 未反映: 編集が［成果物へ反映］されていない ／ 完了: 三点セットが揃い、未反映・エラーなし";
-function stPill(st){const m=DASH_ST[st]||DASH_ST["作業中"];return `<span title="${escAttr(DASH_ST_TIP)}" style="display:inline-block;padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:700;color:${m.c};background:${m.bg}">${esc(st)}</span>`;}
+function stPill(st){const m=DASH_ST[st]||DASH_ST["作業中"];return `<span title="${escAttr(DASH_ST_TIP)}" style="display:inline-block;padding:3px 11px;border-radius:2px;font-size:11.5px;font-weight:700;color:${m.c};background:${m.bg}">${esc(st)}</span>`;}
 function dashOpen(pid,pg){db.activeProcessId=pid;syncProcSel();show(pg||"procview");}
 function procActions(p,st){
   const a=[];
@@ -4754,7 +4754,7 @@ function renderDash(){
   const ag=projAgg();
   const pend=ag.rows.filter(r=>r.st.pend).length;
   /* ---- 上段: 全体KPI（完成・要確認・ギャップを強調） ---- */
-  const kpi=(lb,v,sub,icon,tint,accent,strong)=>`<div class="kpi"${strong?` style="border:1.5px solid ${accent};box-shadow:0 2px 8px ${tint}"`:""}><div class="kh"><span class="kl">${lb}</span><span class="kic" style="background:${tint}"><i class="ph ${icon}" style="color:${accent}"></i></span></div><div class="kv">${v}</div><div class="ks">${sub}</div></div>`;
+  const kpi=(lb,v,sub,icon,tint,accent,strong)=>`<div class="kpi"${strong?` style="border:1.5px solid ${accent};box-shadow:none}"`:""}><div class="kh"><span class="kl">${lb}</span><span class="kic" style="background:${tint}"><i class="ph ${icon}" style="color:${accent}"></i></span></div><div class="kv">${v}</div><div class="ks">${sub}</div></div>`;
   h+=`<div class="kpi-row">`
     +kpi("登録プロセス",ag.procs,"評価範囲対象 "+ag.rows.filter(r=>r.p.in_scope).length,"ph-squares-four","#EFF3F2","#46534E")
     +kpi("三点セット完成",`${ag.complete} / ${ag.procs}`,"記述書・フロー図・RCM","ph-check-circle","#E6F2EC","#157F5B",true)
@@ -4857,7 +4857,7 @@ function refreshProfileList(){
   const sel=document.getElementById("impProfile");
   if(sel){const ps=(db.mappingProfiles||[]).filter(x=>x.type===type);sel.innerHTML='<option value="">（保存済みから選択）</option>'+ps.map(x=>`<option value="${escAttr(x.name)}">${esc(x.name)}</option>`).join("");}
   const list=document.getElementById("impProfileList");
-  if(list){const all=db.mappingProfiles||[];list.innerHTML=all.length?('<table class="dr" style="white-space:normal;width:auto"><thead><tr><th>名前</th><th>種別</th><th>項目数</th><th></th></tr></thead><tbody>'+all.map((x,i)=>`<tr><td style="padding:4px 8px">${esc(x.name)}</td><td style="padding:4px 8px;text-align:center">${x.type==="rcm"?"RCM":"業務記述書"}</td><td style="padding:4px 8px;text-align:center">${Object.keys(x.map||{}).length}</td><td style="padding:4px 8px;text-align:center"><button class="opbtn" onclick="deleteProfileByIndex(${i})" title="削除" aria-label="削除">✕</button></td></tr>`).join("")+"</tbody></table>"):'<span style="color:var(--muted)">保存済みのマッピング表はありません。取込時に「現在のマッピングを保存」で作成できます。</span>';}
+  if(list){const all=db.mappingProfiles||[];list.innerHTML=all.length?('<table class="dr" style="white-space:normal;width:auto"><thead><tr><th>名前</th><th>種別</th><th>項目数</th><th></th></tr></thead><tbody>'+all.map((x,i)=>`<tr><td style="padding:4px 8px">${esc(x.name)}</td><td style="padding:4px 8px;text-align:center">${x.type==="rcm"?"RCM":"業務記述書"}</td><td style="padding:4px 8px;text-align:center">${Object.keys(x.map||{}).length}</td><td style="padding:4px 8px;text-align:center"><button class="opbtn" onclick="deleteProfileByIndex(${i})" title="削除" aria-label="削除">×</button></td></tr>`).join("")+"</tbody></table>"):'<span style="color:var(--muted)">保存済みのマッピング表はありません。取込時に「現在のマッピングを保存」で作成できます。</span>';}
 }
 function deleteProfileByIndex(i){const x=(db.mappingProfiles||[])[i];if(!x)return;if(!confirm(`マッピング表「${x.name}」を削除しますか？`))return;db.mappingProfiles.splice(i,1);markDirty();refreshProfileList();}
 function saveProfile(){const type=document.getElementById("impType").value;const map={};document.querySelectorAll("#impMap select").forEach(s=>{const i=+s.value;if(i>=0)map[s.dataset.field]=_imp.headers[i]||"";});if(!Object.keys(map).length){alert("マッピングが空です。");return;}const name=prompt("マッピング表の名前（例: ○○社 RCM様式）");if(!name)return;db.mappingProfiles=db.mappingProfiles||[];const ex=db.mappingProfiles.find(x=>x.type===type&&x.name===name);if(ex)ex.map=map;else db.mappingProfiles.push({name:name,type:type,map:map});markDirty();refreshProfileList();document.getElementById("impProfile").value=name;alert("マッピング表を保存しました。プロジェクト保存(JSON)で永続化されます。");}
@@ -4927,7 +4927,7 @@ const HELP=[
 <p>行の追加・削除・複製・並べ替え（ドラッグ／↑↓）、セル編集の確定、取込の確定、プロセスの追加・削除、反映操作などが対象です。</p>
 <div class="hint">履歴は最大50件まで保持します。Undo/Redoはプロジェクト全体（プロセス一覧・各プロセスの内容）に対して働きます。</div>`},
 {cat:"基本操作（反映・保存・ドラッグ・Undo）",title:"行の複製とコピー＆ペースト",keywords:["複製","コピー","ペースト","ctrl+c","ctrl+v","duplicate"],html:`
-<p>業務記述書・RCM・不備管理の各行には、削除（✕）ボタンの隣に複製ボタン<svg class="ic"><use href="#i-copy"/></svg>があります。クリックすると、その行をそのまま複製した行が直下に追加されます。</p>
+<p>業務記述書・RCM・不備管理の各行には、削除（×）ボタンの隣に複製ボタン<svg class="ic"><use href="#i-copy"/></svg>があります。クリックすると、その行をそのまま複製した行が直下に追加されます。</p>
 <p>グリッド内の入力欄にフォーカスがある状態で、<b>Ctrl+C</b>でその行をコピーし、<b>Ctrl+V</b>で直下に複製を貼り付けることもできます（業務記述書・RCM・不備管理それぞれの表の中でのみ有効です）。</p>
 <div class="hint">複製した行も他の行と同様にUndo（Ctrl+Z）で取り消せます。</div>`},
 
@@ -5084,8 +5084,8 @@ HELP.push(
 <h2>整備・運用評価（一覧表）</h2>
 <ol>
 <li>各統制の行で、整備評価（結果・主体・評価者・評価日）と運用評価（抽出方法・件数・例外・結果・主体・評価者・評価日）を入力</li>
-<li>行の📝ボタンを開くと、手続種類（質問・観察・閲覧・再実施）・対象期間・母集団・評価内容（長文）・調書番号・査閲欄を記入できます</li>
-<li>結果を「不備」にすると⚠ボタンが現れ、不備管理へジャンプできます</li>
+<li>行の［詳細］ボタンを開くと、手続種類（質問・観察・閲覧・再実施）・対象期間・母集団・評価内容（長文）・調書番号・査閲欄を記入できます</li>
+<li>結果を「不備」にすると不備ジャンプボタンが現れ、不備管理へジャンプできます</li>
 </ol>
 <h2>サンプリング調書（1統制＝1葉）</h2>
 <ol>
@@ -5110,7 +5110,7 @@ HELP.push(
 <li>容量超過時は添付ファイルを除いて本体データの保全を継続します（通知が出ます）</li>
 </ul>`,mode:null},
 {cat:"はじめに",title:"AIに相談（コピー＆回答の取り込み）",keywords:["AI","ChatGPT","Claude","相談","レビュー","取り込み"],html:`
-<p>上部の「✨AIに相談」で、お使いのAIツールと連携できます。<b>このツールがデータを外部送信することはありません</b>（コピー＆貼り付け方式）。</p>
+<p>上部の「AIに相談」で、お使いのAIツールと連携できます。<b>このツールがデータを外部送信することはありません</b>（コピー＆貼り付け方式）。</p>
 <h2>コピーして相談</h2>
 <p>いま見ている画面の内容（記述書・RCM・評価状況など）と相談目的のプロンプトを整形してコピー → 会社で承認されたAIに貼り付けます。</p>
 <h2>回答を取り込む</h2>
@@ -5140,7 +5140,7 @@ HELP.push(
 <li>UI全面リデザイン（teal基調・IBM Plex/Interフォント・Phosphorアイコン）</li>
 <li>左メニュー再編: 編集と成果物を統合し、各画面に「編集｜プレビュー」トグルを設置。セクションをパネル化し、三点セット作成を強調。評価・点検は折りたたみ可能に</li>
 <li>フロー図をJIS X 0121の記号体系を参考にした記号に刷新（手作業=台形・判断=ひし形・書類=波形）。はい/いいえ分岐・R/Cタグ・フェーズ帯・ズーム・書き出しツールバー</li>
-<li>業務記述書グリッド: 業務グルーピング（色帯）・種類バッジ・部署チップ・📝詳細パネル・［＋業務グループ］［＋工程］ボタン</li>
+<li>業務記述書グリッド: 業務グルーピング（色帯）・種類バッジ・部署チップ・詳細パネル・［＋業務グループ］［＋工程］ボタン</li>
 <li>全テーブルの列幅をドラッグで調整可能に（記憶されます）</li>
 <li>Excel出力を画面対応のメニュー化＋UI準拠の装飾付き（色・罫線・結合・Yu Gothic）に</li>
 <li>印刷を監査調書スタイルに（押印欄・A4横・自動縮小・長文注記の分離）</li>
@@ -5182,7 +5182,7 @@ HELP.push(
 
 <h2>実践レシピ（画面別のAI活用）</h2>
 <ul>
-<li><b>業務記述書</b>で「✨AIに相談 → 文章改善」— 統制記述を監査に耐える表現（主語・頻度・証跡）に。回答は「取り込む」タブでワンクリック反映 → <b>必ず自分で読み直してから［反映］</b></li>
+<li><b>業務記述書</b>で「AIに相談 → 文章改善」— 統制記述を監査に耐える表現（主語・頻度・証跡）に。回答は「取り込む」タブでワンクリック反映 → <b>必ず自分で読み直してから［反映］</b></li>
 <li><b>RCM</b>で「網羅性チェック」— アサーション別にリスク・統制の漏れを提案させる。取り込み後、<b>自社の実態に合うか1件ずつ精査</b>（AIは貴社の実務を知りません）</li>
 <li><b>整備・運用評価</b>で「評価手続の妥当性レビュー」— サンプル件数・例外対応・記録の不足を監基報の観点で指摘させ、調書の穴を潰す</li>
 <li><b>ギャップチェック</b>の指摘をコピーして「解決の優先順位と対応案」を相談</li>
@@ -5242,7 +5242,7 @@ function helpRefsHtml(){
   ];
   return `<div class="card" style="margin-top:16px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px"><i class="ph ph-scales" style="font-size:17px;color:var(--c-primary)"></i>基準参照</div>
     <div style="display:flex;flex-direction:column;gap:9px">`+refs.map(r=>`
-    <a href="${r[2]}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid #E6ECEA;border-radius:10px;text-decoration:none">
+    <a href="${r[2]}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid #E6ECEA;border-radius:2px;text-decoration:none">
       <i class="ph ph-link-simple" style="font-size:16px;color:var(--c-primary-d);flex:none"></i>
       <span style="flex:1"><span style="display:block;font-size:12.5px;font-weight:600;color:#1F2B27">${esc(r[0])}</span><span style="display:block;font-size:11px;color:var(--c-text-faint);margin-top:2px">${esc(r[1])}</span></span>
       <i class="ph ph-arrow-up-right" style="font-size:14px;color:#9AA6A2;flex:none"></i>
@@ -5272,7 +5272,7 @@ function renderHelp(){
     const meta=HELP_CAT_META[_help.cat]||["ph-folder",""];
     const arts=HELP.map((a,i)=>({a,i})).filter(({a})=>helpVisible(a)&&a.cat===_help.cat);
     html+=`<div class="breadcrumb"><a href="#" onclick="helpHome();return false;"><i class="ph ph-house" style="font-size:12px"></i> ヘルプ</a> › ${esc(_help.cat)}</div>`;
-    html+=`<div style="display:flex;align-items:center;gap:11px;margin:4px 0 12px"><span style="width:38px;height:38px;border-radius:9px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center"><i class="ph ${meta[0]}" style="font-size:19px;color:var(--c-primary)"></i></span><div><div style="font-size:15px;font-weight:700">${esc(_help.cat)}</div><div style="font-size:12px;color:var(--c-text-mid)">${esc(meta[1])}</div></div></div>`;
+    html+=`<div style="display:flex;align-items:center;gap:11px;margin:4px 0 12px"><span style="width:38px;height:38px;border-radius:2px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center"><i class="ph ${meta[0]}" style="font-size:19px;color:var(--c-primary)"></i></span><div><div style="font-size:15px;font-weight:700">${esc(_help.cat)}</div><div style="font-size:12px;color:var(--c-text-mid)">${esc(meta[1])}</div></div></div>`;
     html+=`<div class="help-list">`+arts.map(({a,i})=>`<div class="help-item" onclick="helpShow(${i})"><div class="help-item-title">${esc(a.title)}</div></div>`).join("")+`</div>`;
   }else{
     /* おすすめ（まず読む3本） */
@@ -5287,7 +5287,7 @@ function renderHelp(){
       const meta=HELP_CAT_META[c]||["ph-folder",""];
       return `<div class="help-cat-card" onclick="helpCat('${escAttr(c)}')">
         <div style="display:flex;align-items:flex-start;gap:11px">
-          <span style="width:36px;height:36px;border-radius:9px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${meta[0]}" style="font-size:18px;color:var(--c-primary)"></i></span>
+          <span style="width:36px;height:36px;border-radius:2px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${meta[0]}" style="font-size:18px;color:var(--c-primary)"></i></span>
           <div style="flex:1;min-width:0"><div class="help-cat-title">${esc(c)}</div><div style="font-size:11.5px;color:var(--c-text-mid);line-height:1.5;margin:2px 0 4px">${esc(meta[1])}</div><div class="help-cat-count num">${n}件の記事</div></div>
         </div></div>`;
     }).join("")+`</div>`;
