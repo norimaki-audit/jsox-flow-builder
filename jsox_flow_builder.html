@@ -2100,8 +2100,8 @@ async function exportDocXlsx(containerId,fileBase){
     }
     if(containerId==="stepsDocBody")addStepsDetailSheet(wb);
     if(containerId==="evalDocBody")addEvalDetailSheet(wb);
-    /* 評価結果サマリ（UI配色のヘッダ付き） */
-    if(((db&&db.mode)||"jsox")!=="manual"){
+    /* 評価結果サマリ: 評価・証憑管理機能がONで、評価系の出力（評価調書・サンプリング調書）のときのみ付加 */
+    if(((db&&db.mode)||"jsox")!=="manual"&&isEvalOn()&&(containerId==="evalDocBody"||containerId==="oewpBody")){
       const agg=aggregate();
       const ws=wb.addWorksheet("評価結果サマリ");
       const thin={style:"thin",color:{argb:"FFE2E8E7"}};
@@ -2150,9 +2150,11 @@ function exportXlsx(){
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sh),"業務記述書");
   const rh=[[...RCM_H,...csR.map(c=>c.label)]];p.rcm.forEach(r=>rh.push([...RCM_F.map(f=>{const v=r[f];return typeof v==="boolean"?(v?"○":""):v;}),...csR.map(c=>(r.custom||{})[c.id]||"")]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rh),"RCM");
-  const evh=[["統制ID","業務","リスク","統制内容","整備評価","抽出方法","件数","例外","運用評価","総合","評価内容"]];
-  p.rcm.filter(r=>(r.control_id||"").trim()).forEach(r=>evh.push([r.control_id,r.gyomu,r.risk_desc,r.control_desc,r.de_result||"",r.oe_method||"",r.oe_sample_nos||"",r.oe_n||"",r.oe_excns||"",r.oe_result||"",overallEvalText(r),r.oe_note||""]));
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(evh),"評価結果");
+  if(isEvalOn()){
+    const evh=[["統制ID","業務","リスク","統制内容","整備評価","抽出方法","件数","例外","運用評価","総合","評価内容"]];
+    p.rcm.filter(r=>(r.control_id||"").trim()).forEach(r=>evh.push([r.control_id,r.gyomu,r.risk_desc,r.control_desc,r.de_result||"",r.oe_method||"",r.oe_sample_nos||"",r.oe_n||"",r.oe_excns||"",r.oe_result||"",overallEvalText(r),r.oe_note||""]));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(evh),"評価結果");
+  }
   const gh=[["レベル","区分","内容"]];gapCheck(p).forEach(g=>gh.push([g.lv==="error"?"エラー":g.lv==="warning"?"警告":"提案",g.cat,g.msg]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(gh),"GapCheck");
   const cov=coverage(p);const ch=[["勘定科目","統制数","キー統制"].concat(ASRT)];Object.keys(cov).forEach(fs=>{const d=cov[fs];ch.push([fs,d.ctrls,d.keys].concat(ASRT.map(a=>[...d.asserts].some(x=>x.includes(a)||a.includes(x))?"●":"")));});
@@ -2161,12 +2163,14 @@ function exportXlsx(){
   XLSX.utils.book_append_sheet(wb,sheetFromText(buildMermaid(p)),"Mermaid");
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["draw.io XML（diagrams.netに貼り付け / 拡張子.drawioで保存可）"],[buildDrawioXml(p)]]),"DrawIO_XML");
   const pl=P();
-  const dh=[["不備ID","業務","関連統制","区分","不備の内容","原因","金額影響","質的影響","発見日","是正計画","是正期限","是正状況","再評価結果"]];
-  pl.deficiencies.forEach(d=>dh.push([d.def_id,d.gyomu,d.control_id,d.type,d.desc,d.cause,d.amount,d.qual,d.found,d.plan,d.due,d.status,d.retest]));
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dh),"不備管理");
-  const eh=[["統制ID","業務","統制内容","必要証憑","依頼先","期限","状況","格納証憑数","格納ファイル名"]];
-  pl.rcm.filter(r=>(r.control_id||"").trim()).forEach(r=>{const cid=(r.control_id||"").trim();const o=(pl.evidence&&pl.evidence[cid])||{};eh.push([cid,r.gyomu||"",r.control_desc||"",r.evidence||"",(o.req_to||r.owner||""),o.req_due||"",o.req_status||"未依頼",(o.files||[]).length,(o.files||[]).map(f=>f.name).join(" / ")]);});
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(eh),"証憑依頼");
+  if(isEvalOn()){
+    const dh=[["不備ID","業務","関連統制","区分","不備の内容","原因","金額影響","質的影響","発見日","是正計画","是正期限","是正状況","再評価結果"]];
+    pl.deficiencies.forEach(d=>dh.push([d.def_id,d.gyomu,d.control_id,d.type,d.desc,d.cause,d.amount,d.qual,d.found,d.plan,d.due,d.status,d.retest]));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dh),"不備管理");
+    const eh=[["統制ID","業務","統制内容","必要証憑","依頼先","期限","状況","格納証憑数","格納ファイル名"]];
+    pl.rcm.filter(r=>(r.control_id||"").trim()).forEach(r=>{const cid=(r.control_id||"").trim();const o=(pl.evidence&&pl.evidence[cid])||{};eh.push([cid,r.gyomu||"",r.control_desc||"",r.evidence||"",(o.req_to||r.owner||""),o.req_due||"",o.req_status||"未依頼",(o.files||[]).length,(o.files||[]).map(f=>f.name).join(" / ")]);});
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(eh),"証憑依頼");
+  }
   const jh=[["仕訳No","起票契機","対象工程No","区分","システム","借/貸","勘定科目","補助科目","摘要"]];
   p.journals.forEach(j=>jh.push([j.jno,j.trigger,j.step_no,j.type,j.system,j.side,j.account,j.sub,j.note]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(jh),"起票仕訳");
@@ -2311,7 +2315,7 @@ async function exportXlsxRich(){
     }
     // J-SOX固有シート
     if(m==="jsox"){
-      const evalDocEl=document.getElementById("evalDocBody");
+      const evalDocEl=isEvalOn()?document.getElementById("evalDocBody"):null;
       if(evalDocEl){const tables=[...evalDocEl.querySelectorAll("table")];for(let i=0;i<tables.length;i++){const ws=wb.addWorksheet(("評価調書"+(tables.length>1?"_"+(i+1):"")).slice(0,31));await tableToExcel(ws,tables[i]);}}
       const gapBodyEl=document.getElementById("gapBody");
       if(gapBodyEl){const tables=[...gapBodyEl.querySelectorAll("table")];for(let i=0;i<tables.length;i++){const ws=wb.addWorksheet(("ギャップ"+(tables.length>1?"_"+(i+1):"")).slice(0,31));await tableToExcel(ws,tables[i]);}}
