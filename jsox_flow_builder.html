@@ -770,7 +770,7 @@
 
     <!-- FLOW -->
     <section class="page" id="page-flow"><div class="pad">
-      <div class="ph"><h2>フロー図</h2><span class="sub">業務記述書＋RCMから自動生成（記号は JIS X 0121 準拠）</span><span class="sp"></span></div>
+      <div class="ph"><h2>フロー図</h2><span class="sub">業務記述書＋RCMから自動生成（JIS X 0121の記号体系を参考）</span><span class="sp"></span></div>
       <div id="flowBanner"></div>
       <div class="flowcard">
         <div class="flow-toolbar">
@@ -1297,7 +1297,7 @@ function fname(){return ((P()&&P().name)||db.projectName||"jsox").replace(/[\\/:
 function typeToShape(t){return t==="判断"?"decision":t==="書類"?"document":(t==="開始"||t==="終了")?"terminal":t==="システム処理"?"system":"process";}
 
 // =================================================================
-// フローチャート描画エンジン（SVG・スイムレーン / JIS X 0121 準拠・§4）
+// フローチャート描画エンジン（SVG・スイムレーン / JIS X 0121の記号体系を参考・§4）
 // =================================================================
 const LANE_W=234,HEADER_H=46,ROW_H=104,TITLE_H=40,LEGEND_H=46,PAD_B=14;
 const NODE_W=152,NODE_H=54,DEC_W=170,DEC_H=74,DOC_H=58;
@@ -2749,6 +2749,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
+const SELF_TEST_COUNT=18;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -2812,6 +2813,7 @@ async function runSelfTest(){
     db=JSON.parse(_bak);normalize();applyMode();syncProcSel();_applied={};applyAll();clearDirty();
     window.alert=_alert;window.confirm=_confirm;window.download=_download;_asDisabled=_asBak;
   }
+  if(results.length!==SELF_TEST_COUNT)results.push({name:"テスト件数の宣言一致",pass:false,detail:`宣言${SELF_TEST_COUNT}件 / 実際${results.length}件`});
   // 結果表示
   const ok=results.filter(x=>x.pass).length;
   window.__selftest={ok,total:results.length,results};
@@ -4739,7 +4741,7 @@ HELP.push(
 <ul>
 <li>UI全面リデザイン（teal基調・IBM Plex/Interフォント・Phosphorアイコン）</li>
 <li>左メニュー再編: 編集と成果物を統合し、各画面に「編集｜プレビュー」トグルを設置。セクションをパネル化し、三点セット作成を強調。評価・点検は折りたたみ可能に</li>
-<li>フロー図をJIS X 0121準拠の記号に刷新（手作業=台形・判断=ひし形・書類=波形）。はい/いいえ分岐・R/Cタグ・フェーズ帯・ズーム・書き出しツールバー</li>
+<li>フロー図をJIS X 0121の記号体系を参考にした記号に刷新（手作業=台形・判断=ひし形・書類=波形）。はい/いいえ分岐・R/Cタグ・フェーズ帯・ズーム・書き出しツールバー</li>
 <li>業務記述書グリッド: 業務グルーピング（色帯）・種類バッジ・部署チップ・📝詳細パネル・［＋業務グループ］［＋工程］ボタン</li>
 <li>全テーブルの列幅をドラッグで調整可能に（記憶されます）</li>
 <li>Excel出力を画面対応のメニュー化＋UI準拠の装飾付き（色・罫線・結合・Yu Gothic）に</li>
@@ -4838,7 +4840,7 @@ function helpRefsHtml(){
   const refs=[
     ["財務報告に係る内部統制の評価及び監査の基準・実施基準","金融庁（2023年4月改訂）— 金融庁サイト内で検索","https://www.fsa.go.jp/"],
     ["監査基準委員会報告書 230（監査調書）・330・500","日本公認会計士協会 — サイト内で検索","https://jicpa.or.jp/"],
-    ["JIS X 0121（情報処理用流れ図記号）","フロー図の記号はこの規格に準拠しています","https://www.jisc.go.jp/"]
+    ["JIS X 0121（情報処理用流れ図記号）","フロー図の記号はこの規格の記号体系を参考にしています","https://www.jisc.go.jp/"]
   ];
   return `<div class="card" style="margin-top:16px"><div style="font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px"><i class="ph ph-scales" style="font-size:17px;color:var(--c-primary)"></i>基準参照</div>
     <div style="display:flex;flex-direction:column;gap:9px">`+refs.map(r=>`

@@ -2,6 +2,8 @@
 
 # J-SOX Flow Builder
 
+[![CI](https://github.com/norimaki-audit/jsox-flow-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/norimaki-audit/jsox-flow-builder/actions/workflows/ci.yml)
+
 **バラバラのExcelで管理されているJ-SOX三点セットを、一つの構造化データから作成・更新できる無料ツールです。**
 AIで作成したRCM案等も取り込み、人間が確認・確定したうえで、業務記述書、フロー図、RCM、Excel、draw.io等へ出力できます。
 
@@ -10,7 +12,7 @@ AIで作成したRCM案等も取り込み、人間が確認・確定したうえ
 
 | Status | Version | Tested | Self-test | Last verified |
 |---|---|---|---|---|
-| **Beta** | v0.9.0-beta | Chrome / Edge | **18項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
+| **Beta** | v0.9.0-beta | Chrome（Edgeは同系エンジンのため動作見込み） | **18項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
 
 - 📦 [出力される成果物サンプル](https://norimaki-audit.github.io/jsox-flow-builder/#outputs)（Excel / PDF / draw.io / SVG / JSON — 実出力）
 - 🎬 [操作の流れ（デモ）](https://norimaki-audit.github.io/jsox-flow-builder/#demo)
@@ -26,7 +28,7 @@ AIで作成したRCM案等も取り込み、人間が確認・確定したうえ
 
 ## 3つの主要価値
 
-1. **三点セットの一元管理** — 工程・リスク・統制を構造化データとして管理し、業務記述書・フロー図・RCMを**矛盾のない状態で同期生成・更新**。修正のたびに3ファイルを直す作業から解放されます
+1. **三点セットの一元管理** — 工程・リスク・統制を構造化データとして管理し、業務記述書・フロー図・RCMを**同じ構造化データから生成し、三点セット間の更新漏れや構造上の不整合を抑えます**。修正のたびに3ファイルを直す作業から解放されます
 2. **既存Excelからの移行** — 各社様式のExcel/CSVを列マッピングで取込。マッピング設定は保存して再利用できます
 3. **AI時代の分業設計** — AIは下書き・レビュー、本ツールは構造・整合・確定・出力、人間は判断と責任。AI回答は差分プレビューを確認してから取り込みます
 
@@ -65,7 +67,7 @@ AIへの送信は自動では行いません。ツール内で相談用データ
 
 ## PCでの始め方
 
-1. [アプリを開く](https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html)（Chrome / Edge / Firefox / Safari）
+1. [アプリを開く](https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html)（推奨: 最新版の Chrome または Edge。Firefox / Safari では証憑フォルダ格納など一部機能が利用できない場合があります）
 2. 開始画面で「サンプルデータで試す」を選択（まずはこれがおすすめ）
 3. 慣れたら「既存Excel/CSVを取り込む」または「テンプレートから新規作成」で自社データへ
 
