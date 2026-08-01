@@ -855,6 +855,23 @@
         <th>統制ID</th><th>業務</th><th>統制内容</th><th>必要証憑</th><th>依頼先</th><th>期限</th><th>状況</th><th>格納証憑（ローカル）</th>
       </tr></thead><tbody id="evBody"></tbody></table></div>
       <input type="file" id="evFileInput" multiple style="display:none">
+      <input type="file" id="stepAttInput" multiple style="display:none">
+      <div id="stepAttModal" style="display:none;position:fixed;inset:0;background:rgba(15,25,22,.45);z-index:120;align-items:center;justify-content:center" onclick="if(event.target===this)stepAttClose()">
+        <div style="background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(560px,92vw);max-height:80vh;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--c-border)">
+            <b id="stepAttTitle" style="font-size:14px;flex:1">証跡ファイル</b>
+            <button class="opbtn" onclick="stepAttClose()" aria-label="閉じる">✕</button>
+          </div>
+          <div id="stepAttInfo" style="padding:10px 18px;font-size:11.5px;color:var(--c-text-mid);border-bottom:1px dashed var(--c-border)"></div>
+          <div id="stepAttList" style="padding:8px 18px;overflow:auto;flex:1"></div>
+          <div style="display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--c-border);flex-wrap:wrap">
+            <button class="sm primary" onclick="document.getElementById('stepAttInput').click()"><i class="ph ph-paperclip"></i>ファイルを添付</button>
+            <button class="sm" id="stepAttDirBtn" onclick="evSetFolder().then(()=>stepAttRender())">保存先フォルダ…</button>
+            <span style="flex:1"></span>
+            <button class="sm" onclick="stepAttClose()">閉じる</button>
+          </div>
+        </div>
+      </div>
       <div class="hint">格納方式は2通り：<b>ブラウザ内</b>（.jsonに含まれ持ち運び可能・1ファイル5MB目安）／<b>フォルダ</b>（「保存先フォルダ…」で設定したPCのフォルダへ「プロセスID/統制ID/ファイル名」で直接保存・容量制限なし・Chrome/Edge対応）。フォルダ方式の一覧から削除しても、フォルダ内のファイル自体は削除されません。</div>
     </div></section>
 
@@ -1262,7 +1279,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 // データモデル（構造化ローカルデータ＝source of truth）
 // =================================================================
 function blankJournal(){return {jno:"",trigger:"",step_no:"",type:"定型",system:"",side:"借",account:"",sub:"",note:""};}
-function blankStep(no){return {no:no==null?"":no,gyomu:"",dept:"",role:"",type:"手動処理",label:"",detail:"",system:"",evidence:"",yes:"",no2:"",jump:"",point:"",dur:"",img:"",images:[],custom:{}};}
+function blankStep(no){return {no:no==null?"":no,gyomu:"",dept:"",role:"",type:"手動処理",label:"",detail:"",system:"",evidence:"",yes:"",no2:"",jump:"",point:"",dur:"",img:"",images:[],atts:[],custom:{}};}
 function blankRcm(){return {gyomu:"",risk_id:"",fs:"",assertion:"",as_exist:false,as_comp:false,as_rights:false,as_val:false,as_cutoff:false,as_pres:false,risk_desc:"",control_id:"",step_no:"",objective:"",control_desc:"",prev_det:"",man_auto:"",it_dep:false,freq:"",owner:"",reviewer:"",evidence:"",key:false,ipe:false,ipe_ca:"",test:"",fraud:false,evaluation:"",eval_note:"",de_result:"",de_note:"",oe_method:"",oe_n:"",oe_excns:"",oe_result:"",oe_note:"",de_by:"",de_date:"",oe_by:"",oe_date:"",de_role:"",de_proc:"",oe_role:"",oe_period:"",oe_pop:"",wp_ref:"",wp_rev_by:"",wp_rev_date:"",oe_sample_nos:"",custom:{}};}
 const ASRT_KEYS=["as_exist","as_comp","as_rights","as_val","as_cutoff","as_pres"];
 const ASRT_LBL=["実在性","網羅性","権利と義務の帰属","評価の妥当性","期間配分の適切性","表示の妥当性"];
@@ -1517,7 +1534,7 @@ function renderSteps(){
     +`<td class="w-wide">${inp("steps",i,"label",s.label)}</td>`
     +`<td style="text-align:center;padding:4px 8px"><button class="detailbtn${hasDetail?" on":""}" title="詳細な手順を入力／閲覧" aria-label="詳細記述を編集" onclick="openDetail(${i})"><i class="ph ${hasDetail?"ph-note":"ph-note-pencil"}"></i></button></td>`
     +`<td>${inp("steps",i,"system",s.system)}</td>`
-    +`<td>${inp("steps",i,"evidence",s.evidence)}</td>`
+    +`<td style="white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:4px;width:100%">${inp("steps",i,"evidence",s.evidence)}<button class="opbtn" onclick="stepAttOpen(${i})" title="証跡ファイルを添付（参考資料の格納）" aria-label="証跡ファイルを添付" style="flex:none${(s.atts||[]).length?";color:var(--c-primary);font-weight:700":""}">📎${(s.atts||[]).length||""}</button></span></td>`
     +`<td class="w-sm">${inp("steps",i,"yes",s.yes)}</td>`
     +`<td class="w-sm">${inp("steps",i,"no2",s.no2)}</td>`
     +`<td class="w-md">${inp("steps",i,"jump",s.jump)}</td>`
@@ -2477,7 +2494,7 @@ let _asTimer=null,_asWarned=false,_asDisabled=false;
 function scheduleAutosave(){if(_asDisabled)return;clearTimeout(_asTimer);_asTimer=setTimeout(autosaveNow,1500);}
 function _stripHeavy(o){const d=JSON.parse(JSON.stringify(o));
   (d.processes||[]).forEach(pp=>{Object.values(pp.evidence||{}).forEach(e=>{(e.files||[]).forEach(f=>{delete f.data;f._dropped=true;});});
-    (pp.steps||[]).forEach(s=>{s.img="";s.images=[];});});
+    (pp.steps||[]).forEach(s=>{s.img="";s.images=[];(s.atts||[]).forEach(f=>{delete f.data;f._dropped=true;});});});
   (d.library||[]).forEach(it=>{(it.files||[]).forEach(f=>{delete f.data;f._dropped=true;});});
   return d;}
 function autosaveNow(){
@@ -2788,7 +2805,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=19;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=20;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -2848,7 +2865,17 @@ async function runSelfTest(){
       document.getElementById("aiInText").value="";});
     // 16. Excel取込パイプライン（demoMap→プレビュー）
     T("Excel取込マッピング",()=>{demoMap();eq(document.getElementById("impMapCard").style.display,"","マッピングカード表示");eq(_imp.headers.includes("業務内容")||_imp.headers.includes("作業内容"),true,"ヘッダ認識");});
-    // 17. プロジェクトダッシュボード集計・状態判定
+    // 17. 工程証跡の添付（データ保持・JSON往復）
+    T("工程証跡の添付",()=>{
+      const st0=P().steps[0];st0.atts=st0.atts||[];
+      st0.atts.push({name:"test.png",type:"image/png",size:10,data:"data:image/png;base64,AAA",addedAt:today()});
+      const j=JSON.stringify(db);const d2=JSON.parse(j);
+      eq(d2.processes[0].steps[0].atts.length>=1,true,"JSON保存に含まれる");
+      const bs=blankStep();eq(Array.isArray(bs.atts),true,"blankStepにatts");
+      const stripped=_stripHeavy(db);
+      eq(stripped.processes[0].steps[0].atts[0].data===undefined,true,"自動保存フォールバックでdata除外");
+      st0.atts.pop();});
+    // 18. プロジェクトダッシュボード集計・状態判定
     T("プロジェクト全体集計",()=>{
       const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
       eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
@@ -4196,6 +4223,77 @@ async function evExportAll(){
   renderEv();
   toast("一括書き出し完了: "+n+"件"+(skip?"（対象外 "+skip+"件）":""));
 }
+/* ===== 業務記述書: 工程の証跡ファイル添付（ブラウザ/フォルダの2方式・証憑と同じ保存先を共用） ===== */
+let _stepAttIdx=-1;
+async function stepWriteDirFile(step,file){
+  const root=await evEnsureDir();
+  if(!root)throw new Error("保存先フォルダにアクセスできません。「保存先フォルダ…」で設定してください。");
+  const segs=[sanitizeSeg(P().id),"S"+sanitizeSeg(String(step.no||"_"))];
+  const d=await _dirByPath(root,segs,true);
+  const fh=await d.getFileHandle(sanitizeSeg(file.name),{create:true});
+  const w=await fh.createWritable();await w.write(file);await w.close();
+  return segs.join("/")+"/"+sanitizeSeg(file.name);
+}
+function stepAttOpen(i){_stepAttIdx=i;document.getElementById("stepAttModal").style.display="flex";stepAttRender();}
+function stepAttClose(){document.getElementById("stepAttModal").style.display="none";_stepAttIdx=-1;renderSteps();}
+function stepAttRender(){
+  const st=P().steps[_stepAttIdx];if(!st)return;
+  st.atts=st.atts||[];
+  document.getElementById("stepAttTitle").textContent=`証跡ファイル — 工程 No.${st.no||"（未設定）"} ${st.label||""}`;
+  const dirMode=db.evStore==="dir";
+  document.getElementById("stepAttInfo").innerHTML=
+    `保存方式: <b>${dirMode?`フォルダ格納（${esc(db.evDirName||"未設定")}）`:"ブラウザ内格納（プロジェクトJSONに含まれます・1ファイル5MBまで）"}</b>`
+    +`　<span style="color:var(--c-text-faint)">証憑機能と同じ設定・保存先を使用します${FSA_OK?"":"（このブラウザはフォルダ保存に非対応）"}</span>`;
+  const btn=document.getElementById("stepAttDirBtn");if(btn)btn.style.display=FSA_OK?"":"none";
+  let h="";
+  st.atts.forEach((f,j)=>{
+    h+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--c-border)">
+      <i class="ph ${f.store==="dir"?"ph-folder-open":"ph-file"}" style="font-size:16px;color:var(--c-primary);flex:none"></i>
+      <a href="#" onclick="stepAttOpenFile(${j});return false" style="flex:1;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="クリックで開く">${esc(f.name)}</a>
+      <span class="mono" style="font-size:11px;color:var(--c-text-faint);flex:none">${f.size?Math.ceil(f.size/1024)+"KB":""}${f.store==="dir"?" ・ フォルダ":""}</span>
+      <button class="opbtn" onclick="stepAttDel(${j})" title="添付を解除" aria-label="添付を解除">✕</button></div>`;
+  });
+  document.getElementById("stepAttList").innerHTML=h||`<div style="font-size:12px;color:var(--c-text-faint);padding:14px 0">添付ファイルはありません。「ファイルを添付」から参考資料（帳票の例・画面コピー等）を格納できます。</div>`;
+}
+async function stepAttFiles(files){
+  const st=P().steps[_stepAttIdx];if(!st||!files.length)return;
+  st.atts=st.atts||[];
+  if(db.evStore==="dir"&&FSA_OK){
+    let n=0;
+    for(const f of files){
+      try{const path=await stepWriteDirFile(st,f);st.atts.push({name:f.name,type:f.type,size:f.size,store:"dir",path:path,addedAt:today()});n++;}
+      catch(e){alert(e.message||"フォルダへの保存に失敗しました。");break;}
+    }
+    if(n){markDirty();stepAttRender();toast(n+"件をフォルダへ格納しました。");}
+    return;
+  }
+  let left=files.length;
+  const done=()=>{if(--left<=0){markDirty();stepAttRender();}};
+  files.forEach(f=>{
+    if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした（フォルダ格納なら制限なし。「保存先フォルダ…」から設定できます）。`);done();return;}
+    const fr=new FileReader();
+    fr.onload=()=>{st.atts.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
+    fr.onerror=done;fr.readAsDataURL(f);
+  });
+}
+async function stepAttOpenFile(j){
+  const st=P().steps[_stepAttIdx];const f=st&&st.atts&&st.atts[j];if(!f)return;
+  if(f.store==="dir"){
+    const file=await evReadDirFile(f);if(!file)return;
+    const url=URL.createObjectURL(file);window.open(url,"_blank");setTimeout(()=>URL.revokeObjectURL(url),60000);
+    return;
+  }
+  if(!f.data){alert("このファイルの実体は保存されていません（容量節約のため自動保存から除外された可能性があります。プロジェクトJSONを開き直すか、再添付してください）。");return;}
+  const b=dataUrlToBlob(f.data);if(!b){alert("ファイルを開けませんでした。");return;}
+  const url=URL.createObjectURL(b);window.open(url,"_blank");setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+function stepAttDel(j){
+  const st=P().steps[_stepAttIdx];if(!st)return;
+  const f=st.atts[j];
+  if(!confirm(`「${f.name}」の添付を解除しますか？${f.store==="dir"?"（フォルダ内のファイル自体は削除されません）":""}`))return;
+  pushUndo();st.atts.splice(j,1);markDirty();stepAttRender();
+}
+document.getElementById("stepAttInput").addEventListener("change",e=>{stepAttFiles([...e.target.files]);e.target.value="";});
 async function openEvidenceAsync(cid,idx){
   const f=evOf(cid).files[idx];if(!f)return;
   if(f.store==="dir"){const file=await evReadDirFile(f);if(!file)return;
