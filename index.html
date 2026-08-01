@@ -42,6 +42,8 @@
   .cta .btn-s{border:none;}
   .pc-only{display:flex;} .sp-only{display:none;}
   @media (max-width:768px){.pc-only{display:none!important;}.sp-only{display:flex;}}
+  .pc-heading{display:block;} .sp-heading{display:none;}
+  @media (max-width:768px){.pc-heading{display:none;}.sp-heading{display:block;}}
   .sp-cta{flex-direction:column;width:100%;max-width:380px;}
   .sp-note{font-size:12px;color:#A9D4CD;margin-top:10px;}
   /* pain */
@@ -218,8 +220,8 @@
 </section>
 
 <div class="fcta">
-  <h2 class="pc-only" style="display:block">サンプルデータで無料で試す</h2>
-  <h2 class="sp-only" style="display:block">PCでお試しください</h2>
+  <h2 class="pc-heading">サンプルデータで無料で試す</h2>
+  <h2 class="sp-heading">PCでお試しください</h2>
   <p>操作画面はPC向けです。スマートフォンではツールの概要と操作例をご覧いただけます。</p>
   <div class="cta pc-only" style="justify-content:center">
     <a class="btn btn-s" href="./jsox_flow_builder.html?start=sample" style="background:#fff;color:var(--pd)">サンプルデータで無料で試す</a>
@@ -240,7 +242,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_URL="https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html";
+const APP_URL="https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html?start=sample";
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000);}
 function copyUrl(){
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(APP_URL).then(()=>toast("PC用URLをコピーしました。PCのブラウザに貼り付けて開いてください。"),()=>prompt("このURLをコピーしてください",APP_URL));
