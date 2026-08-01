@@ -46,13 +46,12 @@ jobs:
           print("✓ asset references OK")
           PY
 
-      - name: レスポンシブ見出しの再発防止チェック
+      - name: レスポンシブ体裁の再発防止チェック
         run: |
-          ! grep -nE 'class="(sp|pc)-only" style="display:block"' index.html manual.html \
-            || { echo "NG: 見出しに pc-only/sp-only + inline display:block が残っています"; exit 1; }
-          grep -q 'class="pc-heading"' index.html && grep -q 'class="sp-heading"' index.html
-          grep -q 'class="pc-heading"' manual.html && grep -q 'class="sp-heading"' manual.html
-          echo "✓ responsive headings OK"
+          # PC/SPの二重出し分け（pc-only/sp-only/pc-heading/sp-heading）は廃止済み。復活させない
+          ! grep -nE 'class="[^"]*(sp|pc)-(only|heading)' index.html manual.html \
+            || { echo "NG: pc-only/sp-only系の二重出し分けが復活しています"; exit 1; }
+          echo "✓ responsive single-system OK"
 
       - name: 旧表記［反映］の再発防止チェック
         run: |
