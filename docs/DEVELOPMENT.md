@@ -88,3 +88,17 @@ dist/jsox_flow_builder.html   # 従来どおり単体配布
 - `build.js` は Node 標準のみで実装（依存ゼロ）。CI で「ビルド結果 = リポジトリのHTML」を検証し乖離を防ぐ
 - 移行単位ごとに: 切り出し → ビルド → セルフテスト18項目 → コミット、の小さなサイクルで進める
 - 一度に全面リファクタリングしない。各段階で既存JSON・自動保存の互換を維持
+
+## Release用配布HTMLの作成手順
+
+リポジトリ構成は変えず、Release作成時にローカルでコピーして添付する運用とします（開発元と配布物の乖離防止のため、必ずタグを打ったコミットからコピーする）。
+
+```bash
+git checkout v0.9.0-beta
+cp jsox_flow_builder.html jsox_flow_builder-v0.9.0-beta.html
+gh release upload v0.9.0-beta jsox_flow_builder-v0.9.0-beta.html assets/samples/sample_project.json
+```
+
+- 配布ファイル名はタグと一致させる（`jsox_flow_builder-vX.Y.Z(-beta).html`）
+- 添付は「単体で使い始められる」最小セット: 配布HTML＋サンプルJSON（必要に応じてサンプルExcel）
+- アップロード後、ダウンロードして `?selftest=1` が18/18で通ることを確認する
