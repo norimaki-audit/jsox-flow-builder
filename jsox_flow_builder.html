@@ -677,6 +677,7 @@
       <div class="nav-group">
         <div class="grp">メイン</div>
         <a class="jsox-only" data-pg="dash" tabindex="0" onclick="show('dash')" onkeydown="if(event.key==='Enter')show('dash')"><i class="ph ph-gauge"></i><span class="nav-lbl">ダッシュボード</span></a>
+        <a class="jsox-only" data-pg="procview" tabindex="0" onclick="show('procview')" onkeydown="if(event.key==='Enter')show('procview')"><i class="ph ph-target"></i><span class="nav-lbl">プロセス概要</span></a>
         <a data-pg="processes" tabindex="0" onclick="show('processes')" onkeydown="if(event.key==='Enter')show('processes')"><i class="ph ph-squares-four"></i><span class="nav-lbl">プロセス管理</span></a>
       </div>
       <div class="nav-feature">
@@ -820,8 +821,14 @@
 
     <!-- DASHBOARD -->
     <section class="page" id="page-dash"><div class="pad">
-      <div class="ph"><h2>ダッシュボード</h2><span class="sub">評価の進捗・カバレッジ・不備・証憑の概況</span><span class="sp"></span><button class="sm" onclick="exportXlsx()">データ(.xlsx)</button></div>
-      <div id="dashBody" style="max-width:1180px"></div>
+      <div class="ph"><h2>プロジェクトダッシュボード</h2><span class="sub">全プロセスの三点セット作成状況・カバレッジ・確認事項</span><span class="sp"></span><button class="sm" onclick="exportXlsx()">データ(.xlsx)</button></div>
+      <div id="dashBody" style="max-width:1380px"></div>
+    </div></section>
+
+    <!-- PROCESS OVERVIEW -->
+    <section class="page" id="page-procview"><div class="pad">
+      <div class="ph"><h2>プロセス概要</h2><span class="sub" id="procViewSub">選択中プロセスの三点セット・ギャップ・カバレッジ</span><span class="sp"></span><button class="sm" onclick="show('dash')"><i class="ph ph-gauge"></i>全体へ戻る</button></div>
+      <div id="procViewBody" style="max-width:1180px"></div>
     </div></section>
 
     <!-- DEFICIENCY -->
@@ -2411,7 +2418,7 @@ const MODE_CONFIG={
     navLabels:{processes:"業務の管理",steps:"手順書",stepsdoc:"手順書",rcm:"業務ルール表 編集",rcmdoc:"業務ルール表",flow:"業務フロー図",gap:"抜け漏れチェック",walk:"業務ヒアリングメモ",def:"改善ポイント",ev:"使用資料",library:"規程・資料",manualout:"マニュアル出力"},
     terms:{process:"業務",risk:"起こりうるミス・問題",control:"チェックポイント",keyControl:"重要チェック",evidence:"使用帳票・関連資料・記録",deficiency:"改善ポイント",evaluation:"実施確認"},
     /* §7: マニュアルモードでは J-SOX 系ページを非表示（手順書・フロー図・取込・規程資料・ヘルプ中心） */
-    hiddenPages:["dash","rcm","rcmdoc","evalwork","evaldoc","oewp","gap","walk","rollf","def","ev","jnl"],
+    hiddenPages:["dash","procview","rcm","rcmdoc","evalwork","evaldoc","oewp","gap","walk","rollf","def","ev","jnl"],
     hiddenFields:["assertion","ipe","itac"],
     templates:["expense_manual","bill_manual","collect_manual","payment_manual","monthly_manual","order_manual","inquiry_manual"]
   },
@@ -2775,7 +2782,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=18;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=19;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -2835,6 +2842,13 @@ async function runSelfTest(){
       document.getElementById("aiInText").value="";});
     // 16. Excel取込パイプライン（demoMap→プレビュー）
     T("Excel取込マッピング",()=>{demoMap();eq(document.getElementById("impMapCard").style.display,"","マッピングカード表示");eq(_imp.headers.includes("業務内容")||_imp.headers.includes("作業内容"),true,"ヘッダ認識");});
+    // 17. プロジェクトダッシュボード集計・状態判定
+    T("プロジェクト全体集計",()=>{
+      const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
+      eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
+      const empty=procStats({id:"__t",name:"t",steps:[],rcm:[],revisions:[]});eq(empty.status,"未着手","空プロセス=未着手");
+      const half=procStats({id:"__t2",name:"t2",steps:[{no:"10",dept:"A",label:"x"}],rcm:[],revisions:[]});eq(half.status,"作業中","RCM未作成=作業中");
+      const ag=projAgg();eq(ag.procs,db.processes.length,"プロセス数");eq(ag.steps>=st.act,true,"全工程合計");});
   }finally{
     db=JSON.parse(_bak);normalize();applyMode();syncProcSel();_applied={};applyAll();clearDirty();
     window.alert=_alert;window.confirm=_confirm;window.download=_download;_asDisabled=_asBak;
@@ -3023,8 +3037,28 @@ function delCustomCol(id){
 // =================================================================
 // プロセス管理 + ナビ
 // =================================================================
-function syncProcSel(){const sel=document.getElementById("procSel");sel.innerHTML=db.processes.map(p=>`<option value="${escAttr(p.id)}"${p.id===db.activeProcessId?" selected":""}>${esc(p.id)} ${esc(p.name)}</option>`).join("");const dot=document.getElementById("procDot");if(dot)dot.style.background=db.activeProcessId?procColor(db.activeProcessId):"transparent";}
-document.getElementById("procSel").addEventListener("change",e=>{db.activeProcessId=e.target.value;show(curPage);});
+function syncProcSel(){const sel=document.getElementById("procSel");sel.innerHTML=db.processes.map(p=>`<option value="${escAttr(p.id)}"${p.id===db.activeProcessId?" selected":""}>${esc(p.id)} ${esc(p.name)}</option>`).join("");const dot=document.getElementById("procDot");if(dot)dot.style.background=db.activeProcessId?procColor(db.activeProcessId):"transparent";if(typeof updateProcSelView==="function"&&typeof curPage!=="undefined")updateProcSelView();}
+document.getElementById("procSel").addEventListener("change",e=>{
+  const v=e.target.value;
+  if(v==="__all"){show("dash");return;}
+  db.activeProcessId=v;
+  /* ダッシュボード表示中に個別プロセスを選んだら、そのプロセスの概要へ遷移 */
+  show(curPage==="dash"?"procview":curPage);
+});
+function updateProcSelView(){
+  const sel=document.getElementById("procSel");if(!sel)return;
+  const onDash=curPage==="dash"&&((db&&db.mode)||"jsox")!=="manual";
+  const hasAll=sel.querySelector('option[value="__all"]');
+  if(onDash){
+    if(!hasAll){const o=document.createElement("option");o.value="__all";o.textContent="全プロセス";sel.insertBefore(o,sel.firstChild);}
+    sel.value="__all";
+    const dot=document.getElementById("procDot");if(dot)dot.style.background="var(--c-primary)";
+  }else{
+    if(hasAll)hasAll.remove();
+    if(db&&db.activeProcessId)sel.value=db.activeProcessId;
+    const dot=document.getElementById("procDot");if(dot&&db)dot.style.background=db.activeProcessId?procColor(db.activeProcessId):"transparent";
+  }
+}
 document.getElementById("projName").addEventListener("input",e=>{db.projectName=e.target.value;markDirty();});
 function addProcess(){pushUndo();const id=nextPid();db.processes.push({id,name:"新規プロセス",sub_process:"",in_scope:true,laneOrder:[],steps:[blankStep(10)],rcm:[]});db.activeProcessId=id;markDirty();syncProcSel();show("processes");}
 function selectProcess(id){db.activeProcessId=id;syncProcSel();renderProcesses();}
@@ -3150,8 +3184,9 @@ function show(pg){if(typeof isPageHidden==="function"&&isPageHidden(pg))pg=isPag
   if(pg==="steps"||pg==="stepsdoc")_viewPref.steps=(pg==="steps")?"edit":"preview";
   if(pg==="rcm"||pg==="rcmdoc")_viewPref.rcm=(pg==="rcm")?"edit":"preview";
   document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));document.getElementById("page-"+pg).classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.dataset.pg===(NAV_ALIAS[pg]||pg)));
-  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="oewp")renderOewp();else if(pg==="kaizen")renderKaizen();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
+  if(pg==="processes")renderProcesses();else if(pg==="steps")renderSteps();else if(pg==="rcm")renderRcm();else if(pg==="jnl")renderJournals();else if(pg==="stepsdoc")renderStepsDoc();else if(pg==="flow")renderFlow();else if(pg==="rcmdoc")renderRcmDoc();else if(pg==="gap")renderGap();else if(pg==="walk")renderWalk();else if(pg==="rollf")renderRollf();else if(pg==="def")renderDef();else if(pg==="ev")renderEv();else if(pg==="dash")renderDash();else if(pg==="procview")renderProcView();else if(pg==="evaldoc")renderEvalDoc();else if(pg==="evalwork")renderEvalWork();else if(pg==="oewp")renderOewp();else if(pg==="kaizen")renderKaizen();else if(pg==="import")refreshProfileList();else if(pg==="library")renderLibrary();else if(pg==="manualout")renderManualOut();else if(pg==="help")renderHelp();
   updateApplyBtn();if(typeof updateXlsMenu==="function")updateXlsMenu();
+  if(typeof updateProcSelView==="function")updateProcSelView();
   if(EVAL_OPT_PGS.includes(pg)&&db&&db.features&&!db.features.eval){db.features.eval=true;toast("評価・証憑管理機能をオンにしました（ファイルメニューからオフにできます）。",5000);}
   applyNavEval();
   if(pg==="flow"&&typeof tourStep==="function"&&_tour.on&&_tour.done[1])tourStep(3);
@@ -4378,8 +4413,8 @@ function renderDashManual(){
   }
   document.getElementById("dashBody").innerHTML=h+"</div>";
 }
-function renderDashDocs(){
-  /* 評価機能オフ時: 三点セットの作成状況ダッシュボード */
+function renderProcViewDocs(){
+  /* 評価機能オフ時: 選択中プロセスの三点セット概要 */
   const op=outProc(),p=P();
   const act=op.steps.filter(s=>(s.label||"").trim()||(s.dept||"").trim());
   const ctrls=op.rcm.filter(r=>(r.control_id||"").trim());
@@ -4388,14 +4423,14 @@ function renderDashDocs(){
   const gErr=gaps.filter(x=>x.lv==="error").length,gWarn=gaps.filter(x=>x.lv==="warning").length;
   const cov=coverage(op);const fsKeys=Object.keys(cov);
   const kpi=(lb,v,sub,icon,tint,accent)=>`<div class="kpi"><div class="kh"><span class="kl">${lb}</span><span class="kic" style="background:${tint}"><i class="ph ${icon}" style="color:${accent}"></i></span></div><div class="kv">${v}</div><div class="ks">${sub}</div></div>`;
-  let h=`<h1 style="font-size:19px;margin:0 0 4px">ダッシュボード — ${esc(op.name||"")}</h1><div class="meta" style="border:none;padding-bottom:0;margin-bottom:14px">作成日: ${today()}${(typeof isPending==="function"&&isPending())?'　／　<span style="color:var(--c-warn);font-weight:700">未反映の編集あり</span>':""}</div>`;
+  let h=`<h1 style="font-size:19px;margin:0 0 4px">${esc(op.name||"プロセス")} — 概要</h1><div class="meta" style="border:none;padding-bottom:0;margin-bottom:14px">作成日: ${today()}${(typeof isPending==="function"&&isPending())?'　／　<span style="color:var(--c-warn);font-weight:700">未反映の編集あり</span>':""}</div>`;
   h+=`<div class="kpi-row">`
     +kpi("工程数",act.length,"業務記述書","ph-list-numbers","#E8F3F1","#0E7C73")
     +kpi("リスク",op.rcm.filter(r=>(r.risk_id||"").trim()).length,"RCM登録","ph-warning","#F7E9E7","#B0413B")
     +kpi("統制",ctrls.length,`うちキー ${ctrls.filter(r=>r.key).length}`,"ph-shield-check","#E8F3F1","#0E7C73")
     +kpi("文書化率",act.length?Math.round(det/act.length*100)+"%":"—","詳細手順の記載","ph-article","#E6F2EC","#157F5B")
     +kpi("勘定科目",fsKeys.length,"アサーション対応","ph-grid-four","#E9F0F8","#2D5A86")
-    +kpi("ギャップ指摘",gErr+gWarn,`エラー${gErr}・警告${gWarn}`,"ph-magnifying-glass",gErr?"#F7E9E7":"#E6F2EC",gErr?"#B0413B":"#157F5B")
+    +`<div onclick="show('gap')" style="display:contents;cursor:pointer" title="クリックでギャップチェックへ">`+kpi("ギャップ指摘",gErr+gWarn,`エラー${gErr}・警告${gWarn} — クリックで確認`,"ph-magnifying-glass",gErr?"#F7E9E7":"#E6F2EC",gErr?"#B0413B":"#157F5B")+`</div>`
     +`</div>`;
   h+=`<div class="kz-card"><div style="font-size:13.5px;font-weight:700;margin-bottom:12px">三点セット 作成状況</div><div style="display:flex;flex-wrap:wrap;gap:12px">`;
   [["ph-list-numbers","業務記述書",`${act.length}工程 ・ 詳細記述 ${det}件`,act.length>0],
@@ -4404,19 +4439,21 @@ function renderDashDocs(){
   .forEach(([ic,nm,dt,ok])=>{h+=`<div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid #E6ECEA;border-radius:10px;background:#F9FBFA">
     <span style="width:38px;height:38px;border-radius:9px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${ic}" style="font-size:19px;color:#0E7C73"></i></span>
     <div style="flex:1"><div style="font-size:13px;font-weight:600">${nm}</div><div style="font-size:11.5px;color:#8A9794">${dt}</div></div>
-    ${ok?'<span class="evalpill ep-ok"><i class="ph ph-check"></i>作成中</span>':'<span class="evalpill ep-na">未着手</span>'}</div>`;});
+    ${ok?'<span class="evalpill ep-ok"><i class="ph ph-check"></i>作成済</span>':'<span class="evalpill ep-na">未作成</span>'}</div>`;});
   h+=`</div></div>`;
   if(fsKeys.length){
     h+=`<div class="kz-card"><div style="font-size:13.5px;font-weight:700;margin-bottom:10px">勘定科目 × アサーション 対応状況</div><div style="overflow:auto"><table style="font-size:12px;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:5px 9px;border:1px solid var(--c-line)">勘定科目</th><th style="padding:5px 9px;border:1px solid var(--c-line)">統制</th>`+ASRT.map(a=>`<th style="writing-mode:vertical-rl;text-orientation:upright;padding:6px 3px;border:1px solid var(--c-line)">${a}</th>`).join("")+`</tr></thead><tbody>`;
     fsKeys.forEach(fs=>{const d=cov[fs];h+=`<tr><td style="padding:5px 9px;border:1px solid var(--c-line)">${esc(fs)}</td><td style="text-align:center;border:1px solid var(--c-line)" class="num">${d.ctrls}</td>`+ASRT.map(a=>`<td style="text-align:center;border:1px solid var(--c-line)">${[...d.asserts].some(z=>z.includes(a)||a.includes(z))?'<span class="asrt-on"><i class="ph ph-check-bold" style="font-size:10px"></i></span>':'<span class="asrt-off">·</span>'}</td>`).join("")+`</tr>`;});
     h+=`</tbody></table></div></div>`;
   }
+  h+=procNextHTML(p);
   h+=`<div class="pagehint"><i class="ph ph-info" style="font-size:14px"></i>整備・運用評価や不備・証憑の管理を行う場合は、ファイルメニューの「評価・証憑管理機能」をオンにしてください（データは共通です）。</div>`;
-  document.getElementById("dashBody").innerHTML=h;
+  document.getElementById("procViewBody").innerHTML=h;
 }
-function renderDash(){
-  if((db&&db.mode)==="manual")return renderDashManual();
-  if(!isEvalOn())return renderDashDocs();
+function renderProcView(){
+  if((db&&db.mode)==="manual")return;
+  const sub=document.getElementById("procViewSub");if(sub){const pp=P();sub.textContent=`${pp.id} ${pp.name||""}${pp.sub_process?"（"+pp.sub_process+"）":""}`;}
+  if(!isEvalOn())return renderProcViewDocs();
   const op=outProc(),p=P();
   const ctrls=op.rcm.filter(r=>(r.control_id||"").trim());const totalCtl=ctrls.length;const keys=ctrls.filter(r=>r.key).length;
   const cE=s=>op.rcm.filter(r=>overallEval(r)===s).length;
@@ -4474,7 +4511,176 @@ function renderDash(){
   trip.forEach(t=>{const done=t[1]==="業務記述書"?active.length>0:(t[1]==="RCM"?totalCtl>0:active.length>0);
     h+=`<div style="flex:1;min-width:220px;display:flex;align-items:center;gap:13px;padding:12px 15px;border:1px solid #E6ECEA;border-radius:10px;background:#F9FBFA"><span style="width:38px;height:38px;border-radius:9px;background:#E8F3F1;display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${t[0]}" style="font-size:19px;color:var(--c-primary)"></i></span><div style="flex:1"><div style="font-size:13px;font-weight:600">${t[1]}</div><div style="font-size:11.5px;color:var(--c-text-faint)">${t[2]}</div></div><span class="evalpill ${done?"ep-ok":"ep-na"}"><i class="ph ${done?"ph-check":"ph-minus"}" style="font-size:12px"></i>${done?"作成済":"未作成"}</span></div>`;});
   h+=`</div></div>`;
-  document.getElementById("dashBody").innerHTML=h;
+  h+=procNextHTML(p);
+  document.getElementById("procViewBody").innerHTML=h;
+}
+
+/* =================================================================
+   プロジェクトダッシュボード（全プロセス横断・表示時に算出、JSONへは保存しない）
+   ================================================================= */
+function pendFor(p){if(_applied[p.id])return snapKey(_applied[p.id])!==snapKey(p);return p.id===db.activeProcessId?isPending():false;}
+function procStats(p){
+  const act=(p.steps||[]).filter(s=>(s.dept||"").trim()||(s.label||"").trim());
+  const det=act.filter(s=>(s.detail||"").trim()).length;
+  const risks=[...new Set((p.rcm||[]).map(r=>(r.risk_id||"").trim()).filter(Boolean))].length;
+  const ctrls=(p.rcm||[]).filter(r=>(r.control_id||"").trim()).length;
+  const keys=(p.rcm||[]).filter(r=>r.key&&(r.control_id||"").trim()).length;
+  const gaps=gapCheck(p);
+  const gErr=gaps.filter(x=>x.lv==="error").length,gWarn=gaps.filter(x=>x.lv==="warning").length;
+  const pend=pendFor(p);
+  const last=((p.revisions||[]).map(r=>r.date||"").filter(Boolean).sort().pop())||"";
+  const hasAny=act.length>0||(p.rcm||[]).some(r=>(r.risk_id||"").trim()||(r.control_id||"").trim());
+  const triple=act.length>0&&ctrls>0;
+  let status;
+  if(!hasAny)status="未着手";
+  else if(!triple)status="作業中";
+  else if(gErr>0)status="要確認";
+  else if(pend)status="未反映";
+  else status="完了";
+  return {act:act.length,det,risks,ctrls,keys,gErr,gWarn,pend,last,triple,status};
+}
+const DASH_ST={"要確認":{c:"#B0413B",bg:"#F7E9E7",o:0},"未反映":{c:"#B7791F",bg:"#FBF2DD",o:1},"作業中":{c:"#2D5A86",bg:"#E9F0F8",o:2},"未着手":{c:"#7A867F",bg:"#EFF3F2",o:3},"完了":{c:"#157F5B",bg:"#E6F2EC",o:4}};
+const DASH_ST_TIP="状態の判定 ─ 未着手: 工程・リスク・統制が未登録 ／ 作業中: 三点セットのいずれかが未作成（工程または統制が0件） ／ 要確認: エラー相当のギャップ（ID重複・分岐先不明など）あり ／ 未反映: 編集が［成果物へ反映］されていない ／ 完了: 三点セットが揃い、未反映・エラーなし";
+function stPill(st){const m=DASH_ST[st]||DASH_ST["作業中"];return `<span title="${escAttr(DASH_ST_TIP)}" style="display:inline-block;padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:700;color:${m.c};background:${m.bg}">${esc(st)}</span>`;}
+function dashOpen(pid,pg){db.activeProcessId=pid;syncProcSel();show(pg||"procview");}
+function procActions(p,st){
+  const a=[];
+  if(st.gErr>0)a.push({pr:1,msg:`ギャップチェックにエラーが${st.gErr}件あります`,btn:"ギャップを確認する",pg:"gap"});
+  if(st.pend)a.push({pr:2,msg:"編集内容が成果物へ反映されていません",btn:"成果物を確認する",pg:"steps"});
+  if(st.act>0&&st.ctrls===0)a.push({pr:3,msg:"RCM（リスクと統制）が未作成です",btn:"RCMを作成する",pg:"rcm"});
+  if(st.act===0&&(st.risks>0||st.ctrls>0))a.push({pr:5,msg:"業務記述書（工程）が未入力です",btn:"工程を入力する",pg:"steps"});
+  if(st.gErr===0&&st.gWarn>0)a.push({pr:6,msg:`ギャップチェックに警告が${st.gWarn}件あります`,btn:"ギャップを確認する",pg:"gap"});
+  if(st.status==="未着手")a.push({pr:7,msg:"三点セットが未作成です",btn:"作成を開始する",pg:"steps"});
+  return a;
+}
+function procNextHTML(p){
+  /* プロセス概要用「次に行うこと」 */
+  const st=procStats(p);const acts=procActions(p,st).sort((x,y)=>x.pr-y.pr).slice(0,3);
+  let h=`<div class="card" style="margin:14px 0 0"><div style="font-size:13.5px;font-weight:700;margin-bottom:10px">次に行うこと</div>`;
+  if(!acts.length)h+=`<div style="font-size:12.5px;color:var(--c-text-mid)"><i class="ph ph-check-circle" style="color:var(--c-ok)"></i> このプロセスで重大な確認事項はありません。</div>`;
+  else acts.forEach((a,i)=>{h+=`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;${i?"border-top:1px dashed var(--c-border)":""}"><span class="mono" style="font-weight:700;color:var(--c-text-faint)">${i+1}</span><span style="flex:1;font-size:12.5px">${esc(a.msg)}</span><button class="sm" onclick="show('${a.pg}')">${esc(a.btn)}</button></div>`;});
+  return h+`</div>`;
+}
+let _dashSort={key:"",dir:1};
+function dashSort(k){if(_dashSort.key===k)_dashSort.dir*=-1;else _dashSort={key:k,dir:1};renderDash();}
+function projAgg(){
+  const rows=(db.processes||[]).map(p=>({p,st:procStats(p)}));
+  return {
+    rows,procs:rows.length,
+    complete:rows.filter(r=>r.st.status==="完了").length,
+    attention:rows.filter(r=>r.st.status==="要確認").length,
+    gapsErr:rows.reduce((a,r)=>a+r.st.gErr,0),
+    gapsWarn:rows.reduce((a,r)=>a+r.st.gWarn,0),
+    steps:rows.reduce((a,r)=>a+r.st.act,0),
+    risks:rows.reduce((a,r)=>a+r.st.risks,0),
+    ctrls:rows.reduce((a,r)=>a+r.st.ctrls,0),
+    lastUpd:rows.map(r=>r.st.last).filter(Boolean).sort().pop()||""
+  };
+}
+function renderDash(){
+  if((db&&db.mode)==="manual")return renderDashManual();
+  const el=document.getElementById("dashBody");if(!el)return;
+  const ps=db.processes||[];
+  let h="";
+  if(db.projectName)h+=`<p style="margin:0 0 14px;font-size:13px;color:var(--c-text-mid)"><i class="ph ph-folder-open"></i> ${esc(db.projectName)}</p>`;
+  if(!ps.length){
+    el.innerHTML=h+`<div class="card" style="text-align:center;padding:44px 24px"><div style="font-size:15px;font-weight:700;margin-bottom:6px">まだプロセスが登録されていません</div><div style="font-size:12.5px;color:var(--c-text-mid);margin-bottom:18px">次のいずれかの方法で始められます。</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="sm" onclick="show('import')"><i class="ph ph-download-simple"></i>Excel／CSVを取り込む</button>
+      <button class="sm" onclick="openTmplModal()"><i class="ph ph-stack"></i>テンプレートから作成</button>
+      <button class="sm" onclick="show('processes')"><i class="ph ph-plus"></i>プロセスを追加</button>
+      <button class="sm" onclick="loadExampleConfirmed()"><i class="ph ph-play"></i>サンプルデータで試す</button>
+      </div></div>`;
+    return;
+  }
+  const ag=projAgg();
+  const pend=ag.rows.filter(r=>r.st.pend).length;
+  /* ---- 上段: 全体KPI（完成・要確認・ギャップを強調） ---- */
+  const kpi=(lb,v,sub,icon,tint,accent,strong)=>`<div class="kpi"${strong?` style="border:1.5px solid ${accent};box-shadow:0 2px 8px ${tint}"`:""}><div class="kh"><span class="kl">${lb}</span><span class="kic" style="background:${tint}"><i class="ph ${icon}" style="color:${accent}"></i></span></div><div class="kv">${v}</div><div class="ks">${sub}</div></div>`;
+  h+=`<div class="kpi-row">`
+    +kpi("登録プロセス",ag.procs,"評価範囲対象 "+ag.rows.filter(r=>r.p.in_scope).length,"ph-squares-four","#EFF3F2","#46534E")
+    +kpi("三点セット完成",`${ag.complete} / ${ag.procs}`,"記述書・フロー図・RCM","ph-check-circle","#E6F2EC","#157F5B",true)
+    +kpi("要確認",ag.attention?`${ag.attention}プロセス`:"0","エラー相当のギャップあり","ph-warning-circle",ag.attention?"#F7E9E7":"#EFF3F2",ag.attention?"#B0413B":"#7A867F",ag.attention>0)
+    +kpi("未解決ギャップ",ag.gapsErr+ag.gapsWarn,`エラー${ag.gapsErr}・警告${ag.gapsWarn}`,"ph-magnifying-glass",ag.gapsErr?"#F7E9E7":"#EFF3F2",ag.gapsErr?"#B0413B":"#7A867F",ag.gapsErr>0)
+    +kpi("全工程数",ag.steps,"全プロセス合計","ph-list-numbers","#EFF3F2","#46534E")
+    +kpi("リスク／統制",`${ag.risks} / ${ag.ctrls}`,"全プロセス合計","ph-shield-check","#EFF3F2","#46534E")
+    +kpi("最終更新",ag.lastUpd||"—","改訂履歴ベース","ph-clock","#EFF3F2","#46534E")
+    +`</div>`;
+  /* ---- 中段: プロセス別作成状況 ---- */
+  const rows=ag.rows.slice();
+  const key=_dashSort.key,dir=_dashSort.dir;
+  const stOrder=r=>DASH_ST[r.st.status].o;
+  if(key==="status")rows.sort((a,b)=>(stOrder(a)-stOrder(b))*dir);
+  else if(key==="gaps")rows.sort((a,b)=>((b.st.gErr*100+b.st.gWarn)-(a.st.gErr*100+a.st.gWarn))*dir);
+  else if(key==="last")rows.sort((a,b)=>String(b.st.last).localeCompare(String(a.st.last))*dir);
+  else rows.sort((a,b)=>(stOrder(a)-stOrder(b))||String(a.p.id).localeCompare(String(b.p.id)));
+  const th=(lb,k)=>`<th${k?` style="cursor:pointer" title="クリックで並べ替え" onclick="dashSort('${k}')"`:""}>${lb}${k&&_dashSort.key===k?(_dashSort.dir>0?" ▲":" ▼"):""}</th>`;
+  const cell=(pid,pg,html,title)=>`<td style="text-align:center;cursor:pointer" title="${escAttr(title)}" onclick="dashOpen('${escAttr(pid)}','${pg}')">${html}</td>`;
+  const docPill=(on,lb)=>on?`<span class="evalpill ep-ok" style="cursor:inherit">${lb||"生成済"}</span>`:`<span class="evalpill ep-na" style="cursor:inherit">${lb||"未着手"}</span>`;
+  let tb="";
+  rows.forEach(({p,st})=>{
+    const rcmPill=st.ctrls>0?docPill(true):(st.risks>0?`<span class="evalpill ep-warn" style="cursor:inherit">入力中</span>`:docPill(false));
+    tb+=`<tr>
+      <td class="mono" style="white-space:nowrap;font-weight:600;color:var(--c-primary-d)">${esc(p.id)}</td>
+      <td style="cursor:pointer;font-weight:600" title="クリックでプロセス概要へ" onclick="dashOpen('${escAttr(p.id)}','procview')">${esc(p.name||"")}${p.sub_process?`<span style="font-weight:400;color:var(--c-text-faint)">（${esc(p.sub_process)}）</span>`:""}</td>
+      ${cell(p.id,"steps",docPill(st.act>0,st.act>0?`生成済 ${st.act}工程`:"未着手"),"クリックで業務記述書へ")}
+      ${cell(p.id,"flow",docPill(st.act>0),"クリックでフロー図へ")}
+      ${cell(p.id,"rcm",rcmPill,"クリックでRCMへ")}
+      ${cell(p.id,"steps",st.pend?`<span class="evalpill ep-warn" style="cursor:inherit">未反映</span>`:`<span style="color:var(--c-text-faint)">—</span>`,"クリックで編集画面へ")}
+      ${cell(p.id,"gap",(st.gErr+st.gWarn)?`<span class="mono" style="font-weight:700;color:${st.gErr?"#B0413B":"#9A6614"}">${st.gErr+st.gWarn}件</span>`:`<span style="color:var(--c-text-faint)">0件</span>`,"クリックでギャップチェックへ")}
+      <td class="mono" style="text-align:center;color:var(--c-text-mid)">${esc(st.last||"—")}</td>
+      <td style="text-align:center">${stPill(st.status)}</td>
+      <td style="text-align:center"><button class="sm" onclick="dashOpen('${escAttr(p.id)}','procview')">開く</button></td>
+    </tr>`;
+  });
+  h+=`<div class="card" style="margin:0 0 14px;padding:0;overflow:hidden"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px"><span style="font-size:13.5px;font-weight:700">プロセス別 作成状況</span><span style="font-size:11px;color:var(--c-text-faint)" title="${escAttr(DASH_ST_TIP)}"><i class="ph ph-info"></i> 状態の判定条件</span></div>
+    <div style="overflow:auto;max-height:420px"><table class="dr" style="width:100%;white-space:nowrap"><thead style="position:sticky;top:0;background:#fff;z-index:1"><tr>${th("ID")}${th("プロセス名")}${th("業務記述書")}${th("フロー図")}${th("RCM")}${th("未反映")}${th("ギャップ","gaps")}${th("最終更新","last")}${th("状態","status")}${th("")}</tr></thead><tbody>${tb}</tbody></table></div></div>`;
+  /* ---- 下段: 優先して確認する項目 ＋ カバレッジ要約 ---- */
+  const allActs=[];
+  ag.rows.forEach(({p,st})=>{procActions(p,st).forEach(a=>allActs.push(Object.assign({pid:p.id,pname:p.name||p.id},a)));});
+  allActs.sort((a,b)=>a.pr-b.pr);
+  let actH="";
+  allActs.slice(0,6).forEach((a,i)=>{actH+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i?"border-top:1px dashed var(--c-border)":""}">
+    <span class="mono" style="font-weight:700;color:var(--c-text-faint);flex:none">${i+1}</span>
+    <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">${esc(a.pname)}</div><div style="font-size:12px;color:var(--c-text-mid)">${esc(a.msg)}</div></div>
+    <button class="sm" style="flex:none" onclick="dashOpen('${escAttr(a.pid)}','${a.pg}')">${esc(a.btn)}</button></div>`;});
+  if(!actH)actH=`<div style="font-size:12.5px;color:var(--c-text-mid)"><i class="ph ph-check-circle" style="color:var(--c-ok)"></i> すべてのプロセスで重大な確認事項はありません。</div>`;
+  /* カバレッジ要約（詳細マトリクスはプロセス概要側） */
+  let covRows=[];
+  ag.rows.forEach(({p})=>{
+    const src=_applied[p.id]||p;const cov=coverage(src);const fsKeys=Object.keys(cov);
+    if(!fsKeys.length)return;
+    let miss=0;fsKeys.forEach(fs=>{ASRT.forEach(a=>{if(![...cov[fs].asserts].some(z=>z.includes(a)||a.includes(z)))miss++;});});
+    if(miss>0)covRows.push({pid:p.id,pname:p.name||p.id,miss});
+  });
+  let covH="";
+  if(!covRows.length)covH=`<div style="font-size:12.5px;color:var(--c-text-mid)"><i class="ph ph-check-circle" style="color:var(--c-ok)"></i> 勘定科目×アサーションの未対応はありません。</div>`;
+  else{
+    covH=`<div style="font-size:12.5px;margin-bottom:8px">未対応あり <b class="mono" style="color:#B0413B">${covRows.length}</b> プロセス</div>`;
+    covRows.slice(0,4).forEach(r=>{covH+=`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px dashed var(--c-border)"><span style="flex:1;font-size:12.5px">${esc(r.pname)}</span><span class="mono" style="font-size:12px;color:#B0413B;font-weight:700">${r.miss}項目</span><button class="sm" onclick="dashOpen('${escAttr(r.pid)}','procview')">詳細を確認する</button></div>`;});
+  }
+  /* 評価サマリ（評価機能ON時のみ・控えめに） */
+  let evalH="";
+  if(isEvalOn()){
+    let tc=0,de=0,oe=0,openD=0,evNeed=0,evStored=0;
+    ag.rows.forEach(({p})=>{
+      const cs=(p.rcm||[]).filter(r=>(r.control_id||"").trim());tc+=cs.length;
+      de+=cs.filter(r=>(r.de_result||"").trim()).length;oe+=cs.filter(r=>(r.oe_result||"").trim()).length;
+      openD+=(p.deficiencies||[]).filter(d=>d.status!=="是正済").length;
+      cs.forEach(r=>{if((r.evidence||"").trim()){evNeed++;const o=p.evidence&&p.evidence[(r.control_id||"").trim()];if(o&&o.files&&o.files.length)evStored++;}});
+    });
+    evalH=`<div class="card" style="margin:14px 0 0"><div style="font-size:12.5px;font-weight:700;margin-bottom:8px;color:var(--c-text-mid)">評価の概況（全プロセス）</div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--c-text-mid)">
+      <span>評価対象統制 <b class="mono">${tc}</b></span><span>整備評価 <b class="mono">${de}/${tc}</b></span><span>運用評価 <b class="mono">${oe}/${tc}</b></span>
+      <span>未解決不備 <b class="mono" style="color:${openD?"#B0413B":"inherit"}">${openD}</b></span><span>未回収証憑 <b class="mono" style="color:${evNeed-evStored>0?"#9A6614":"inherit"}">${Math.max(0,evNeed-evStored)}</b></span>
+      </div></div>`;
+  }
+  h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start">
+    <div class="card" style="flex:1.4 1 460px;margin:0"><div style="font-size:13.5px;font-weight:700;margin-bottom:6px">優先して確認する項目</div>${actH}</div>
+    <div class="card" style="flex:1 1 320px;margin:0"><div style="font-size:13.5px;font-weight:700;margin-bottom:6px">アサーションカバレッジ</div>${covH}</div>
+  </div>`;
+  h+=evalH;
+  el.innerHTML=h;
 }
 
 // =================================================================
@@ -4521,7 +4727,7 @@ const HELP=[
 <p>基本の操作は次の3ステップです。</p>
 <ol>
 <li><b>入力</b>：「プロセス」「業務記述書 編集」「RCM 編集」で内容を入力します。既存のExcel/CSVがあれば「取込」ページから読み込めます。</li>
-<li><b>反映</b>：内容を確認したら、上部の<b>［反映］</b>ボタンを押します。これにより成果物（業務記述書・フロー図・RCM等）が最新の入力内容に更新されます。</li>
+<li><b>成果物へ反映</b>：内容を確認したら、上部の<b>［成果物へ反映］</b>ボタンを押します。これにより成果物（業務記述書・フロー図・RCM等）が最新の入力内容に更新されます。</li>
 <li><b>成果物の確認・出力</b>：「業務記述書（成果物）」「フロー図」「RCM」で内容を確認し、PNG/SVG/Mermaid/draw.io/PDF/Excelなどの形式で出力します。</li>
 </ol>
 <div class="hint">点検として「ギャップチェック」と「ウォークスルー」も活用してください。</div>`},
