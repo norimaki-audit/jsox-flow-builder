@@ -82,7 +82,7 @@ Forkにはライセンスおよび著作権表示をそのまま維持してく�
 ## 5. 適用範囲
 
 - 本ライセンスは、作者が権利を有する本体コード・紹介ページ・ドキュメント・画像等に適用されます。
-- 同梱・参照している第三者ライブラリ、フォント、アイコン等には**それぞれの第三者ライセンスが適用され**、本ライセンスによって制限されません（[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) および [licenses/](licenses/) を参照）。
+- 同梱・参照している第三者ライブラリ、フォント、アイコン等には**それぞれの第三者ライセンスが適用され**、本ライセンスによって制限されません（[licenses/THIRD_PARTY_NOTICES.md](licenses/THIRD_PARTY_NOTICES.md) を参照）。
 - 利用者の入力データおよび成果物には本ライセンスは適用されません。
 - 本ライセンスは、適用される法令上認められる引用、調査・研究のための利用その他の権利を制限するものではありません。
 
@@ -120,4 +120,4 @@ Forkにはライセンスおよび著作権表示をそのまま維持してく�
 
 ---
 
-*English summary (the Japanese text above is authoritative): J-SOX Flow Builder is source-available, not open source. Free to use for individuals and organizations (including commercial internal use and professional client services); download and offline use permitted; local modification for internal use only. Output documents belong entirely to you and are not subject to this license. Redistribution of the code or HTML, publishing modified versions, re-hosting, SaaS/derivative services, bundling into other products, and sale require prior written permission — ask via GitHub Issues. GitHub forks are permitted for review and contribution only (no Pages re-publishing or independent distribution). Third-party libraries keep their own licenses (see THIRD_PARTY_NOTICES.md). First minor violations may be cured within 30 days of notice. Provided AS IS without warranty. Trademarks and branding are not licensed. Future versions may be licensed differently; changes do not apply retroactively to rights already granted.*
+*English summary (the Japanese text above is authoritative): J-SOX Flow Builder is source-available, not open source. Free to use for individuals and organizations (including commercial internal use and professional client services); download and offline use permitted; local modification for internal use only. Output documents belong entirely to you and are not subject to this license. Redistribution of the code or HTML, publishing modified versions, re-hosting, SaaS/derivative services, bundling into other products, and sale require prior written permission — ask via GitHub Issues. GitHub forks are permitted for review and contribution only (no Pages re-publishing or independent distribution). Third-party libraries keep their own licenses (see licenses/THIRD_PARTY_NOTICES.md). First minor violations may be cured within 30 days of notice. Provided AS IS without warranty. Trademarks and branding are not licensed. Future versions may be licensed differently; changes do not apply retroactively to rights already granted.*
