@@ -598,6 +598,11 @@
   .card-flash{animation:cardflash 1.3s ease-out;}
   a.linkpill{cursor:pointer;text-decoration:none;}
   a.linkpill:hover .evalpill,a.linkpill:hover .idchip{box-shadow:0 0 0 2px rgba(14,124,115,.18);}
+  /* ページヘッダーの.phがPhosphorアイコンCSSの.ph（font-family:Phosphor !important）と衝突するため打ち消す。
+     div.ph内のアイコン<i class="ph ...">はPhosphorに戻す */
+  div.ph,div.ph *{font-family:'IBM Plex Sans JP',system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP","Meiryo",sans-serif !important;font-variant:normal !important;font-feature-settings:normal !important;}
+  div.ph i.ph,div.ph i[class*="ph-"]{font-family:"Phosphor" !important;font-variant:normal !important;}
+  div.ph .num,div.ph [style*="font-num"]{font-family:var(--font-num) !important;}
 </style>
 </head>
 <body>
