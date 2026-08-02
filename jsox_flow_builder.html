@@ -2612,7 +2612,20 @@ function applyMode(){
    データ保全: 自動保存（localStorage・2世代・容量超過フォールバック）
    ================================================================= */
 const AS_KEY="jsoxfb_autosave_v1",AS_PREV="jsoxfb_autosave_prev_v1";
-let _asTimer=null,_asWarned=false,_asDisabled=false;
+let _asTimer=null,_asDisabled=false;
+/* 自動保存の状態: ok=全内容を保存 / partial=添付を除いて保存 / off=容量不足で停止
+   状態が変わったときだけ通知し、常時の表示はファイルメニューの自動保存欄で行う。 */
+let _asState="ok";
+/* localStorage が自動保存に使っている概算バイト数（UTF-16のため文字数×2） */
+function asBytes(){let n=0;try{[AS_KEY,AS_PREV].forEach(k=>{const v=localStorage.getItem(k);if(v)n+=v.length*2;});}catch(e){}return n;}
+function setAsState(st){
+  if(_asState===st){updateAsInfo();return;}
+  _asState=st;
+  if(st==="partial")toast("添付ファイルはブラウザ保存の容量を超えるため、自動保存に含まれていません。［保存(.json)］でPCへ保存するか、［保存先フォルダ…］の設定をご検討ください。",9000);
+  if(st==="off")toast("ブラウザの保存容量が不足したため、自動保存を停止しました。作業内容を失わないよう［保存(.json)］でPCへ保存してください。",14000);
+  if(st==="ok"&&_asDisabled===false)/* 復帰時は静かに戻す */0;
+  updateAsInfo();
+}
 function scheduleAutosave(){if(_asDisabled)return;clearTimeout(_asTimer);_asTimer=setTimeout(autosaveNow,1500);}
 function _stripHeavy(o){const d=JSON.parse(JSON.stringify(o));
   (d.processes||[]).forEach(pp=>{Object.values(pp.evidence||{}).forEach(e=>{(e.files||[]).forEach(f=>{delete f.data;f._dropped=true;});});
@@ -2628,16 +2641,38 @@ function autosaveNow(){
     catch(qe){
       rec={ts:Date.now(),projectName:db.projectName||"",partial:true,json:JSON.stringify(_stripHeavy(db))};
       localStorage.setItem(AS_KEY,JSON.stringify(rec));
-      if(!_asWarned){_asWarned=true;toast("ブラウザ保存の容量を超えたため、添付ファイルを除いて自動保存しています。完全な保全には［保存(.json)］をご利用ください。",7000);}
     }
     if(cur){try{localStorage.setItem(AS_PREV,cur);}catch(e){try{localStorage.removeItem(AS_PREV);}catch(_e){}}}
-    updateAsInfo();
-  }catch(e){_asDisabled=true;console.warn("自動保存を無効化しました:",e);}
+    setAsState(rec.partial?"partial":"ok");
+  }catch(e){
+    _asDisabled=true;
+    console.warn("自動保存を停止しました:",e);
+    setAsState("off");   /* 失敗を黙って握りつぶさない */
+  }
 }
 window.addEventListener("beforeunload",function(){try{if(dirty)autosaveNow();}catch(e){}});
 function fmtTs(t){const d=new Date(t);const z=n=>String(n).padStart(2,"0");return (d.getMonth()+1)+"/"+d.getDate()+" "+z(d.getHours())+":"+z(d.getMinutes());}
 function getAutosave(prev){try{const s=localStorage.getItem(prev?AS_PREV:AS_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
-function updateAsInfo(){const el=document.getElementById("asInfo");if(!el)return;const a=getAutosave();el.textContent=a?("自動保存: "+fmtTs(a.ts)+(a.partial?"（添付除く）":"")+(a.projectName?" ・ "+a.projectName:"")):"自動保存: なし";}
+function updateAsInfo(){
+  const el=document.getElementById("asInfo");if(!el)return;
+  const a=getAutosave();
+  const use=asBytes(),att=(typeof attTotalStored==="function")?attTotalStored():0;
+  const mb=b=>(Math.round(b/1048576*10)/10)+"MB";
+  let txt,warn=false;
+  if(_asState==="off"){txt="自動保存: 停止中 — ［保存(.json)］で保全してください";warn=true;}
+  else if(!a){txt="自動保存: なし";}
+  else{
+    txt="自動保存: "+fmtTs(a.ts)+(a.partial?"（添付を除く）":"");
+    txt+=" ・ 使用 "+mb(use);
+    if(att>0)txt+=" ／ 添付 "+mb(att);
+    warn=!!a.partial;
+  }
+  el.textContent=txt;
+  el.style.color=warn?"var(--c-err)":"";
+  el.title=warn
+    ?"添付ファイルは自動保存に含まれていません。［保存(.json)］でPCへ保存するか、［保存先フォルダ…］をご利用ください。"
+    :"ブラウザ内の自動保存の状態です。恒久的な保全は［保存(.json)］で行ってください。";
+}
 function restoreAutosave(prev){
   const rec=getAutosave(prev);
   if(!rec||!rec.json){alert("自動保存データがありません。");return;}
@@ -2931,7 +2966,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=24;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=25;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -3072,7 +3107,39 @@ async function runSelfTest(){
       eq(safeImgSrc("javascript:x()"),"","画像src: javascript:を遮断");
       eq(safeImgSrc("https://example.com/a.png"),"","画像src: 外部URLを遮断");
       eq(safeImgSrc("data:image/png;base64,AAAA"),"data:image/png;base64,AAAA","画像src: 正当なdata URLは通す");});
-    // 22. プロジェクトダッシュボード集計・状態判定
+    // 22. 保存容量が不足したときの挙動（データを失わず、必ず利用者へ伝える）
+    T("保存容量不足時の自動保存",()=>{
+      const origSet=localStorage.setItem.bind(localStorage);
+      const bakA=localStorage.getItem(AS_KEY),bakP=localStorage.getItem(AS_PREV);
+      const bakState=_asState,bakDis=_asDisabled;
+      const quotaErr=()=>{const e=new Error("quota");e.name="QuotaExceededError";throw e;};
+      try{
+        /* 1回目だけ失敗 → 添付を除いた保存へフォールバックし、partial として記録・通知する */
+        let calls=0;
+        localStorage.setItem=(k,v)=>{calls++;if(calls===1)quotaErr();return origSet(k,v);};
+        _asDisabled=false;_asState="ok";
+        autosaveNow();
+        eq(_asState,"partial","添付を除いた保存へフォールバック");
+        const rec=getAutosave();
+        eq(!!(rec&&rec.partial),true,"記録にpartialフラグが立つ");
+        eq(!!(rec&&rec.json),true,"文字情報は保存されている");
+        const restored=JSON.parse(rec.json);
+        eq(Array.isArray(restored.processes),true,"復元可能な構造を保っている");
+        /* 常に失敗 → 自動保存を停止し、状態を off として利用者に伝える */
+        localStorage.setItem=()=>quotaErr();
+        _asDisabled=false;_asState="ok";
+        autosaveNow();
+        eq(_asDisabled,true,"容量不足で自動保存を停止する");
+        eq(_asState,"off","停止状態が記録される（通知対象）");
+        /* 停止後も編集中データ自体は失われない */
+        eq(Array.isArray(db.processes),true,"停止してもメモリ上のデータは無事");
+      }finally{
+        localStorage.setItem=origSet;
+        try{if(bakA==null)localStorage.removeItem(AS_KEY);else origSet(AS_KEY,bakA);
+            if(bakP==null)localStorage.removeItem(AS_PREV);else origSet(AS_PREV,bakP);}catch(e){}
+        _asState=bakState;_asDisabled=bakDis;
+      }});
+    // 23. プロジェクトダッシュボード集計・状態判定
     T("プロジェクト全体集計",()=>{
       const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
       eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
@@ -4341,6 +4408,7 @@ function onEvFile(e){const cid=_evCid;if(!cid){return;}const files=[...e.target.
   for(const f of files){
     const c=attCheck(f,(o.files||[]).length+okFiles.length,dirMode,added);
     if(!c.ok){alert(c.reason);continue;}
+    if(c.warn)_attWarn=c.warn;
     okFiles.push(f);added+=f.size||0;
   }
   if(!okFiles.length)return;
@@ -4354,7 +4422,7 @@ function onEvFile(e){const cid=_evCid;if(!cid){return;}const files=[...e.target.
     })();
     return;
   }
-  let pending=okFiles.length;const done=()=>{if(--pending<=0){markDirty();renderEv();}};
+  let pending=okFiles.length;const done=()=>{if(--pending<=0){markDirty();renderEv();attFlushWarn();}};
   okFiles.forEach(f=>{const fr=new FileReader();
     fr.onload=()=>{o.files.push({name:attSafeName(f.name),type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
     fr.onerror=()=>{alert(`「${f.name}」の読み取りに失敗したため追加しませんでした。`);done();};
@@ -4376,8 +4444,12 @@ const ATT_MAX_FILE=5*1048576;        /* ブラウザ内格納: 1ファイル */
 const ATT_MAX_FILE_DIR=50*1048576;   /* フォルダ格納: 1ファイル */
 const ATT_MAX_COUNT=20;              /* 1か所あたりの件数 */
 const ATT_MAX_TOTAL=25*1048576;      /* プロジェクト全体のブラウザ内格納 合計 */
+/* localStorage は概ね5MB。これを超える添付は自動保存に載らないため、事前に案内する閾値 */
+const ATT_BROWSER_SAFE=3*1048576;
 const ATT_ACCEPT="."+Object.keys(ATT_TYPES).join(",.");
 
+let _attWarn=null;
+function attFlushWarn(){if(_attWarn){const m=_attWarn;_attWarn=null;toast(m,10000);}}
 function attExt(name){const m=String(name||"").toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:"";}
 function attKind(name){return ATT_TYPES[attExt(name)]||null;}
 /* パス区切り・制御文字・先頭ドットを除去（保存名/ダウンロード名の両方で使用） */
@@ -4409,6 +4481,8 @@ function attCheck(file,curCount,dirMode,addedBytes){
   if(!dirMode){
     const total=attTotalStored()+(addedBytes||0)+file.size;
     if(total>ATT_MAX_TOTAL)return {ok:false,reason:`ブラウザ内に保存できる添付の合計（${attMB(ATT_MAX_TOTAL)}MB）を超えるため追加しませんでした。\n現在 約${attMB(attTotalStored())}MB。［保存先フォルダ…］の設定、または不要な添付の解除をご検討ください。`};
+    /* ブラウザの自動保存（localStorageは概ね5MB）に載らない規模になったら、その場で伝える */
+    if(total>ATT_BROWSER_SAFE)return {ok:true,warn:`添付の合計が約${attMB(total)}MBになります。この規模ではブラウザの自動保存に添付が含まれません（作業内容の文字情報のみ保存されます）。\n［保存(.json)］でPCへ保存するか、［保存先フォルダ…］の設定をおすすめします。`};
   }
   return {ok:true};
 }
@@ -4566,6 +4640,7 @@ async function stepAttFiles(files){
   for(const f of files){
     const c=attCheck(f,st.atts.length+okFiles.length,dirMode,added);
     if(!c.ok){alert(c.reason);continue;}
+    if(c.warn)_attWarn=c.warn;
     okFiles.push(f);added+=f.size||0;
   }
   if(!okFiles.length)return;
@@ -4579,7 +4654,7 @@ async function stepAttFiles(files){
     return;
   }
   let left=okFiles.length;
-  const done=()=>{if(--left<=0){markDirty();stepAttRender();}};
+  const done=()=>{if(--left<=0){markDirty();stepAttRender();attFlushWarn();}};
   okFiles.forEach(f=>{
     const fr=new FileReader();
     fr.onload=()=>{st.atts.push({name:attSafeName(f.name),type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
@@ -4763,11 +4838,12 @@ function onLibFile(e){const id=_libId;if(!id)return;const it=libArr().find(x=>x.
   for(const f of files){
     const c=attCheck(f,it.files.length+okFiles.length,false,added);
     if(!c.ok){alert(c.reason);continue;}
+    if(c.warn)_attWarn=c.warn;
     okFiles.push(f);added+=f.size||0;
   }
   if(!okFiles.length)return;
   let pending=okFiles.length;
-  const done=()=>{if(--pending<=0){markDirty();renderLibrary();}};
+  const done=()=>{if(--pending<=0){markDirty();renderLibrary();attFlushWarn();}};
   okFiles.forEach(f=>{
     const fr=new FileReader();
     fr.onload=()=>{it.files.push({name:attSafeName(f.name),type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
