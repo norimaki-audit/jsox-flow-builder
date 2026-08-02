@@ -1333,6 +1333,15 @@ function nextPid(){let m=0;db.processes.forEach(p=>{m=Math.max(m,procIdNum(p.id)
 // =================================================================
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escAttr(s){return esc(s).replace(/"/g,"&quot;");}
+/* インラインイベント属性（onclick="fn('...')"）内のJS文字列リテラルへ値を埋め込む用。
+   属性値はHTMLデコードされてからJSとして解釈されるため、HTMLエスケープだけでは
+   引用符による脱出を防げない。JSエスケープ → HTMLエスケープの順に施す。 */
+function escJs(s){return escAttr(String(s==null?"":s)
+  .replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/\r/g,"\\r").replace(/\n/g,"\\n"));}
+/* 画像の src は data:image/... のみ許可（外部URL・javascript:・属性脱出を遮断）。
+   許可外は空文字を返すので、呼び出し側で <img> 自体を出さない判定に使う。 */
+function safeImgSrc(v){const t=String(v==null?"":v).trim();
+  return /^data:image\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/=]+$/i.test(t)?t:"";}
 function download(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 function fname(){return ((P()&&P().name)||db.projectName||"jsox").replace(/[\\/:*?"<>|\s]+/g,"_");}
 function typeToShape(t){return t==="判断"?"decision":t==="書類"?"document":(t==="開始"||t==="終了")?"terminal":t==="システム処理"?"system":"process";}
@@ -1472,7 +1481,7 @@ function renderFlow(){
   setBanner("flowBanner");const p=outProc();const def=buildDef(p);const L=buildLayout(def);const sz={};let nm="";
   const manual=((db&&db.mode)||"jsox")==="manual";
   def.nodes.forEach(n=>{const ps=L.pos[n.id];if(!ps)return;const r=renderNode(n,ps);sz[n.id]={h:r.h,w:r.w};
-    nm+=`<g style="cursor:pointer" onclick="openDetailNo('${escAttr(String(n.no==null?"":n.no))}')"><title>クリックで${manual?"手順":"工程"}の詳細を表示</title>${r.markup}</g>`;});
+    nm+=`<g style="cursor:pointer" onclick="openDetailNo('${escJs(String(n.no==null?"":n.no))}')"><title>クリックで${manual?"手順":"工程"}の詳細を表示</title>${r.markup}</g>`;});
   let em="";def.edges.forEach(e=>{em+=renderEdge(e,L,sz);});
   const fr=renderFrame(def,L.mr);
   // 使用システム列: 各工程のシステムをチップ表示し、ノードから点線で紐づけ
@@ -1521,7 +1530,7 @@ function renderSteps(){
     +`<th>詳細<br><span style="font-weight:400;color:#C4D0CC">(記述書用)</span></th>`
     +`<th>使用システム</th><th>証跡</th><th>Yes先</th><th>No先</th><th>接続(上書)</th>`
     +`<th>ポイント・注意点</th><th>所要時間目安</th><th class="manual-only">図</th>`
-    +cc.map(c=>`<th class="custc">${esc(c.label)}<button class="cusdel" onclick="delCustomCol('${escAttr(c.id)}')" title="この列を削除" aria-label="この列を削除">×</button></th>`).join("")
+    +cc.map(c=>`<th class="custc">${esc(c.label)}<button class="cusdel" onclick="delCustomCol('${escJs(c.id)}')" title="この列を削除" aria-label="この列を削除">×</button></th>`).join("")
     +`<th>操作</th></tr>`;
   let h="";
   const pal=phasePalette(p.steps);const totalCols=18+cc.length;
@@ -1532,7 +1541,7 @@ function renderSteps(){
     const ph=pal[g]||["transparent","#F2F6F5"];
     if(g&&g!==prevG){
       const cnt=p.steps.filter(x=>(x.gyomu||"").trim()===g).length;
-      h+=`<tr class="grp-row" style="--grp-tint:${ph[1]}"><td colspan="${totalCols}"><span class="gdot" style="background:${ph[0]}"></span><span class="gname">${esc(g)}</span><span class="gcount">${cnt} ${unitLbl}</span><button class="grp-btn" onclick="addStepInGroup('${escAttr(g)}')" title="この業務の末尾に${unitLbl}を追加"><i class="ph ph-plus"></i>${unitLbl}</button><button class="grp-btn" onclick="renameGroup('${escAttr(g)}')" title="業務（グループ）名を変更"><i class="ph ph-pencil-simple"></i></button></td></tr>`;
+      h+=`<tr class="grp-row" style="--grp-tint:${ph[1]}"><td colspan="${totalCols}"><span class="gdot" style="background:${ph[0]}"></span><span class="gname">${esc(g)}</span><span class="gcount">${cnt} ${unitLbl}</span><button class="grp-btn" onclick="addStepInGroup('${escJs(g)}')" title="この業務の末尾に${unitLbl}を追加"><i class="ph ph-plus"></i>${unitLbl}</button><button class="grp-btn" onclick="renameGroup('${escJs(g)}')" title="業務（グループ）名を変更"><i class="ph ph-pencil-simple"></i></button></td></tr>`;
     }
     prevG=g||prevG;
     const hasDetail=(s.detail||"").trim()||((s.images||[]).length>0);
@@ -1553,7 +1562,7 @@ function renderSteps(){
     +`<td class="w-md">${inp("steps",i,"jump",s.jump)}</td>`
     +`<td class="w-wide">${inp("steps",i,"point",s.point||"")}</td>`
     +`<td class="w-sm">${inp("steps",i,"dur",s.dur||"")}</td>`
-    +`<td class="manual-only" style="text-align:center;white-space:nowrap;padding:4px 8px">${s.img?`<img src="${s.img}" style="max-width:64px;max-height:46px;border:1px solid var(--line);border-radius:2px;cursor:pointer;vertical-align:middle" onclick="attachStepImg(${i})" title="クリックで差替え"> <a href="#" onclick="delStepImg(${i});return false" style="color:var(--c-err);text-decoration:none" title="削除">×</a>`:`<button class="sm" onclick="attachStepImg(${i})" title="手順の画像を添付（自動で縮小）">＋図</button>`}</td>`
+    +`<td class="manual-only" style="text-align:center;white-space:nowrap;padding:4px 8px">${safeImgSrc(s.img)?`<img src="${safeImgSrc(s.img)}" alt="" style="max-width:64px;max-height:46px;border:1px solid var(--line);border-radius:2px;cursor:pointer;vertical-align:middle" onclick="attachStepImg(${i})" title="クリックで差替え"> <a href="#" onclick="delStepImg(${i});return false" style="color:var(--c-err);text-decoration:none" title="削除">×</a>`:`<button class="sm" onclick="attachStepImg(${i})" title="手順の画像を添付（自動で縮小）">＋図</button>`}</td>`
     +cc.map(c=>`<td class="custc"><input data-g="steps" data-i="${i}" data-cf="${escAttr(c.id)}" value="${escAttr((s.custom||{})[c.id]||"")}"></td>`).join("")
     +`<td style="white-space:nowrap;padding:0 6px">${s.ai_meta?`<span class="ai-mark" title="AI提案から取込（${escAttr(s.ai_meta.at)}・${escAttr(s.ai_meta.type)}）。クリックで印を解除" onclick="clearAiMark('steps',${i})">AI</span>`:""}<button class="opbtn" data-g="steps" data-act="dup" data-i="${i}" title="この行を複製" aria-label="この行を複製"><i class="ph ph-copy"></i></button><button class="opbtn" data-g="steps" data-act="del" data-i="${i}" title="この行を削除" aria-label="この行を削除">×</button></td>`
     +"</tr>";});
@@ -1572,7 +1581,7 @@ function renderRcm(){
     +`<th class="ctl">統制責任者</th><th class="ctl">査閲者</th><th class="ctl">証跡</th><th class="ctl">キー</th>`
     +`<th class="ctl jsox-only">IPE</th><th class="ctl jsox-only">IPE網羅/正確</th><th class="ctl jsox-only">テスト手続</th><th class="ctl jsox-only">不正対応</th>`
     +`<th class="evalc jsox-only">整備評価</th><th class="evalc jsox-only">運用：抽出方法</th><th class="evalc jsox-only">運用：件数</th><th class="evalc jsox-only">運用：例外</th><th class="evalc jsox-only">運用評価</th><th class="evalc jsox-only">評価内容</th>`
-    +cc.map(c=>`<th class="custc">${esc(c.label)}<button class="cusdel" onclick="delCustomCol('${escAttr(c.id)}')" title="この列を削除" aria-label="この列を削除">×</button></th>`).join("")
+    +cc.map(c=>`<th class="custc">${esc(c.label)}<button class="cusdel" onclick="delCustomCol('${escJs(c.id)}')" title="この列を削除" aria-label="この列を削除">×</button></th>`).join("")
     +`<th>操作</th></tr>`;
   let h="";
   p.rcm.forEach((r,i)=>{h+="<tr data-i='"+i+"'>"
@@ -1709,7 +1718,7 @@ function renderOewp(){
   const keys=all.filter(([r])=>r.key);
   const rows=(keys.length?keys:all).sort((a,b)=>{const d=idNum(a[0].control_id)-idNum(b[0].control_id);return d||a[1]-b[1];});
   if(!rows.length){el.innerHTML=`<div class="hint">統制ID付きのRCM行がありません。RCMの編集で統制ID（キーコントロールには「キー」チェック）を設定してください。</div>`;return;}
-  const inp3=(i,f,v,ph)=>`<input value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">`;
+  const inp3=(i,f,v,ph)=>`<input value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${escJs(f)}',this.value)">`;
   let h="";
   rows.forEach(([r,i])=>{
     const cid=(r.control_id||"").trim();
@@ -1839,7 +1848,7 @@ function renderKaizen(){
       <td style="text-align:center;color:${ar==="高"?"var(--c-err)":ar==="中"?"var(--c-warn)":"inherit"}">${esc(ar)}</td>
       <td style="text-align:center" class="num">${esc(x.last)}</td>
       <td style="text-align:center" class="num" style="font-weight:700">${x.items.length}</td>
-      <td class="no-print" style="text-align:center;padding:4px"><button class="sm" onclick="selectProcess('${escAttr(x.p.id)}');show('steps')" title="このプロセスを開く"><i class="ph ph-arrow-right"></i></button></td></tr>`;
+      <td class="no-print" style="text-align:center;padding:4px"><button class="sm" onclick="selectProcess('${escJs(x.p.id)}');show('steps')" title="このプロセスを開く"><i class="ph ph-arrow-right"></i></button></td></tr>`;
   });
   h+=`</tbody></table></div></div>`;
   perProc.filter(x=>x.items.length).forEach(x=>{
@@ -1847,7 +1856,7 @@ function renderKaizen(){
       <span style="font-size:13.5px;font-weight:700">${esc(x.p.name||"")}</span>
       <span style="font-size:11px;color:var(--c-text-faint)" class="num">${x.items.length}件の改善ポイント</span>
       <span style="flex:1"></span>
-      <button class="sm no-print" onclick="selectProcess('${escAttr(x.p.id)}');show('steps')"><i class="ph ph-pencil-simple"></i>編集へ</button></div>`;
+      <button class="sm no-print" onclick="selectProcess('${escJs(x.p.id)}');show('steps')"><i class="ph ph-pencil-simple"></i>編集へ</button></div>`;
     x.items.forEach(it=>{h+=`<div class="kz-item"><span class="kz-badge ${it.cls}">${esc(it.cat)}</span><span>${esc(it.msg)}</span></div>`;});
     h+=`</div>`;
   });
@@ -2922,7 +2931,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=23;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=24;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -3033,7 +3042,37 @@ async function runSelfTest(){
       eq(/[\/]/.test(attSafeName("..\..\win\evil.png")),false,"パス区切りを除去");
       eq(attSafeName(".hidden.png").startsWith("."),false,"先頭ドットを除去");
       eq(attSafeName(""),"file","空名はfile");});
-    // 21. プロジェクトダッシュボード集計・状態判定
+    // 21. エスケープ（取込・AI回答由来のXSS対策）
+    T("エスケープとXSS対策",()=>{
+      eq(esc("<script>"),"&lt;script&gt;","タグをエスケープ");
+      eq(esc("a&b"),"a&amp;b","アンパサンド");
+      eq(escAttr('a"b'),"a&quot;b","属性の二重引用符");
+      /* インラインイベント属性はHTMLデコード後にJSとして解釈されるため、
+         HTMLエスケープだけでは単一引用符による脱出を防げない（escJsが必要） */
+      /* 実際の属性コンテキストで評価し、コードが実行されず文字列として渡ることを確認する。
+         escAttr のみでは同じ経路でコードが実行されてしまうことも併せて検証する。 */
+      const probe=(escFn)=>{
+        delete window.__xssRun;delete window.__xssVal;
+        const raw="');window.__xssRun=1;//";
+        const d=document.createElement("div");
+        d.innerHTML=`<b onclick="window.__xssVal=('${escFn(raw)}')"></b>`;
+        try{d.firstChild.click();}catch(e){}
+        const r={ran:window.__xssRun===1,val:window.__xssVal,raw:raw};
+        delete window.__xssRun;delete window.__xssVal;return r;
+      };
+      eq(probe(escAttr).ran,true,"escAttrのみでは属性内でコードが実行される（escJsが必要な理由）");
+      const pj=probe(escJs);
+      eq(pj.ran,false,"escJs: コードが実行されない");
+      eq(pj.val,pj.raw,"escJs: 値が文字列として正しく渡る");
+      eq(escJs("a'b"),"a\\'b","単一引用符をJSエスケープ");
+      eq(escJs("a\\b"),"a\\\\b","バックスラッシュをJSエスケープ");
+      eq(escJs("<x>"),"&lt;x&gt;","HTMLエスケープも施す");
+      eq(escJs("a\nb").indexOf("\n"),-1,"改行を除去");
+      eq(safeImgSrc('x" onerror="y'),"","画像src: 属性脱出を遮断");
+      eq(safeImgSrc("javascript:x()"),"","画像src: javascript:を遮断");
+      eq(safeImgSrc("https://example.com/a.png"),"","画像src: 外部URLを遮断");
+      eq(safeImgSrc("data:image/png;base64,AAAA"),"data:image/png;base64,AAAA","画像src: 正当なdata URLは通す");});
+    // 22. プロジェクトダッシュボード集計・状態判定
     T("プロジェクト全体集計",()=>{
       const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
       eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
@@ -3341,7 +3380,7 @@ function renderProcesses(){
     const active=p.id===db.activeProcessId;
     const dupId=idCount[p.id]>1;
     const rv=reviewNeeded(p);
-    return `<div class="proc-row${active?' active':''}"${active?"":` style="border-left-color:${procColor(p.id)}"`} onclick="selectProcess('${p.id}')" ondblclick="show('steps')" title="クリックでこのプロセスをアクティブにします（ダブルクリックで${manual?'業務マニュアル':'業務記述書'}へ）">`
+    return `<div class="proc-row${active?' active':''}"${active?"":` style="border-left-color:${procColor(p.id)}"`} onclick="selectProcess('${escJs(p.id)}')" ondblclick="show('steps')" title="クリックでこのプロセスをアクティブにします（ダブルクリックで${manual?'業務マニュアル':'業務記述書'}へ）">`
       +`<span class="proc-dot" style="background:${procColor(p.id)}"></span>`
       +(manual?"":`<span class="chip${p.in_scope?'':' out'}">${p.in_scope?'評価対象':'対象外'}</span>`)
       +(manual?triBadge(p.attribution_risk):"")
@@ -3349,9 +3388,9 @@ function renderProcesses(){
       +(dupId?`<span class="chip" style="background:#B0413B;color:#fff;border:none" title="同じIDのプロセスが複数あります。ID変更で解消してください">ID重複</span>`:"")
       +`<span class="nm">${esc(p.id)}　${esc(p.name)}</span>`
       +`<span style="color:var(--muted);font-size:12px">${manual?"手順":"工程"}${p.steps.length}${manual?"":" / 統制"+p.rcm.filter(r=>r.control_id).length}</span>`
-      +`<button class="sm" onclick="event.stopPropagation();selectProcess('${p.id}')">選択</button>`
-      +`<button class="sm ghost" onclick="event.stopPropagation();editProcId('${p.id}')" title="プロセスIDの番号を変更します（基本3桁・最大4桁）">ID変更</button>`
-      +`<button class="sm ghost" onclick="event.stopPropagation();delProcess('${p.id}')">削除</button>`
+      +`<button class="sm" onclick="event.stopPropagation();selectProcess('${escJs(p.id)}')">選択</button>`
+      +`<button class="sm ghost" onclick="event.stopPropagation();editProcId('${escJs(p.id)}')" title="プロセスIDの番号を変更します（基本3桁・最大4桁）">ID変更</button>`
+      +`<button class="sm ghost" onclick="event.stopPropagation();delProcess('${escJs(p.id)}')">削除</button>`
       +`</div>`;
   }).join("");
   document.getElementById("procList").innerHTML=list||`<div class="hint">${q?"検索条件に一致する業務がありません。":"業務がありません。"}</div>`;
@@ -3364,7 +3403,7 @@ function renderProcesses(){
       ob.innerHTML=`<div class="card" style="background:#E6F2EC;border-color:#C3E2D2">
         <h3 style="margin:0 0 6px;font-size:14px;color:#157F5B">まず業務を1つ登録してみましょう</h3>
         <div class="hint" style="margin:0 0 8px">完璧でなくてOK。よくある業務のテンプレートから始めて、自社の実態に合わせて直していくのがおすすめです。</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">${ex.map(([id,lb])=>`<button class="sm primary" onclick="createFromTemplateId('${id}')">${esc(lb)}</button>`).join("")}<button class="sm" onclick="addProcess()">空の業務を作る</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${ex.map(([id,lb])=>`<button class="sm primary" onclick="createFromTemplateId('${escJs(id)}')">${esc(lb)}</button>`).join("")}<button class="sm" onclick="addProcess()">空の業務を作る</button></div>
         <div class="hint" style="margin:8px 0 0;font-size:11px">入力の順番の目安：業務名 → 担当・部署 → 作業の流れ → 使用する資料・システム → 注意点/ミスしやすい点 → チェックポイント → 完了条件</div>
       </div>`;
     }else ob.innerHTML="";
@@ -3667,7 +3706,7 @@ function closeTmplModal(){document.getElementById("tmplModal").style.display="no
 function renderTmplModal(){
   const vis=tmplVisible();let h="";
   vis.forEach(t=>{const sel=t.id===_tmplSelId;const ic=TMPL_ICONS[t.id]||"ph-files";
-    h+=`<button class="tmpl-card${sel?" sel":""}" onclick="selTmplCard('${escAttr(t.id)}')"><span class="tic"><i class="ph ${ic}"></i></span><span style="flex:1;min-width:0"><span class="tname">${esc(t.name)}</span><span class="tdesc">${esc(t.sub_process||"標準的な工程・リスク・統制のひな形から始めます。")}</span><span><span class="tstat">工程 ${(t.steps||[]).length}</span><span class="tstat">RCM ${(t.rcm||[]).length}</span></span></span></button>`;});
+    h+=`<button class="tmpl-card${sel?" sel":""}" onclick="selTmplCard('${escJs(t.id)}')"><span class="tic"><i class="ph ${ic}"></i></span><span style="flex:1;min-width:0"><span class="tname">${esc(t.name)}</span><span class="tdesc">${esc(t.sub_process||"標準的な工程・リスク・統制のひな形から始めます。")}</span><span><span class="tstat">工程 ${(t.steps||[]).length}</span><span class="tstat">RCM ${(t.rcm||[]).length}</span></span></span></button>`;});
   const selBlank=_tmplSelId==="__blank__";
   h+=`<button class="tmpl-card${selBlank?" sel":""}" onclick="selTmplCard('__blank__')"><span class="tic"><i class="ph ph-plus-circle"></i></span><span style="flex:1;min-width:0"><span class="tname">空のテンプレート</span><span class="tdesc">工程・RCMなしで一から作成します。</span><span><span class="tstat">工程 0</span><span class="tstat">RCM 0</span></span></span></button>`;
   document.getElementById("tmplGrid").innerHTML=h;
@@ -3702,7 +3741,7 @@ function openDetail(i){_detailIdx=i;const s=P().steps[i];if(!s)return;
   renderDmImgs();
   document.getElementById("detailModal").style.display="flex";setTimeout(()=>document.getElementById("dmText").focus(),0);}
 function renderDmImgs(){const el=document.getElementById("dmImgs");if(!el)return;const s=P().steps[_detailIdx];if(!s){el.innerHTML="";return;}
-  let h="";(s.images||[]).forEach((d,k)=>{h+=`<div class="img-thumb"><img src="${d}"><button class="del" title="この画像を削除" onclick="delDmImg(${k})"><i class="ph ph-x"></i></button></div>`;});
+  let h="";(s.images||[]).forEach((d,k)=>{h+=`<div class="img-thumb"><img src="${safeImgSrc(d)}" alt=""><button class="del" title="この画像を削除" onclick="delDmImg(${k})"><i class="ph ph-x"></i></button></div>`;});
   h+=`<button class="img-add" onclick="addDmImg()" title="画像を添付（自動で縮小）"><i class="ph ph-upload-simple"></i>クリックで画像を添付<span class="mono" style="font-size:9.5px;color:var(--c-text-faint);font-weight:500">PNG / JPG ・ ローカル保存</span></button>`;
   el.innerHTML=h;}
 function addDmImg(){const fi=document.getElementById("dmImgInput");if(!fi)return;fi.value="";fi.click();}
@@ -3935,8 +3974,8 @@ function renderManual(p,cc){
       if(s.system||s.evidence||s.dur)h+=`<div style="font-size:12px;color:var(--muted);margin-bottom:4px">${s.system?`使用システム: ${esc(s.system)}　`:""}${s.evidence?`使用帳票: ${esc(s.evidence)}　`:""}${s.dur?`所要時間: ${esc(s.dur)}`:""}</div>`;
       if(s.detail)h+=`<p style="font-size:12.5px;margin:4px 0 6px;white-space:pre-wrap">${esc(s.detail)}</p>`;
       if(s.point)h+=`<div class="step-point">ポイント・注意点: ${esc(s.point)}</div>`;
-      if(s.img)h+=`<div style="margin-top:6px"><img src="${s.img}" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:2px"></div>`;
-      (s.images||[]).forEach(d=>{h+=`<div style="margin-top:6px"><img src="${d}" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:2px"></div>`;});
+      if(safeImgSrc(s.img))h+=`<div style="margin-top:6px"><img src="${safeImgSrc(s.img)}" alt="" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:2px"></div>`;
+      (s.images||[]).forEach(d=>{if(!safeImgSrc(d))return;h+=`<div style="margin-top:6px"><img src="${safeImgSrc(d)}" alt="" style="max-width:100%;max-height:340px;border:1px solid var(--line);border-radius:2px"></div>`;});
       if(rules.length)h+=`<div style="margin-top:6px;font-size:12px"><b>ルール・チェックポイント:</b> ${rules.map(r=>esc(r.control_desc)).join(" / ")}</div>`;
       h+=`</div>`;
     });
@@ -4016,7 +4055,7 @@ function renderRcmDoc(){
         +`<td>${(r.risk_id||"").trim()?`<span class="idchip" style="margin-right:6px">${esc(r.risk_id)}</span>`:""}${esc(r.risk_desc)}</td>`
         +`<td>${(r.control_id||"").trim()?`<span class="idchip" style="margin-right:6px">${esc(r.control_id)}</span>`:""}${r.key?keyTag():""}<div style="margin-top:3px">${esc(r.control_desc)}</div></td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
-        +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
+        +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escJs((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
         +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
         +cc.map(c=>`<td>${esc((r.custom||{})[c.id]||"")}</td>`).join("")
         +`</tr>`;});
@@ -4046,7 +4085,7 @@ function renderRcmDoc(){
         +`<td style="white-space:nowrap">${(r.control_id||"").trim()?`<span class="idchip">${esc(r.control_id)}</span>`:""}</td>`
         +`<td>${esc(r.control_desc)}</td>`
         +ASRT_KEYS.map(k=>`<td style="text-align:center">${asrtMark(r[k])}</td>`).join("")
-        +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
+        +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×"&&(r.control_id||"").trim())?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escJs((r.control_id||"").trim())}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
         +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
         +`<td style="text-align:center">${esc(r.prev_det||"")}</td>`
         +`<td style="text-align:center">${esc(r.man_auto||"")}</td>`
@@ -4095,9 +4134,9 @@ function renderEvalWork(){
   const pal=phasePalette(p.steps);
   const el=document.getElementById("evalWorkBody");
   if(!rows.length){el.innerHTML=`<div class="hint">統制ID付きのRCM行がありません。「RCM（リスクと統制）」の編集で統制IDを入力すると、ここに評価一覧が表示されます。</div>`;return;}
-  const sel=(i,f,v,opts)=>`<select onfocus="evwPush()" onchange="evwSet(${i},'${f}',this.value)">${opts.map(o=>`<option value="${escAttr(o)}"${o===v?" selected":""}>${esc(o||"　")}</option>`).join("")}</select>`;
-  const inp2=(i,f,v,ph,list)=>`<input value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""}${list?` list="${list}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">`;
-  const ta=(i,f,v,ph)=>`<textarea class="evw-note" placeholder="${escAttr(ph)}" onfocus="evwPush()" oninput="evwSet(${i},'${f}',this.value)">${esc(v||"")}</textarea>`;
+  const sel=(i,f,v,opts)=>`<select onfocus="evwPush()" onchange="evwSet(${i},'${escJs(f)}',this.value)">${opts.map(o=>`<option value="${escAttr(o)}"${o===v?" selected":""}>${esc(o||"　")}</option>`).join("")}</select>`;
+  const inp2=(i,f,v,ph,list)=>`<input value="${escAttr(v||"")}"${ph?` placeholder="${escAttr(ph)}"`:""}${list?` list="${list}"`:""} onfocus="evwPush()" oninput="evwSet(${i},'${escJs(f)}',this.value)">`;
+  const ta=(i,f,v,ph)=>`<textarea class="evw-note" placeholder="${escAttr(ph)}" onfocus="evwPush()" oninput="evwSet(${i},'${escJs(f)}',this.value)">${esc(v||"")}</textarea>`;
   const COLS=14;
   const ROLES=["","業務部門（自己）","内部監査","会計監査人","監査役等","外部専門家"];
   let h=`<div class="gridbox" style="max-height:none"><table class="dr" style="white-space:normal;width:100%;min-width:1120px">
@@ -4138,8 +4177,8 @@ function renderEvalWork(){
       <td class="evalc" style="min-width:98px">${inp2(i,"oe_date",r.oe_date,"YYYY-MM-DD")}</td>
       <td class="gs" style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px"><span id="evw-total-${i}">${evalPill(overallEval(r))}</span></td>
       <td style="text-align:center;vertical-align:middle;white-space:nowrap;padding:6px 8px">
-        <button class="detailbtn${hasNotes?" on":""}" onclick="evwToggle('${escAttr(cid)}')" title="評価手続・評価内容を${open?"閉じる":"開く"}"><i class="ph ${open?"ph-caret-up":"ph-note-pencil"}"></i></button>
-        <button class="sm" id="evw-deflink-${i}" style="${showDefLink?"":"display:none"};margin-left:4px;padding:0 7px" onclick="gotoDef('${escAttr(cid)}')" title="不備管理の該当行へ"><i class="ph ph-warning"></i></button>
+        <button class="detailbtn${hasNotes?" on":""}" onclick="evwToggle('${escJs(cid)}')" title="評価手続・評価内容を${open?"閉じる":"開く"}"><i class="ph ${open?"ph-caret-up":"ph-note-pencil"}"></i></button>
+        <button class="sm" id="evw-deflink-${i}" style="${showDefLink?"":"display:none"};margin-left:4px;padding:0 7px" onclick="gotoDef('${escJs(cid)}')" title="不備管理の該当行へ"><i class="ph ph-warning"></i></button>
       </td>
     </tr>`;
     if(open){
@@ -4197,12 +4236,12 @@ function renderEvalDoc(){
   rows.forEach(r=>{
     const oeDetail=[r.oe_method,(r.oe_n||"").toString().trim()?`件数:${r.oe_n}`:"",(r.oe_excns||"").toString().trim()?`例外:${r.oe_excns}`:""].filter(Boolean).join(" / ");
     const cid=(r.control_id||"").trim();
-    const defLink=x=>(x==="不備")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr(cid)}');return false">${resPill(x)}</a>`:resPill(x);
+    const defLink=x=>(x==="不備")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escJs(cid)}');return false">${resPill(x)}</a>`:resPill(x);
     const roleAbbr=v=>({"業務部門（自己）":"自己","内部監査":"内監","会計監査人":"会監","監査役等":"監査役","外部専門家":"外部"}[v]||"");
     const evln=(lbl,role,by,dt)=>(role||by||dt)?`<span style="color:var(--c-text-faint)">${lbl}:</span>${roleAbbr(role)?` <b>${esc(roleAbbr(role))}</b>`:""} ${esc(by||"—")}<span style="color:var(--c-text-faint)"> ${esc(dt||"")}</span>`:"";
     const evby=[evln("整備",r.de_role,r.de_by,r.de_date),evln("運用",r.oe_role,r.oe_by,r.oe_date),evln("査閲","",r.wp_rev_by,r.wp_rev_date)].filter(Boolean).join("<br>")||`<span style="color:var(--c-text-faint)">—</span>`;
     h+=`<tr class="${r.key?"kc":""}">`
-      +`<td style="white-space:nowrap"><a href="#" class="linkpill" title="整備・運用評価の詳細へジャンプ" onclick="gotoEvalWork('${escAttr(cid)}');return false"><span class="idchip">${esc(r.control_id)}</span></a>${r.key?" "+keyTag():""}</td>`
+      +`<td style="white-space:nowrap"><a href="#" class="linkpill" title="整備・運用評価の詳細へジャンプ" onclick="gotoEvalWork('${escJs(cid)}');return false"><span class="idchip">${esc(r.control_id)}</span></a>${r.key?" "+keyTag():""}</td>`
       +`<td class="mono" style="white-space:nowrap;font-size:11.5px;color:var(--c-text-mid)">${esc(r.wp_ref||"—")}</td>`
       +`<td>${esc(r.gyomu)}</td>`
       +`<td>${esc(r.risk_desc)}</td>`
@@ -4211,7 +4250,7 @@ function renderEvalDoc(){
       +`<td>${esc(oeDetail||"-")}</td>`
       +`<td style="text-align:center">${defLink(r.oe_result)}</td>`
       +`<td style="font-size:11.5px;white-space:nowrap">${evby}</td>`
-      +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escAttr(cid)}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
+      +`<td style="text-align:center;white-space:nowrap">${(overallEval(r)==="×")?`<a href="#" class="linkpill" title="不備管理の該当行へジャンプ" onclick="gotoDef('${escJs(cid)}');return false">${evalPill("×")}</a>`:evalPill(overallEval(r))}</td>`
       +`<td class="col-note">${esc(r.oe_note||"")}${(r.de_note||"").trim()?`<br><span style="color:var(--muted)">整備: ${esc(r.de_note)}</span>`:""}</td>`
       +`</tr>`;});
   h+=`</tbody></table></div>`+prnNotesBlock(rows)+`<div class="hint" style="margin-top:8px">整備評価＝統制が適切にデザインされているかの評価。運用評価＝サンプルテスト（抽出方法・件数・例外件数）に基づく運用状況の評価。評価主体（自己評価／内部監査／会計監査人）・査閲・調書番号を記録でき、印刷・Excel出力をそのまま監査調書として利用できます（実施基準・監基報230/330の記録要素を参考）。総合＝整備・運用の結果を踏まえた総合判定です。キー統制が設定されている場合はキー統制のみを表示します。統制IDをクリックすると評価の詳細（整備・運用評価）へ、「不備」の表示をクリックすると不備管理の該当行へジャンプします。</div>`;
@@ -4604,7 +4643,7 @@ function renderEv(){
   let h="";
   if(!ctrls.length)h=`<tr><td colspan="8" style="color:var(--muted);padding:10px">統制ID付きのRCM行がありません。RCM編集で統制IDを入力してください。</td></tr>`;
   ctrls.forEach(r=>{const cid=(r.control_id||"").trim();const o=evOf(cid);
-    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:${f.store==="dir"?"#3E6B63":"#56635F"}" title="${escAttr(f.store==="dir"?(f.path||f.name)+"（フォルダ格納）":f.name)} (${fmtSize(f.size)})　クリックで開く">${f.store==="dir"?'<i class="ph ph-folder" style="font-size:10px"></i> ':""}<a href="#" onclick="openEvidence('${escAttr(cid)}',${idx});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlEvidence('${escAttr(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escAttr(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">×</a></span>`).join(" ");
+    const chips=o.files.map((f,idx)=>`<span class="tagmini" style="background:${f.store==="dir"?"#3E6B63":"#56635F"}" title="${escAttr(f.store==="dir"?(f.path||f.name)+"（フォルダ格納）":f.name)} (${fmtSize(f.size)})　クリックで開く">${f.store==="dir"?'<i class="ph ph-folder" style="font-size:10px"></i> ':""}<a href="#" onclick="openEvidence('${escJs(cid)}',${idx});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlEvidence('${escJs(cid)}',${idx});return false" style="color:#cde;text-decoration:none" title="ダウンロード" aria-label="ダウンロード">⤓</a> <a href="#" onclick="delEvidence('${escJs(cid)}',${idx});return false" style="color:#fbb;text-decoration:none" title="削除" aria-label="削除">×</a></span>`).join(" ");
     h+=`<tr>`
       +`<td class="w-no"><b>${esc(cid)}</b>${r.key?'<span class="tagmini" style="background:'+C_CTRL+'">KC</span>':""}</td>`
       +`<td>${esc(r.gyomu||"")}</td>`
@@ -4613,7 +4652,7 @@ function renderEv(){
       +`<td class="w-sm"><input data-cid="${escAttr(cid)}" data-ef="req_to" value="${escAttr(o.req_to||r.owner||"")}"></td>`
       +`<td class="w-sm"><input data-cid="${escAttr(cid)}" data-ef="req_due" value="${escAttr(o.req_due||"")}" placeholder="YYYY-MM-DD"></td>`
       +`<td><select data-cid="${escAttr(cid)}" data-ef="req_status">${["未依頼","依頼済","受領","不足"].map(s=>`<option ${o.req_status===s?"selected":""}>${s}</option>`).join("")}</select></td>`
-      +`<td><button class="sm" onclick="attachEvidence('${escAttr(cid)}')"><svg class="ic"><use href="#i-ev"/></svg> 添付</button> <span style="font-size:11px">${chips||'<span style="color:var(--muted)">なし</span>'}</span></td>`
+      +`<td><button class="sm" onclick="attachEvidence('${escJs(cid)}')"><svg class="ic"><use href="#i-ev"/></svg> 添付</button> <span style="font-size:11px">${chips||'<span style="color:var(--muted)">なし</span>'}</span></td>`
       +`</tr>`;});
   document.getElementById("evBody").innerHTML=h;
 }
@@ -4748,15 +4787,15 @@ function renderLibrary(){
   const body=document.getElementById("libBody");if(!body)return;
   if(!rows.length){body.innerHTML=`<tr><td colspan="6" style="color:var(--muted);padding:10px">${all.length?"条件に一致する資料がありません。":"まだ規程・資料が登録されていません。「＋資料を追加」から登録できます。"}</td></tr>`;return;}
   body.innerHTML=rows.map(it=>{
-    const links=(it.links||[]).map((u,i)=>`<span class="tagmini" style="background:#56635F"><a href="${escAttr(u)}" target="_blank" rel="noopener" style="color:#cde;text-decoration:none" title="${escAttr(u)}">リンク</a> <a href="#" onclick="delLibLink('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">×</a></span>`).join(" ");
-    const files=(it.files||[]).map((f,i)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})　クリックで開く"><a href="#" onclick="openLibFile('${escAttr(it.id)}',${i});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlLibFile('${escAttr(it.id)}',${i});return false" style="color:#cde;text-decoration:none" title="ダウンロード">⤓</a> <a href="#" onclick="delLibFile('${escAttr(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">×</a></span>`).join(" ");
+    const links=(it.links||[]).map((u,i)=>`<span class="tagmini" style="background:#56635F"><a href="${escAttr(u)}" target="_blank" rel="noopener" style="color:#cde;text-decoration:none" title="${escAttr(u)}">リンク</a> <a href="#" onclick="delLibLink('${escJs(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">×</a></span>`).join(" ");
+    const files=(it.files||[]).map((f,i)=>`<span class="tagmini" style="background:#56635F" title="${escAttr(f.name)} (${fmtSize(f.size)})　クリックで開く"><a href="#" onclick="openLibFile('${escJs(it.id)}',${i});return false" style="color:#fff;text-decoration:underline" title="クリックで開く（別タブ）">${esc(f.name.length>16?f.name.slice(0,15)+"…":f.name)}</a> <a href="#" onclick="dlLibFile('${escJs(it.id)}',${i});return false" style="color:#cde;text-decoration:none" title="ダウンロード">⤓</a> <a href="#" onclick="delLibFile('${escJs(it.id)}',${i});return false" style="color:#fbb;text-decoration:none" title="削除">×</a></span>`).join(" ");
     return `<tr>`
       +`<td class="w-md"><b>${esc(it.title||"")}</b></td>`
       +`<td class="w-sm">${esc(it.category||"")}</td>`
       +`<td class="w-wide">${esc(it.note||"")}</td>`
-      +`<td>${links||'<span style="color:var(--muted)">—</span>'} <button class="sm no-print" onclick="addLibLink('${escAttr(it.id)}')" title="リンクを追加">＋</button></td>`
-      +`<td>${files||'<span style="color:var(--muted)">なし</span>'} <button class="sm no-print" onclick="attachLibFile('${escAttr(it.id)}')" title="ファイルを添付">添付</button></td>`
-      +`<td class="no-print"><button class="sm" onclick="editLibItem('${escAttr(it.id)}')">編集</button> <button class="sm" onclick="delLibItem('${escAttr(it.id)}')">削除</button></td>`
+      +`<td>${links||'<span style="color:var(--muted)">—</span>'} <button class="sm no-print" onclick="addLibLink('${escJs(it.id)}')" title="リンクを追加">＋</button></td>`
+      +`<td>${files||'<span style="color:var(--muted)">なし</span>'} <button class="sm no-print" onclick="attachLibFile('${escJs(it.id)}')" title="ファイルを添付">添付</button></td>`
+      +`<td class="no-print"><button class="sm" onclick="editLibItem('${escJs(it.id)}')">編集</button> <button class="sm" onclick="delLibItem('${escJs(it.id)}')">削除</button></td>`
       +`</tr>`;
   }).join("");
 }
@@ -4899,7 +4938,7 @@ function renderProcView(){
   // ---- 不備管理 3段階 + 証憑格納 ----
   const tiers=[["不備",minor,"#9A6614","#FBF7EE","#EBDFC4"],["開示すべき重要な不備",mat,"#7A1F1A","#F7EEED","#E6CBC6"],["未是正",openD,"#B0413B","#FBEEEC","#EFD3CE"]];
   let tierH=`<div style="display:flex;gap:10px;margin-bottom:14px">`;tiers.forEach(t=>{tierH+=`<div style="flex:1;padding:12px;border-radius:2px;background:${t[3]};border:1px solid ${t[4]}"><div class="mono" style="font-size:24px;font-weight:700;color:${t[2]};line-height:1">${t[1]}</div><div style="font-size:10.5px;font-weight:600;color:${t[2]};margin-top:5px;line-height:1.3">${t[0]}</div></div>`;});tierH+=`</div>`;
-  let defH="";ds.filter(d=>d.status!=="是正済").slice(0,3).forEach(d=>{defH+=`<div onclick="gotoDefById('${escAttr(d.def_id)}')" title="クリックで不備管理の該当行へ" style="display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #EFD3CE;border-radius:2px;background:#FDF7F6;margin-bottom:8px;cursor:pointer"><i class="ph ph-warning-circle" style="font-size:18px;color:var(--c-err);flex:none;margin-top:1px"></i><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap"><span class="mono" style="font-size:11px;font-weight:600;color:#7A1F1A">${esc(d.def_id)}</span><span style="font-size:10px;font-weight:600;color:var(--c-err);padding:1px 7px;border-radius:2px;background:#F7E2DF">${esc(d.type)}</span><span style="font-size:11px;color:var(--c-text-faint)">統制 ${esc(d.control_id||"—")}</span></div><div style="font-size:12.5px;color:#2A3633;line-height:1.5">${esc(d.desc||"")}</div>${d.due?`<div style="margin-top:5px;font-size:11px;color:var(--c-text-mid)">是正期限 <b class="mono" style="color:var(--c-err)">${esc(d.due)}</b></div>`:""}</div></div>`;});
+  let defH="";ds.filter(d=>d.status!=="是正済").slice(0,3).forEach(d=>{defH+=`<div onclick="gotoDefById('${escJs(d.def_id)}')" title="クリックで不備管理の該当行へ" style="display:flex;align-items:flex-start;gap:11px;padding:12px;border:1px solid #EFD3CE;border-radius:2px;background:#FDF7F6;margin-bottom:8px;cursor:pointer"><i class="ph ph-warning-circle" style="font-size:18px;color:var(--c-err);flex:none;margin-top:1px"></i><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap"><span class="mono" style="font-size:11px;font-weight:600;color:#7A1F1A">${esc(d.def_id)}</span><span style="font-size:10px;font-weight:600;color:var(--c-err);padding:1px 7px;border-radius:2px;background:#F7E2DF">${esc(d.type)}</span><span style="font-size:11px;color:var(--c-text-faint)">統制 ${esc(d.control_id||"—")}</span></div><div style="font-size:12.5px;color:#2A3633;line-height:1.5">${esc(d.desc||"")}</div>${d.due?`<div style="margin-top:5px;font-size:11px;color:var(--c-text-mid)">是正期限 <b class="mono" style="color:var(--c-err)">${esc(d.due)}</b></div>`:""}</div></div>`;});
   let evH="";ctrls.slice(0,6).forEach(r=>{const cid=(r.control_id||"").trim();const o=(p.evidence||{})[cid];const n=o&&o.files?o.files.length:0;const st=n>0?["格納済","ep-ok","ph-check-circle"]:(o&&o.req_status&&o.req_status!=="未依頼"?[o.req_status==="依頼済"?"依頼中":o.req_status,"ep-warn","ph-clock"]:["未依頼","ep-na","ph-circle-dashed"]);
     evH+=`<div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid #E6ECEA;border-radius:2px;margin-bottom:8px"><span class="mono" style="font-size:11px;font-weight:600;color:var(--c-primary-d);flex:none;width:44px">${esc(cid)}</span><span style="flex:1;font-size:12px;color:#2A3633;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.control_desc||"")}</span><span class="mono" style="font-size:11px;color:var(--c-text-faint);flex:none">${n}件</span><span class="evalpill ${st[1]}"><i class="ph ${st[2]}" style="font-size:12px"></i>${st[0]}</span></div>`;});
   h+=`<div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px">`
@@ -4982,7 +5021,7 @@ function procNextHTML(p){
   const st=procStats(p);const acts=procActions(p,st).sort((x,y)=>x.pr-y.pr).slice(0,3);
   let h=`<div class="card" style="margin:14px 0 0"><div style="font-size:13.5px;font-weight:700;margin-bottom:10px">次に行うこと</div>`;
   if(!acts.length)h+=`<div style="font-size:12.5px;color:var(--c-text-mid)"><i class="ph ph-check-circle" style="color:var(--c-ok)"></i> このプロセスで重大な確認事項はありません。</div>`;
-  else acts.forEach((a,i)=>{h+=`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;${i?"border-top:1px dashed var(--c-border)":""}"><span class="mono" style="font-weight:700;color:var(--c-text-faint)">${i+1}</span><span style="flex:1;font-size:12.5px">${esc(a.msg)}</span><button class="sm" onclick="show('${a.pg}')">${esc(a.btn)}</button></div>`;});
+  else acts.forEach((a,i)=>{h+=`<div style="display:flex;align-items:center;gap:12px;padding:9px 0;${i?"border-top:1px dashed var(--c-border)":""}"><span class="mono" style="font-weight:700;color:var(--c-text-faint)">${i+1}</span><span style="flex:1;font-size:12.5px">${esc(a.msg)}</span><button class="sm" onclick="show('${escJs(a.pg)}')">${esc(a.btn)}</button></div>`;});
   return h+`</div>`;
 }
 let _dashSort={key:"",dir:1};
@@ -5039,15 +5078,15 @@ function renderDash(){
   else if(key==="last")rows.sort((a,b)=>String(b.st.last).localeCompare(String(a.st.last))*dir);
   else if(key==="id")rows.sort((a,b)=>(procIdNum(a.p.id)-procIdNum(b.p.id))*dir);
   else rows.sort((a,b)=>procIdNum(a.p.id)-procIdNum(b.p.id));/* 既定はID番号順 */
-  const th=(lb,k)=>`<th${k?` style="cursor:pointer" title="クリックで並べ替え" onclick="dashSort('${k}')"`:""}>${lb}${k&&_dashSort.key===k?(_dashSort.dir>0?" ▲":" ▼"):""}</th>`;
-  const cell=(pid,pg,html,title)=>`<td style="text-align:center;cursor:pointer" title="${escAttr(title)}" onclick="dashOpen('${escAttr(pid)}','${pg}')">${html}</td>`;
+  const th=(lb,k)=>`<th${k?` style="cursor:pointer" title="クリックで並べ替え" onclick="dashSort('${escJs(k)}')"`:""}>${lb}${k&&_dashSort.key===k?(_dashSort.dir>0?" ▲":" ▼"):""}</th>`;
+  const cell=(pid,pg,html,title)=>`<td style="text-align:center;cursor:pointer" title="${escAttr(title)}" onclick="dashOpen('${escJs(pid)}','${escJs(pg)}')">${html}</td>`;
   const docPill=(on,lb)=>on?`<span class="evalpill ep-ok" style="cursor:inherit">${lb||"生成済"}</span>`:`<span class="evalpill ep-na" style="cursor:inherit">${lb||"未着手"}</span>`;
   let tb="";
   rows.forEach(({p,st})=>{
     const rcmPill=st.ctrls>0?docPill(true):(st.risks>0?`<span class="evalpill ep-warn" style="cursor:inherit">入力中</span>`:docPill(false));
     tb+=`<tr>
       <td class="mono" style="white-space:nowrap;font-weight:600;color:var(--c-primary-d)">${esc(p.id)}</td>
-      <td style="cursor:pointer;font-weight:600" title="クリックでプロセス概要へ" onclick="dashOpen('${escAttr(p.id)}','procview')">${esc(p.name||"")}${p.sub_process?`<span style="font-weight:400;color:var(--c-text-faint)">（${esc(p.sub_process)}）</span>`:""}</td>
+      <td style="cursor:pointer;font-weight:600" title="クリックでプロセス概要へ" onclick="dashOpen('${escJs(p.id)}','procview')">${esc(p.name||"")}${p.sub_process?`<span style="font-weight:400;color:var(--c-text-faint)">（${esc(p.sub_process)}）</span>`:""}</td>
       ${cell(p.id,"steps",docPill(st.act>0,st.act>0?`生成済 ${st.act}工程`:"未着手"),"クリックで業務記述書へ")}
       ${cell(p.id,"flow",docPill(st.act>0),"クリックでフロー図へ")}
       ${cell(p.id,"rcm",rcmPill,"クリックでRCMへ")}
@@ -5055,7 +5094,7 @@ function renderDash(){
       ${cell(p.id,"gap",(st.gErr+st.gWarn)?`<span class="mono" style="font-weight:700;color:${st.gErr?"#B0413B":"#9A6614"}">${st.gErr+st.gWarn}件</span>`:`<span style="color:var(--c-text-faint)">0件</span>`,"クリックでギャップチェックへ")}
       <td class="mono" style="text-align:center;color:var(--c-text-mid)">${esc(st.last||"—")}</td>
       <td style="text-align:center">${stPill(st.status)}</td>
-      <td style="text-align:center"><button class="sm" onclick="dashOpen('${escAttr(p.id)}','procview')">開く</button></td>
+      <td style="text-align:center"><button class="sm" onclick="dashOpen('${escJs(p.id)}','procview')">開く</button></td>
     </tr>`;
   });
   h+=`<div class="card" style="margin:0 0 14px;padding:0;overflow:hidden"><div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px"><span style="font-size:13.5px;font-weight:700">プロセス別 作成状況</span><span style="font-size:11px;color:var(--c-text-faint)" title="${escAttr(DASH_ST_TIP)}"><i class="ph ph-info"></i> 状態の判定条件</span></div>
@@ -5068,7 +5107,7 @@ function renderDash(){
   allActs.slice(0,6).forEach((a,i)=>{actH+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i?"border-top:1px dashed var(--c-border)":""}">
     <span class="mono" style="font-weight:700;color:var(--c-text-faint);flex:none">${i+1}</span>
     <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">${esc(a.pname)}</div><div style="font-size:12px;color:var(--c-text-mid)">${esc(a.msg)}</div></div>
-    <button class="sm" style="flex:none" onclick="dashOpen('${escAttr(a.pid)}','${a.pg}')">${esc(a.btn)}</button></div>`;});
+    <button class="sm" style="flex:none" onclick="dashOpen('${escJs(a.pid)}','${escJs(a.pg)}')">${esc(a.btn)}</button></div>`;});
   if(!actH)actH=`<div style="font-size:12.5px;color:var(--c-text-mid)"><i class="ph ph-check-circle" style="color:var(--c-ok)"></i> すべてのプロセスで重大な確認事項はありません。</div>`;
   /* カバレッジ要約（詳細マトリクスはプロセス概要側） */
   let covRows=[];
@@ -5082,14 +5121,14 @@ function renderDash(){
   if(!covRows.length)covH=`<div style="font-size:12.5px;color:var(--c-text-mid)"><i class="ph ph-check-circle" style="color:var(--c-ok)"></i> 勘定科目×アサーションの未対応はありません。</div>`;
   else{
     covH=`<div style="font-size:12.5px;margin-bottom:8px">未対応あり <b class="mono" style="color:#B0413B">${covRows.length}</b> プロセス</div>`;
-    covRows.slice(0,4).forEach(r=>{covH+=`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px dashed var(--c-border)"><span style="flex:1;font-size:12.5px">${esc(r.pname)}</span><span class="mono" style="font-size:12px;color:#B0413B;font-weight:700">${r.miss}項目</span><button class="sm" onclick="dashOpen('${escAttr(r.pid)}','procview')">詳細を確認する</button></div>`;});
+    covRows.slice(0,4).forEach(r=>{covH+=`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px dashed var(--c-border)"><span style="flex:1;font-size:12.5px">${esc(r.pname)}</span><span class="mono" style="font-size:12px;color:#B0413B;font-weight:700">${r.miss}項目</span><button class="sm" onclick="dashOpen('${escJs(r.pid)}','procview')">詳細を確認する</button></div>`;});
   }
   /* 仕訳の科目がRCMの対象勘定に無いプロセス */
   const jnlRows=[];
   ag.rows.forEach(({p})=>{const st=jnlLinkStats(p,_applied[p.id]||p);if(st.acctsOnly.length)jnlRows.push({pid:p.id,pname:p.name||p.id,n:st.acctsOnly.length});});
   if(jnlRows.length){
     covH+=`<div style="font-size:12px;margin-top:10px;padding-top:8px;border-top:1px solid var(--c-border);color:var(--c-text-mid)">仕訳のみに登場する勘定科目あり:</div>`;
-    jnlRows.slice(0,3).forEach(r=>{covH+=`<div style="display:flex;align-items:center;gap:10px;padding:6px 0"><span style="flex:1;font-size:12.5px">${esc(r.pname)}</span><span class="mono" style="font-size:12px;color:#9A6614;font-weight:700">${r.n}科目</span><button class="sm" onclick="dashOpen('${escAttr(r.pid)}','jnl')">仕訳を確認</button></div>`;});
+    jnlRows.slice(0,3).forEach(r=>{covH+=`<div style="display:flex;align-items:center;gap:10px;padding:6px 0"><span style="flex:1;font-size:12.5px">${esc(r.pname)}</span><span class="mono" style="font-size:12px;color:#9A6614;font-weight:700">${r.n}科目</span><button class="sm" onclick="dashOpen('${escJs(r.pid)}','jnl')">仕訳を確認</button></div>`;});
   }
   /* 評価サマリ（評価機能ON時のみ・控えめに） */
   let evalH="";
@@ -5526,7 +5565,7 @@ function renderHelp(){
     else html+=`<div class="help-list">`+results.map(({a,i})=>`<div class="help-item" onclick="helpShow(${i})"><div class="help-item-cat">${esc(a.cat)}</div><div class="help-item-title">${esc(a.title)}</div></div>`).join("")+`</div>`;
   }else if(_help.view==="article"&&_help.idx>=0&&HELP[_help.idx]){
     const a=HELP[_help.idx];
-    html+=`<div class="breadcrumb"><a href="#" onclick="helpHome();return false;"><i class="ph ph-house" style="font-size:12px"></i> ヘルプ</a> › <a href="#" onclick="helpCat('${escAttr(a.cat)}');return false;">${esc(a.cat)}</a> › ${esc(a.title)}</div>`;
+    html+=`<div class="breadcrumb"><a href="#" onclick="helpHome();return false;"><i class="ph ph-house" style="font-size:12px"></i> ヘルプ</a> › <a href="#" onclick="helpCat('${escJs(a.cat)}');return false;">${esc(a.cat)}</a> › ${esc(a.title)}</div>`;
     html+=`<div class="doc help-article"><h1>${esc(a.title)}</h1>${a.html}</div>`;
     const rel=HELP.map((x,i)=>({x,i})).filter(({x,i})=>helpVisible(x)&&x.cat===a.cat&&i!==_help.idx);
     if(rel.length){
@@ -5551,7 +5590,7 @@ function renderHelp(){
     html+=`<div class="help-cats">`+helpCats().map(c=>{
       const n=HELP.filter(a=>helpVisible(a)&&a.cat===c).length;
       const meta=HELP_CAT_META[c]||["ph-folder",""];
-      return `<div class="help-cat-card" onclick="helpCat('${escAttr(c)}')">
+      return `<div class="help-cat-card" onclick="helpCat('${escJs(c)}')">
         <div style="display:flex;align-items:flex-start;gap:11px">
           <span style="width:36px;height:36px;border-radius:2px;background:var(--c-primary-tint);display:flex;align-items:center;justify-content:center;flex:none"><i class="ph ${meta[0]}" style="font-size:18px;color:var(--c-primary)"></i></span>
           <div style="flex:1;min-width:0"><div class="help-cat-title">${esc(c)}</div><div style="font-size:11.5px;color:var(--c-text-mid);line-height:1.5;margin:2px 0 4px">${esc(meta[1])}</div><div class="help-cat-count num">${n}件の記事</div></div>
