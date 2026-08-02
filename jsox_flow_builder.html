@@ -2433,6 +2433,9 @@ async function exportXlsxRich(){
     const stepsDocEl=document.getElementById("stepsDocBody");
     if(stepsDocEl){
       const tables=[...stepsDocEl.querySelectorAll("table")];
+      /* マニュアルの手順書は文書レイアウトで表を持たないため、データから手順一覧を作る */
+      if(!tables.length&&m==="manual"){try{addManualStepsSheet(wb);}catch(e){console.warn("手順一覧シートの追加に失敗:",e);
+        toast("Excelは出力しますが、「手順一覧」シートは作成できませんでした。",8000);}}
       for(let i=0;i<tables.length;i++){
         const wsName=(m==="manual"?"業務マニュアル":"業務記述書")+(tables.length>1?"_"+(i+1):"");
         const ws=wb.addWorksheet(wsName.slice(0,31));
@@ -3066,7 +3069,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=26;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=27;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -3287,7 +3290,41 @@ async function runSelfTest(){
       const ctlMiss=p.rcm.filter(r=>(r.control_id||"").trim()&&active.some(st=>String(st.no).trim()===String(r.step_no).trim()))
         .filter(r=>!txt.includes(r.control_id));
       eq(ctlMiss.length,0,"紐づく統制タグがフロー図に描かれる");});
-    // 24. プロジェクトダッシュボード集計・状態判定
+    // 24. モード切替でデータを失わず、各モードの出力経路が成立する
+    T("モード切替とモード別出力",()=>{
+      const bakMode=db.mode;
+      try{
+        db.mode="jsox";applyMode();_applied={};applyAll();
+        const before=JSON.stringify(P().steps)+"|"+JSON.stringify(P().rcm);
+        const jsoxNav=modeCfg().navLabels.steps;
+        const jsoxHidden=(modeCfg().hiddenPages||[]).length;
+        /* --- マニュアルへ切替: データは保持し、表示だけが変わる --- */
+        db.mode="manual";applyMode();_applied={};applyAll();
+        eq(JSON.stringify(P().steps)+"|"+JSON.stringify(P().rcm),before,"モード切替でデータが変化しない");
+        eq(modeCfg().navLabels.steps!==jsoxNav,true,"名称がモードで切り替わる");
+        eq((modeCfg().hiddenPages||[]).length>jsoxHidden,true,"マニュアルではJ-SOX系ページを隠す");
+        eq(isEvalOn(),false,"マニュアルでは評価機能が無効");
+        /* 手順書は文書レイアウト（表なし）のため、出力はデータから作る経路になる */
+        renderStepsDoc();
+        eq(document.querySelectorAll("#stepsDocBody table").length,0,"手順書は表を持たない文書レイアウト");
+        const wbM=buildManualStepsWorkbook();
+        eq(wbM.worksheets[0].name,"手順一覧","手順一覧シートを作る");
+        const active=P().steps.filter(x=>(x.dept||"").trim()||(x.label||"").trim());
+        eq(wbM.worksheets[0].rowCount-1,active.length,"手順一覧の行数＝有効手順数");
+        eq(wbM.worksheets[0].getRow(2).getCell(6).value,active[0].label||"","手順の内容が一致");
+        /* フロー図はマニュアルではR/C統制タグを出さない */
+        renderFlow();
+        const svg=document.querySelector("#flowCanvas svg");
+        eq(!!svg,true,"マニュアルでもフロー図を描画");
+        eq(/[RC]\d{3}/.test(svg.textContent),false,"マニュアルでは統制タグを出さない");
+        /* --- J-SOXへ戻すと元通り --- */
+        db.mode="jsox";applyMode();_applied={};applyAll();
+        eq(JSON.stringify(P().steps)+"|"+JSON.stringify(P().rcm),before,"往復してもデータが変化しない");
+        eq(modeCfg().navLabels.steps,jsoxNav,"名称が元に戻る");
+        renderStepsDoc();
+        eq(document.querySelectorAll("#stepsDocBody table").length>0,true,"J-SOXの業務記述書は表を持つ");
+      }finally{db.mode=bakMode;applyMode();_applied={};applyAll();}});
+    // 25. プロジェクトダッシュボード集計・状態判定
     T("プロジェクト全体集計",()=>{
       const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
       eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
@@ -3390,13 +3427,71 @@ function toggleXlsMenu(e){e.stopPropagation();closeFileMenu();updateXlsMenu();do
 function closeXlsMenu(){const m=document.getElementById("xlsMenu");if(m)m.classList.remove("open");}
 document.addEventListener("click",function(e){document.querySelectorAll(".filemenu.open").forEach(function(m){const w=m.closest(".filemenu-wrap");if(!w||!w.contains(e.target))m.classList.remove("open");});});
 /* ===== 画面対応のExcel出力（コンテキスト出力） ===== */
+
+/* マニュアルモードの手順書は表を持たない文書レイアウトのため、
+   画面のDOMからではなくデータから表形式のExcelを組み立てる。
+   （J-SOXモードの業務記述書は表構造のため従来どおり exportDocXlsx を使う） */
+/* 手順一覧シートを追加する（マニュアルモードの本体表）。
+   通常のExcel出力と、フロー図込みの装飾Excelの両方から使う。 */
+function addManualStepsSheet(wb){
+  const p=outProc();
+  const active=p.steps.filter(s=>(s.dept||"").trim()||(s.label||"").trim());
+  const cc=(db.customCols||[]).filter(c=>c.target==="steps");
+  const thin={style:"thin",color:{argb:"FFE2E8E7"}};
+  const ws=wb.addWorksheet("手順一覧");
+  const head=["手順No.","業務","担当部門","担当","種類","手順","使用システム","使用帳票・記録","ポイント・注意点","所要時間",...cc.map(c=>c.label)];
+  const hr=ws.addRow(head);
+  hr.eachCell(x=>{x.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFF2F6F5"}};
+    x.font={name:XL_FONT,bold:true,color:{argb:"FF7A867F"},size:10};
+    x.alignment={vertical:"middle",horizontal:"center",wrapText:true};
+    x.border={top:thin,left:thin,bottom:thin,right:thin};});
+  active.forEach(s=>{
+    const xr=ws.addRow([String(s.no==null?"":s.no),s.gyomu||"",s.dept||"",s.role||"",s.type||"",
+      s.label||"",s.system||"",s.evidence||"",s.point||"",s.dur||"",
+      ...cc.map(c=>(s.custom||{})[c.id]||"")]);
+    xr.eachCell((x,ci)=>{x.font={name:XL_FONT,size:10};
+      x.alignment={vertical:"top",horizontal:ci===1?"center":"left",wrapText:true};
+      x.border={top:thin,left:thin,bottom:thin,right:thin};});
+  });
+  ws.columns=[{width:9},{width:12},{width:12},{width:12},{width:11},{width:34},{width:16},{width:16},{width:28},{width:11},
+    ...cc.map(()=>({width:16}))];
+  ws.views=[{state:"frozen",ySplit:1}];
+  return ws;
+}
+function buildManualStepsWorkbook(){
+  const wb=new ExcelJS.Workbook();wb.creator=APP_NAME+" by IC Studio";wb.created=new Date();
+  addManualStepsSheet(wb);
+  try{addStepsDetailSheet(wb);}catch(e){console.warn("各手順の詳細シートの追加に失敗:",e);
+    toast("Excelは出力しますが、「各手順の詳細」シートは作成できませんでした。",8000);}
+  return wb;
+}
+async function exportManualStepsXlsx(){
+  if(typeof ExcelJS==="undefined"){alert("Excelライブラリが見つかりません。");return;}
+  applyAll();
+  const p=outProc();
+  const active=p.steps.filter(s=>(s.dept||"").trim()||(s.label||"").trim());
+  if(!active.length){alert("出力できる手順がありません。「手順書」から手順を追加してください。");return;}
+  try{
+    const wb=buildManualStepsWorkbook();
+    const buf=await wb.xlsx.writeBuffer();
+    download(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),fname()+"_手順書.xlsx");
+  }catch(e){
+    console.error("手順書Excelの出力に失敗:",e);
+    appError({title:"手順書のExcel出力に失敗しました",
+      message:"データは変更されていません。手順の内容を確認してから、もう一度お試しください。",
+      detail:String(e&&e.stack||e)});
+  }
+}
 function xlsCtxOf(){
   /* 評価機能オフ時は評価系コンテキストを出さない */
 
   const manual=((db&&db.mode)||"jsox")==="manual";
   const stepsLbl=manual?"手順書":"業務記述書";
   const map={
-    steps:{lbl:stepsLbl+" をExcel出力",run:function(){applyAll();renderStepsDoc();exportDocXlsx("stepsDocBody",fname()+"_"+stepsLbl);}},
+    /* マニュアルの手順書は文書レイアウトのためデータから生成する（DOMに表が無い） */
+    steps:{lbl:stepsLbl+" をExcel出力",run:function(){
+      if(manual){exportManualStepsXlsx();return;}
+      applyAll();renderStepsDoc();exportDocXlsx("stepsDocBody",fname()+"_"+stepsLbl);}},
     stepsdoc:null, // steps と同じ（下で共有）
     rcm:{lbl:"RCM をExcel出力",run:function(){applyAll();renderRcmDoc();exportDocXlsx("rcmDocBody",fname()+"_RCM");}},
     rcmdoc:null,
@@ -5887,7 +5982,9 @@ document.addEventListener("keydown",e=>{
     })();
     return;
   }
-  if(q.get("start")==="sample"){db=exampleDB();normalize();applyMode();
+  if(q.get("start")==="sample"){db=exampleDB();
+    if(q.get("mode")==="manual")db.mode="manual";   /* サンプル起動でもモード指定を尊重する */
+    normalize();applyMode();
     const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
     syncProcSel();_applied={};applyAll();clearDirty();show("steps");tourStart();
     updateAsInfo();return;}

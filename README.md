@@ -12,7 +12,7 @@ AIで作成したRCM案等も取り込み、人間が確認・確定したうえ
 
 | Status | Version | Tested | Self-test | Last verified |
 |---|---|---|---|---|
-| **Beta** | v0.9.0-beta | Chrome（Edgeは同系エンジンのため動作見込み） | **26項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
+| **Beta** | v0.9.0-beta | Chrome（Edgeは同系エンジンのため動作見込み） | **27項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
 
 - 📦 [出力される成果物サンプル](https://norimaki-audit.github.io/jsox-flow-builder/#outputs)（Excel / PDF / draw.io / SVG / JSON — 実出力）
 - 🖥️ [実際の操作画面を見る](https://norimaki-audit.github.io/jsox-flow-builder/#shots)（8画面のスクリーンショット）
