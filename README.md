@@ -12,7 +12,7 @@ AIで作成したRCM案等も取り込み、人間が確認・確定したうえ
 
 | Status | Version | Tested | Self-test | Last verified |
 |---|---|---|---|---|
-| **Beta** | v0.9.0-beta | Chrome（Edgeは同系エンジンのため動作見込み） | **27項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
+| **Beta** | v0.9.0-beta | Chrome 150 / Edge 151（実機で通し確認済み） | **27項目**（`?selftest=1` で誰でも実行可） | 2026-08-03 |
 
 - 📦 [出力される成果物サンプル](https://norimaki-audit.github.io/jsox-flow-builder/#outputs)（Excel / PDF / draw.io / SVG / JSON — 実出力）
 - 🖥️ [実際の操作画面を見る](https://norimaki-audit.github.io/jsox-flow-builder/#shots)（8画面のスクリーンショット）
@@ -70,7 +70,7 @@ AIへの送信は自動では行いません。ツール内で相談用データ
 
 ## PCでの始め方
 
-1. [アプリを開く](https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html)（推奨: 最新版の Chrome または Edge。Firefox / Safari では証憑フォルダ格納など一部機能が利用できない場合があります）
+1. [アプリを開く](https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html)（推奨: 最新版の Chrome または Edge。両ブラウザで主要な操作を通し確認しています。Firefox / Safari は未確認で、証憑フォルダ格納など一部機能が利用できない場合があります）
 2. 開始画面で「サンプルデータで試す」を選択（まずはこれがおすすめ）
 3. 慣れたら「既存Excel/CSVを取り込む」または「テンプレートから新規作成」で自社データへ
 

@@ -46,6 +46,29 @@
 `docs/archive/` に初期デザインモック（dc.html＋support.js）・実装反映ガイド・旧スクリーンショットを保全。
 
 
+## ブラウザでの通し確認
+
+`scratchpad/opvideo/browser_e2e.js` 相当の手順で、Chrome と Edge に同一の検証をかけています
+（セルフテスト／主要経路／全画面描画／保存・読込／自動保存／セキュリティ／マニュアルモード／エラーUI）。
+
+**2026-08-03 の実測**
+
+| 項目 | Chrome 150 | Edge 151 |
+|---|---|---|
+| セルフテスト | 27/27 | 27/27 |
+| 主要経路（サンプル→編集→反映→フロー図→Excel） | OK（編集内容が図とExcelに反映） | OK |
+| 16画面の描画 | 問題0件 | 問題0件 |
+| 保存→読込の一致 | OK | OK |
+| 自動保存 | OK | OK |
+| 添付allowlist・XSS防御 | OK | OK |
+| 業務マニュアルモード | OK | OK |
+| エラーUI・復旧手段 | OK | OK |
+| JSエラー | なし | なし |
+
+補足: この環境では Edge を Puppeteer の `launch()` で起動できないため、
+`--remote-debugging-port` で起動して CDP 接続する方式で検証しています（アプリ側の問題ではありません）。
+Firefox / Safari は未確認です。
+
 ## 2つのモード（J-SOX / 業務マニュアル）
 
 `db.mode`（`jsox` / `manual`）で切り替わります。設定は `MODE_CONFIG` に集約されています。
