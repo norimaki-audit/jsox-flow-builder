@@ -670,6 +670,7 @@
       <div class="fm-sep"></div>
       <button onclick="toggleEvalFeature()" title="整備・運用評価／サンプリング調書／評価結果／不備管理／証憑管理の表示を切り替えます。オフにしてもデータは保持されます"><i class="ph ph-list-checks"></i>評価・証憑管理機能<span class="fm-sub" id="evalFeatState">オフ</span></button>
       <div class="fm-sep"></div>
+      <button onclick="closeFileMenu();copyDiag()" title="不具合報告に使う環境情報をコピーします（業務データの中身は含まれません）"><i class="ph ph-clipboard-text"></i>診断情報をコピー<span class="fm-sub">不具合報告用</span></button>
       <button onclick="closeFileMenu();window.open('https://github.com/norimaki-audit/jsox-flow-builder/blob/main/LICENSE.md','_blank')" title="無料で利用できます。本ツールはSource-Available（ソース公開型）です。再配布・再ホスティング・派生サービス化には許可が必要です"><i class="ph ph-scales"></i>利用条件（ライセンス）<span class="fm-sub">Source-Available</span></button>
       <div class="fm-sep"></div>
       <div class="fm-row" style="padding-bottom:2px"><label id="asInfo">自動保存: なし</label><label style="letter-spacing:.02em">J-SOX Flow Builder v0.9.0-beta ・ by IC Studio</label></div>
@@ -1331,6 +1332,96 @@ function nextPid(){let m=0;db.processes.forEach(p=>{m=Math.max(m,procIdNum(p.id)
 // =================================================================
 // 共通ユーティリティ
 // =================================================================
+
+/* ===== エラーの提示と復旧手段（方針: 失敗を隠さない / 復旧方法を示す） =====
+   利用者向けの説明（何が起き、データはどうなったか、次に何をすべきか）と
+   開発者向けの詳細（メッセージ・発生箇所・スタック）を分けて表示する。 */
+let _errLast=null,_errSeen={};
+function diagInfo(){
+  /* 不具合報告用の診断情報。業務内容・プロジェクト名などの中身は含めない */
+  const p=(typeof P==="function"&&db&&db.processes&&db.processes.length)?P():null;
+  const cnt=(db&&db.processes||[]).reduce((a,x)=>({
+    steps:a.steps+((x.steps||[]).length),
+    rcm:a.rcm+((x.rcm||[]).length),
+    att:a.att+((x.steps||[]).reduce((n,st)=>n+((st.atts||[]).length),0))
+      +Object.values(x.evidence||{}).reduce((n,o)=>n+((o.files||[]).length),0)
+  }),{steps:0,rcm:0,att:0});
+  return [
+    "アプリ: "+APP_NAME+" v"+APP_VER,
+    "データ形式: スキーマ v"+(typeof SCHEMA_VERSION!=="undefined"?SCHEMA_VERSION:"?")
+      +"（読込データ v"+((db&&db.schemaVersion)!=null?db.schemaVersion:"なし")+"）",
+    "モード: "+((db&&db.mode)||"jsox")+" ／ 評価機能: "+((db&&db.features&&db.features.eval)?"オン":"オフ"),
+    "画面: "+(typeof curPage!=="undefined"?curPage:"?"),
+    "データ規模: プロセス"+((db&&db.processes||[]).length)+" ／ 工程"+cnt.steps+" ／ RCM"+cnt.rcm+" ／ 添付"+cnt.att+"件",
+    "自動保存: "+(typeof _asState!=="undefined"?_asState:"?")+(typeof asBytes==="function"?"（使用 "+Math.round(asBytes()/1048576*10)/10+"MB）":""),
+    "証憑の保存先: "+((db&&db.evStore)||"browser"),
+    "ブラウザ: "+navigator.userAgent,
+    "画面サイズ: "+window.innerWidth+"x"+window.innerHeight,
+    "日時: "+new Date().toISOString(),
+    _errLast?("直近のエラー: "+_errLast):""
+  ].filter(Boolean).join("\n");
+}
+function copyDiag(){
+  const t=diagInfo();
+  const done=()=>toast("診断情報をコピーしました。不具合報告に貼り付けてご利用ください（業務データの中身は含まれません）。",7000);
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,()=>prompt("以下をコピーしてください",t));
+  else prompt("以下をコピーしてください",t);
+}
+/* opt: {title, message, detail, recover:true で復旧ボタンを出す} */
+function appError(opt){
+  opt=opt||{};
+  _errLast=(opt.title||"")+" / "+String(opt.detail||"").slice(0,200);
+  let m=document.getElementById("errModal");
+  if(!m){
+    m=document.createElement("div");m.id="errModal";
+    m.style.cssText="position:fixed;inset:0;background:rgba(26,26,23,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px";
+    m.innerHTML='<div style="background:#fff;border:1px solid var(--c-border);max-width:560px;width:100%;max-height:86vh;display:flex;flex-direction:column">'
+      +'<div style="display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--c-border)">'
+      +'<i class="ph ph-warning-circle" style="font-size:18px;color:var(--c-err)"></i>'
+      +'<b id="errTitle" style="flex:1;font-size:14px"></b>'
+      +'<button class="opbtn" onclick="errClose()" aria-label="閉じる">×</button></div>'
+      +'<div style="padding:14px 16px;overflow:auto;flex:1">'
+      +'<div id="errMsg" style="font-size:13px;line-height:1.8;white-space:pre-wrap"></div>'
+      +'<div id="errRecover" style="display:none;margin-top:14px;padding:12px;background:var(--c-bg);border:1px solid var(--c-border)">'
+      +'<div style="font-size:12px;font-weight:700;margin-bottom:8px">復旧の手順</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="sm primary" onclick="errClose();saveProject()">保存(.json)で保全</button>'
+      +'<button class="sm" onclick="errClose();restoreAutosave()">自動保存から復元</button>'
+      +'<button class="sm" onclick="location.reload()">再読込</button></div></div>'
+      +'<details style="margin-top:12px"><summary style="font-size:12px;cursor:pointer;color:var(--c-text-mid)">開発者向けの詳細情報</summary>'
+      +'<pre id="errDetail" style="font-size:11px;white-space:pre-wrap;word-break:break-all;background:var(--c-bg);padding:10px;margin-top:8px;max-height:220px;overflow:auto"></pre></details></div>'
+      +'<div style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--c-border)">'
+      +'<button class="sm" onclick="copyDiag()">診断情報をコピー</button><span style="flex:1"></span>'
+      +'<button class="sm" onclick="errClose()">閉じる</button></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener("click",e=>{if(e.target===m)errClose();});
+  }
+  document.getElementById("errTitle").textContent=opt.title||"エラーが発生しました";
+  document.getElementById("errMsg").textContent=opt.message||"";
+  document.getElementById("errRecover").style.display=opt.recover?"":"none";
+  document.getElementById("errDetail").textContent=(opt.detail||"（詳細情報なし）")+"\n\n"+diagInfo();
+  m.style.display="flex";
+}
+function errClose(){const m=document.getElementById("errModal");if(m)m.style.display="none";}
+/* 予期しない例外を捕捉し、無反応のまま放置しない */
+function _onUnexpected(where,err){
+  const key=String(err&&err.message||err).slice(0,80);
+  if(_errSeen[key])return;            /* 同じエラーの連発は1回だけ提示 */
+  _errSeen[key]=1;
+  console.error("[unexpected]",where,err);
+  try{
+    appError({
+      title:"予期しないエラーが発生しました",
+      message:"操作は完了していない可能性があります。\n編集中のデータは失われていません（画面上のデータはそのまま残っています）。\n\n"
+        +"念のため［保存(.json)で保全］を実行してから、操作をやり直してください。\n"
+        +"再発する場合は［診断情報をコピー］してGitHubのIssuesへお知らせください。",
+      detail:where+": "+(err&&err.stack||err&&err.message||String(err)),
+      recover:true
+    });
+  }catch(e){/* エラー表示自体の失敗で無限ループにしない */}
+}
+window.addEventListener("error",e=>{_onUnexpected("実行時エラー",e.error||e.message);});
+window.addEventListener("unhandledrejection",e=>{_onUnexpected("非同期処理",e.reason);});
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escAttr(s){return esc(s).replace(/"/g,"&quot;");}
 /* インラインイベント属性（onclick="fn('...')"）内のJS文字列リテラルへ値を埋め込む用。
@@ -2347,7 +2438,8 @@ async function exportXlsxRich(){
         const ws=wb.addWorksheet(wsName.slice(0,31));
         await tableToExcel(ws,tables[i]);
       }
-      try{addStepsDetailSheet(wb);}catch(e){console.warn("詳細シートの追加に失敗:",e);}
+      try{addStepsDetailSheet(wb);}catch(e){console.warn("詳細シートの追加に失敗:",e);
+        toast("Excelは出力しましたが、「各工程の詳細記述」シートは作成できませんでした。詳細の記載内容をご確認ください。",8000);}
     }
     // RCM / 業務ルール表
     const rcmDocEl=document.getElementById("rcmDocBody");
@@ -2373,7 +2465,8 @@ async function exportXlsxRich(){
       await tableToExcel(ws,jnlBodyEl);
     }
     // フロー図
-    try{await addFlowImage(wb);}catch(e){console.warn("フロー図の埋め込みに失敗:",e);}
+    try{await addFlowImage(wb);}catch(e){console.warn("フロー図の埋め込みに失敗:",e);
+      toast("Excelは出力しましたが、フロー図の画像を埋め込めませんでした。フロー図画面を一度開いてから再度お試しください。",8000);}
     const buf=await wb.xlsx.writeBuffer();
     download(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),fname()+"_リッチ.xlsx");
   }catch(e){alert("Excel生成エラー: "+e.message);console.error(e);}finally{
@@ -5741,7 +5834,9 @@ function helpShow(i){const a=HELP[i];if(!a)return;_help={view:"article",cat:a.ca
 // =================================================================
 function updateTopBar(){const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";syncProcSel();updateApplyBtn();}
 let _undo=[],_redo=[];
-function pushUndo(){try{_undo.push(JSON.stringify(db));if(_undo.length>50)_undo.shift();_redo.length=0;}catch(e){}}
+function pushUndo(){try{_undo.push(JSON.stringify(db));if(_undo.length>50)_undo.shift();_redo.length=0;}
+  catch(e){console.warn("Undo履歴の保存に失敗:",e);
+    toast("データが大きいため、この操作は元に戻せません（Undo履歴を作成できませんでした）。［保存(.json)］での保全をおすすめします。",8000);}}
 function restore(json){db=JSON.parse(json);normalize();applyMode();markDirty();updateTopBar();show(curPage||"processes");}
 function undo(){if(!_undo.length)return;_redo.push(JSON.stringify(db));restore(_undo.pop());}
 function redo(){if(!_redo.length)return;_undo.push(JSON.stringify(db));restore(_redo.pop());}
