@@ -66,13 +66,13 @@
   .hcap{font-size:11px;color:var(--faint);letter-spacing:.06em;margin-top:10px;}
   @media (max-width:979px){.hshot{margin-top:30px;max-width:560px;}}
   /* 課題（罫線リスト） */
-  .plist{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 40px;}
+  .plist{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:0 40px;}
   .plist .row{display:grid;grid-template-columns:34px 1fr;border-top:1px solid var(--rule);padding:18px 0 16px;}
   .plist .lbl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--hint);letter-spacing:.1em;padding-top:3px;}
   .plist h3{font-size:15px;font-weight:700;margin-bottom:4px;}
   .plist p{font-size:13px;color:var(--mid);}
   /* しくみ（罫線4分割） */
-  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));border-top:1px solid var(--rule);}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));border-top:1px solid var(--rule);}
   .stp{border-right:1px solid var(--rule);padding:22px 20px 22px 0;margin-right:20px;}
   .stp:last-child{border-right:none;margin-right:0;}
   @media (max-width:519px){.stp{border-right:none;margin-right:0;border-bottom:1px solid var(--rule);}}
@@ -82,7 +82,7 @@
   .stp p{font-size:12.5px;color:var(--mid);}
   .fignote{font-size:11.5px;color:var(--faint);letter-spacing:.04em;margin-top:18px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
   /* 操作画面 */
-  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:26px 30px;}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:26px 30px;}
   .shot{cursor:zoom-in;}
   .shot .frame{border:1px solid var(--rule);background:var(--panel);}
   .shot:hover .frame{border-color:var(--faint);}
@@ -109,7 +109,7 @@
   table.role td{padding:14px 0;border-bottom:1px solid var(--rule);color:var(--ink);}
   blockquote{border-left:2px solid var(--acc);padding-left:18px;font-size:15.5px;line-height:1.95;margin-top:26px;color:var(--ink);}
   /* 安心 */
-  .trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0 40px;list-style:none;}
+  .trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:0 40px;list-style:none;}
   .trust li{display:grid;grid-template-columns:34px 1fr;border-top:1px solid var(--rule);padding:15px 0 13px;font-size:14px;}
   .trust .no{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--hint);letter-spacing:.1em;padding-top:3px;}
   .trust small{display:block;color:var(--faint);font-size:11.5px;margin-top:3px;}
@@ -131,6 +131,33 @@
   footer a:hover{color:#F7F4ED;}
   footer .cp{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.08em;margin-top:12px;}
   .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#1A1A17;color:#F7F4ED;font-size:12.5px;padding:11px 20px;border-radius:2px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:110;}
+  /* ===== スマートフォン（720px以下）=====
+     ナビの2段崩れ防止・ファーストビューの余白圧縮・CTAの段組み */
+  @media (max-width:720px){
+    .wrap{padding-left:22px;padding-right:22px;}
+    /* ナビ: ブランドを1行で確保し、メニューは折り返さず横スクロール */
+    .topnav .wrap{display:block;height:auto;padding-top:12px;padding-bottom:10px;}
+    .topnav .brand{display:block;white-space:nowrap;margin-bottom:6px;font-size:11px;}
+    .topnav nav{margin-left:0;flex-wrap:nowrap;gap:18px;overflow-x:auto;white-space:nowrap;
+                padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .topnav nav::-webkit-scrollbar{display:none;}
+    .topnav nav a{flex:0 0 auto;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center;}
+    /* ファーストビュー */
+    .hero{padding:34px 0 42px;}
+    .hero .tag{margin-bottom:16px;}
+    /* 狭幅で「を、」「ら。」だけが行に残る折り返しを防ぐ */
+    .hero h1{margin-bottom:16px;font-size:clamp(24px,7vw,30px);}
+    .hero .lead{margin-bottom:10px;}
+    .hero .note{margin-bottom:22px;}
+    .hshot{margin-top:24px;}
+    .sec{padding:48px 0;}
+    .fcta{padding:48px 0;}
+    /* CTA: 主ボタンは全幅、副ボタンは2列（狭ければ自動で1列） */
+    .btn{padding:0 14px;font-size:13.5px;}
+    .cta{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:10px;}
+    .hero .cta > :first-child{grid-column:1 / -1;}
+    .fcta .cta{grid-template-columns:1fr;width:100%;}
+  }
   .toast.on{opacity:1;}
 </style>
 </head>
@@ -305,6 +332,19 @@
 <div class="toast" id="toast"></div>
 
 <script>
+/* アプリ内ブラウザ/BFCacheが前回のスクロール位置を復元して途中から表示される問題への対応。
+   ハッシュ無しで開いたときの初回表示のみ先頭に戻し、その後は通常動作へ返して
+   「戻る」でのスクロール位置復元を妨げない（#shots等の明示指定時は何もしない）。 */
+const _navEntry=(performance.getEntriesByType&&performance.getEntriesByType("navigation")[0])||null;
+if(!location.hash&&(!_navEntry||_navEntry.type!=="back_forward")){
+  const toTop=()=>window.scrollTo(0,0);
+  if("scrollRestoration" in history)history.scrollRestoration="manual";
+  toTop();
+  window.addEventListener("pageshow",()=>{
+    requestAnimationFrame(toTop);
+    setTimeout(()=>{if("scrollRestoration" in history)history.scrollRestoration="auto";},400);
+  },{once:true});
+}
 const APP_URL="https://norimaki-audit.github.io/jsox-flow-builder/jsox_flow_builder.html?start=sample";
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000);}
 function copyUrl(){
