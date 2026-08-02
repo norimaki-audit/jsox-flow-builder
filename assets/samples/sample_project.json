@@ -364,6 +364,7 @@
       "attribution_risk": ""
     }
   ],
+  "schemaVersion": 1,
   "mode": "jsox",
   "evStore": "browser",
   "evDirName": "",

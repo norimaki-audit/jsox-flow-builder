@@ -2404,9 +2404,108 @@ document.getElementById("fileCsv").addEventListener("change",function(ev){const 
 // =================================================================
 // プロジェクト保存 / 読込（.json＝ローカルの正本）
 // =================================================================
-function saveProject(){db.projectName=document.getElementById("projName").value;db.savedAt=new Date().toISOString();download(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),(db.projectName||"jsox_project").replace(/[\\/:*?"<>|\s]+/g,"_")+".json");clearDirty();}
+/* ===== スキーマバージョンとデータ保全 =====
+   保存データの形式に版番号を持たせ、旧形式は移行してから読み込む。
+   読込は「検証 → 移行 → 適用」の順で行い、途中で失敗した場合は
+   現在のデータを一切変更しない（部分的に壊れた状態を残さない）。 */
+const SCHEMA_VERSION=1;
+/* 版番号なし(=0)の旧データは normalize() が項目を補完するため、構造変換は不要。
+   将来 v2 で構造を変える場合は 2:function(d){...} をここへ追加する。 */
+const SCHEMA_MIGRATIONS={1:function(d){return d;}};
+
+function validateProject(o){
+  const errors=[],warnings=[];
+  if(o===null||typeof o!=="object"||Array.isArray(o)){
+    errors.push("プロジェクトファイルの形式ではありません。");
+    return {ok:false,errors,warnings};
+  }
+  if(!Array.isArray(o.processes))errors.push("プロセス一覧（processes）が見つからないか、配列ではありません。");
+  else{
+    if(!o.processes.length)warnings.push("プロセスが1件も含まれていません。");
+    o.processes.forEach((p,i)=>{
+      const tag=(i+1)+"件目のプロセス";
+      if(p===null||typeof p!=="object"||Array.isArray(p)){errors.push(tag+"の形式が不正です。");return;}
+      if(!String(p.id||"").trim())warnings.push(tag+"にIDがありません。");
+      ["steps","rcm","deficiencies","journals","revisions"].forEach(k=>{
+        if(p[k]!=null&&!Array.isArray(p[k]))errors.push(tag+"の "+k+" が配列ではありません。");
+      });
+    });
+    const ids=o.processes.map(p=>String((p||{}).id||"").trim()).filter(Boolean);
+    const dup=[...new Set(ids.filter((v,i)=>ids.indexOf(v)!==i))];
+    if(dup.length)warnings.push("プロセスIDが重複しています: "+dup.join(", "));
+  }
+  const v=o.schemaVersion;
+  if(v!=null&&(typeof v!=="number"||!isFinite(v)||v<0))errors.push("スキーマバージョンの値が不正です。");
+  return {ok:errors.length===0,errors,warnings};
+}
+
+function migrateProject(d){
+  const from=(typeof d.schemaVersion==="number")?d.schemaVersion:0;
+  const applied=[];
+  if(from>SCHEMA_VERSION)return {ok:false,from,applied,
+    message:"このファイルは新しい形式（データ形式 v"+from+"）で保存されています。\nお使いのアプリ（v"+APP_VER+" ／ 対応形式 v"+SCHEMA_VERSION+"）では一部の内容を正しく扱えない可能性があります。"};
+  for(let v=from+1;v<=SCHEMA_VERSION;v++){
+    const fn=SCHEMA_MIGRATIONS[v];
+    if(typeof fn==="function"){d=fn(d)||d;applied.push(v);}
+  }
+  d.schemaVersion=SCHEMA_VERSION;
+  return {ok:true,from,applied,data:d};
+}
+
+/* 読み込みの唯一の入口。成功時のみ db を差し替える。
+   opt.quiet=true でダイアログを出さず、呼び出し側に成否を返す（起動時など）。 */
+function loadProjectData(o,label,opt){
+  opt=opt||{};label=label||"プロジェクトファイル";
+  const v=validateProject(o);
+  if(!v.ok){
+    const msg="読み込めませんでした（"+label+"）。現在の内容はそのまま保持しています。\n\n"+v.errors.join("\n");
+    if(opt.quiet)console.warn(msg);else alert(msg);
+    return false;
+  }
+  const m=migrateProject(o);
+  if(!m.ok){
+    if(opt.quiet){console.warn(m.message);return false;}
+    if(!confirm(m.message+"\n\nそれでも読み込みますか？（現在の内容は置き換えられます）"))return false;
+  }
+  const prevDb=db,prevApplied=_applied;
+  try{
+    db=m.ok?m.data:o;
+    normalize();applyMode();
+    const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
+    syncProcSel();_applied={};applyAll();
+  }catch(e){
+    db=prevDb;_applied=prevApplied;           /* 失敗前の状態へ完全に戻す */
+    try{applyMode();syncProcSel();applyAll();}catch(_e){}
+    console.error("loadProjectData failed:",e);
+    const msg="読み込み中にエラーが発生したため、元の内容に戻しました（"+label+"）。\n"
+      +"このファイルは開けませんでした。別の保存ファイルをお試しください。\n\n"
+      +"［開発者向け情報］"+(e&&e.message||e)+" ／ アプリ v"+APP_VER+" ／ 対応形式 v"+SCHEMA_VERSION;
+    if(opt.quiet)console.warn(msg);else alert(msg);
+    return false;
+  }
+  clearDirty();
+  if(!opt.quiet){
+    if(m.ok&&m.applied.length)toast("以前の形式（v"+m.from+"）から現在の形式（v"+SCHEMA_VERSION+"）へ変換して読み込みました。",6000);
+    if(v.warnings.length)toast("読み込みました（確認: "+v.warnings[0]+(v.warnings.length>1?" ほか"+(v.warnings.length-1)+"件":"")+"）",7000);
+  }
+  return true;
+}
+
+function saveProject(){db.projectName=document.getElementById("projName").value;
+  db.schemaVersion=Math.max(SCHEMA_VERSION,(typeof db.schemaVersion==="number"?db.schemaVersion:0));
+  db.appVersion=APP_VER;db.savedAt=new Date().toISOString();download(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),(db.projectName||"jsox_project").replace(/[\\/:*?"<>|\s]+/g,"_")+".json");clearDirty();}
 function openProject(){document.getElementById("fileProj").click();}
-document.getElementById("fileProj").addEventListener("change",function(ev){const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.processes)throw new Error("形式が不正");db=o;normalize();applyMode();document.getElementById("projName").value=db.projectName||"";syncProcSel();clearDirty();_applied={};applyAll();show(curPage);}catch(e){alert("読込エラー: "+e.message);}};rd.readAsText(f);ev.target.value="";});
+document.getElementById("fileProj").addEventListener("change",function(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onerror=()=>{alert("ファイルを読み取れませんでした。現在の内容はそのまま保持しています。");};
+  rd.onload=()=>{
+    let o;
+    try{o=JSON.parse(rd.result);}
+    catch(e){alert("JSONとして解析できませんでした（"+f.name+"）。現在の内容はそのまま保持しています。\n\n［開発者向け情報］"+e.message);return;}
+    if(loadProjectData(o,f.name))show(curPage);
+  };
+  rd.readAsText(f);ev.target.value="";});
 function hasEvalData(d){
   return (d.processes||[]).some(pp=>
     (pp.deficiencies||[]).length>0
@@ -2414,7 +2513,8 @@ function hasEvalData(d){
     ||(pp.rcm||[]).some(r=>(r.de_result||"").trim()||(r.oe_result||"").trim()||(r.oe_note||"").trim()||(r.de_note||"").trim()||(r.oe_samples||[]).length>0||(r.wp_ref||"").trim()));
 }
 function isEvalOn(){return !!(db&&db.features&&db.features.eval)&&((db.mode||"jsox")==="jsox");}
-function normalize(){db.mode=db.mode||"jsox";db.evStore=db.evStore||"browser";db.evDirName=db.evDirName||"";
+function normalize(){if(typeof db.schemaVersion!=="number")db.schemaVersion=SCHEMA_VERSION;
+  db.mode=db.mode||"jsox";db.evStore=db.evStore||"browser";db.evDirName=db.evDirName||"";
   db.features=db.features||{};
   if(db.features.eval==null)db.features.eval=hasEvalData(db);/* 既存データ互換: 評価入力があれば自動でオン */
   (db.processes||[]).forEach(pp=>(pp.rcm||[]).forEach(r=>{
@@ -2533,8 +2633,12 @@ function restoreAutosave(prev){
   const rec=getAutosave(prev);
   if(!rec||!rec.json){alert("自動保存データがありません。");return;}
   if(!confirm(fmtTs(rec.ts)+" 時点の自動保存"+(rec.partial?"（添付ファイル除く）":"")+"を復元します。\n現在の内容は置き換えられます。よろしいですか？"))return;
+  let o;
+  try{o=JSON.parse(rec.json);}
+  catch(e){alert("自動保存データが壊れているため復元できませんでした。現在の内容はそのまま保持しています。\n\n［開発者向け情報］"+e.message);return;}
   pushUndo();
-  db=JSON.parse(rec.json);normalize();applyMode();updateTopBar();_applied={};applyAll();clearDirty();
+  if(!loadProjectData(o,"自動保存"))return;
+  updateTopBar();
   show(isPageHidden("dash")?"steps":"dash");
   toast("自動保存（"+fmtTs(rec.ts)+"）を復元しました。");
 }
@@ -2818,7 +2922,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=20;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=22;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -2888,7 +2992,27 @@ async function runSelfTest(){
       const stripped=_stripHeavy(db);
       eq(stripped.processes[0].steps[0].atts[0].data===undefined,true,"自動保存フォールバックでdata除外");
       st0.atts.pop();});
-    // 18. プロジェクトダッシュボード集計・状態判定
+    // 18. スキーマ版番号と旧データの移行
+    T("スキーマ移行（旧形式→現行）",()=>{
+      const legacy=JSON.parse(JSON.stringify(exampleDB()));delete legacy.schemaVersion;
+      const m=migrateProject(legacy);
+      eq(m.ok,true,"移行成功");eq(m.from,0,"版番号なし=v0として検出");
+      eq(m.data.schemaVersion,SCHEMA_VERSION,"現行版を付与");
+      eq(m.data.processes.length,legacy.processes.length,"プロセス数を保持");
+      eq(m.data.processes[0].steps.length,legacy.processes[0].steps.length,"工程数を保持");
+      const future=Object.assign({},legacy,{schemaVersion:SCHEMA_VERSION+1});
+      eq(migrateProject(future).ok,false,"新しすぎる形式を検出");});
+    // 19. 不正データを取り込んでも既存データを壊さない
+    T("不正データ取込時のデータ保護",()=>{
+      eq(validateProject(null).ok,false,"nullを拒否");
+      eq(validateProject([]).ok,false,"配列を拒否");
+      eq(validateProject({processes:"x"}).ok,false,"processes非配列を拒否");
+      eq(validateProject({processes:[{id:"P1",steps:"x"}]}).ok,false,"steps非配列を拒否");
+      eq(validateProject(exampleDB()).ok,true,"正常データは通過");
+      const before=JSON.stringify(db);
+      eq(loadProjectData({processes:"x"},"テスト",{quiet:true}),false,"読込は失敗を返す");
+      eq(JSON.stringify(db),before,"既存データが変化しない");});
+    // 20. プロジェクトダッシュボード集計・状態判定
     T("プロジェクト全体集計",()=>{
       const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
       eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
@@ -5396,15 +5520,16 @@ document.addEventListener("keydown",e=>{
     return;
   }
   if(a&&a.json){
-    try{
-      db=JSON.parse(a.json);normalize();applyMode();
-      const pn=document.getElementById("projName");if(pn)pn.value=db.projectName||"";
-      syncProcSel();_applied={};applyAll();clearDirty();
+    let o=null;
+    try{o=JSON.parse(a.json);}catch(e){console.warn("自動保存データの解析に失敗:",e);}
+    if(o&&loadProjectData(o,"前回の自動保存",{quiet:true})){
       show(isPageHidden("dash")?"steps":"dash");
       toast("前回の自動保存（"+fmtTs(a.ts)+"）を復元しました。最初からやり直す場合は ファイル → サンプル読込 / 新規作成。",6500);
       updateAsInfo();
       return;
-    }catch(e){console.warn("自動保存の復元に失敗:",e);}
+    }
+    /* 復元できなかったことを利用者に伝える（自動保存データ自体は消さない） */
+    setTimeout(()=>toast("前回の自動保存を復元できませんでした。［ファイル］→［1つ前の自動保存］もお試しください。",9000),800);
   }
   // 初回: 空のプロジェクトを内部的に用意し、スタート画面を表示
   db=exampleDB();normalize();
