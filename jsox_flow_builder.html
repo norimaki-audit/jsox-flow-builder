@@ -2178,8 +2178,10 @@ async function exportDocXlsx(containerId,fileBase){
   }
 }
 
-function exportXlsx(){
-  if(typeof XLSX==="undefined"){alert("Excelライブラリが見つかりません。");return;}
+/* 全データExcelのワークブックを組み立てて返す。
+   ダウンロードせずに内容を検証できるよう exportXlsx() から分離している
+   （セルフテスト「出力と画面データの照合」が本関数の結果を検査する）。 */
+function buildDataWorkbook(){
   const p=outProc();const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["項目","値"],["プロセスID",p.id],["プロセス名",p.name],["サブプロセス",p.sub_process||""],["評価範囲",p.in_scope?"対象":"対象外"],["作成日",today()],["工程数",p.steps.length],["統制数",p.rcm.filter(r=>(r.control_id||"").trim()).length],["キー統制数",p.rcm.filter(r=>r.key).length]]),"Process");
   const csS=(db.customCols||[]).filter(c=>c.target==="steps");
@@ -2213,6 +2215,11 @@ function exportXlsx(){
   const jh=[["仕訳No","起票契機","対象工程No","区分","システム","借/貸","勘定科目","補助科目","摘要"]];
   p.journals.forEach(j=>jh.push([j.jno,j.trigger,j.step_no,j.type,j.system,j.side,j.account,j.sub,j.note]));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(jh),"起票仕訳");
+  return wb;
+}
+function exportXlsx(){
+  if(typeof XLSX==="undefined"){alert("Excelライブラリが見つかりません。");return;}
+  const wb=buildDataWorkbook();
   const buf=XLSX.write(wb,{type:"array",bookType:"xlsx"});
   download(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),fname()+"_jsox.xlsx");
 }
@@ -2966,7 +2973,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=25;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=26;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -3139,7 +3146,55 @@ async function runSelfTest(){
             if(bakP==null)localStorage.removeItem(AS_PREV);else origSet(AS_PREV,bakP);}catch(e){}
         _asState=bakState;_asDisabled=bakDis;
       }});
-    // 23. プロジェクトダッシュボード集計・状態判定
+    // 23. 出力内容と画面データの照合（件数・ID・紐づけ・図の網羅）
+    T("出力と画面データの照合",()=>{
+      applyAll();
+      const p=outProc();
+      const active=p.steps.filter(s=>(s.dept||"").trim()||(s.label||"").trim());
+      const lanes=[...new Set(active.map(s=>(s.dept||"").trim()).filter(Boolean))].length;
+      /* --- 全データExcel --- */
+      const wb=buildDataWorkbook();
+      const rows=n=>{const ws=wb.Sheets[n];return ws?XLSX.utils.sheet_to_json(ws,{header:1,defval:""}):null;};
+      const sh=rows("業務記述書");
+      eq(!!sh,true,"業務記述書シートがある");
+      eq(sh.length-1,p.steps.length,"業務記述書の行数＝工程数");
+      p.steps.forEach((st,i)=>{
+        const r=sh[i+1]||[];
+        eq(String(r[0]),String(st.no),"工程No が一致(行"+(i+1)+")");
+        eq(String(r[5]||""),String(st.label||""),"業務内容が一致(行"+(i+1)+")");
+        const lk=p.rcm.filter(x=>String(x.step_no).trim()===String(st.no).trim());
+        eq(String(r[13]||""),lk.map(x=>x.control_id).filter(Boolean).join(" "),"関連統制の紐づけが一致(行"+(i+1)+")");
+      });
+      const rh=rows("RCM");
+      eq(rh.length-1,p.rcm.length,"RCMの行数＝RCM件数");
+      const ciCtl=RCM_F.indexOf("control_id"),ciStep=RCM_F.indexOf("step_no");
+      p.rcm.forEach((r,i)=>{
+        eq(String((rh[i+1]||[])[ciCtl]||""),String(r.control_id||""),"統制IDが一致(行"+(i+1)+")");
+        eq(String((rh[i+1]||[])[ciStep]||""),String(r.step_no||""),"対象工程Noが一致(行"+(i+1)+")");
+      });
+      eq(rows("起票仕訳").length-1,(p.journals||[]).length,"仕訳の行数が一致");
+      eq(rows("Coverage").length-1,Object.keys(coverage(p)).length,"Coverageの行数＝勘定科目数");
+      /* --- draw.io --- */
+      const xml=buildDrawioXml(p);
+      eq([...xml.matchAll(/id="node_/g)].length,active.length,"draw.ioのノード数＝有効工程数");
+      eq([...xml.matchAll(/id="lane_/g)].length,lanes,"draw.ioのレーン数＝部門数");
+      eq(!!new DOMParser().parseFromString(xml,"application/xml").querySelector("parsererror"),false,"draw.ioがXMLとして妥当");
+      /* --- Mermaid --- */
+      const mmd=buildMermaid(p);
+      eq([...mmd.matchAll(/^\s{4}N\d+/gm)].length,active.length,"Mermaidのノード数＝有効工程数");
+      /* --- フロー図SVG: 工程・使用システム・統制タグの網羅 --- */
+      renderFlow();
+      const svg=document.querySelector("#flowCanvas svg");
+      eq(!!svg,true,"フロー図が描画される");
+      const txt=svg.textContent;
+      const missLabel=active.filter(st=>(st.label||"").trim()&&!txt.includes((st.label||"").trim().slice(0,6)));
+      eq(missLabel.length,0,"全工程がフロー図に描かれる");
+      const sysMiss=[...new Set(active.map(st=>(st.system||"").trim()).filter(Boolean))].filter(n=>!txt.includes(n.slice(0,5)));
+      eq(sysMiss.length,0,"使用システムがフロー図に描かれる");
+      const ctlMiss=p.rcm.filter(r=>(r.control_id||"").trim()&&active.some(st=>String(st.no).trim()===String(r.step_no).trim()))
+        .filter(r=>!txt.includes(r.control_id));
+      eq(ctlMiss.length,0,"紐づく統制タグがフロー図に描かれる");});
+    // 24. プロジェクトダッシュボード集計・状態判定
     T("プロジェクト全体集計",()=>{
       const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
       eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
