@@ -12,12 +12,13 @@ AIで作成したRCM案等も取り込み、人間が確認・確定したうえ
 
 | Status | Version | Tested | Self-test | Last verified |
 |---|---|---|---|---|
-| **Beta** | v0.9.0-beta | Chrome（Edgeは同系エンジンのため動作見込み） | **22項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
+| **Beta** | v0.9.0-beta | Chrome（Edgeは同系エンジンのため動作見込み） | **23項目**（`?selftest=1` で誰でも実行可） | 2026-08-01 |
 
 - 📦 [出力される成果物サンプル](https://norimaki-audit.github.io/jsox-flow-builder/#outputs)（Excel / PDF / draw.io / SVG / JSON — 実出力）
 - 🖥️ [実際の操作画面を見る](https://norimaki-audit.github.io/jsox-flow-builder/#shots)（8画面のスクリーンショット）
 - 🎬 [操作の流れを動画で見る](https://norimaki-audit.github.io/jsox-flow-builder/#demo)（実機録画・約30秒）
 - 🐛 [不具合報告・要望はこちら](https://github.com/norimaki-audit/jsox-flow-builder/issues/new/choose)
+- 📎 添付できる形式: 画像(png/jpg/gif/webp)・PDF・Office(xlsx/docx/pptx等)・csv/txt/zip・msg/eml（安全のためHTML・SVG・実行ファイルは受け付けません）
 - ⚠️ 既知の制約: スマホでの編集操作は非対応（閲覧案内を表示）／証憑フォルダ格納は Chrome・Edge のみ／Excelの複雑な結合セルは取込時に列マッピングでの調整が必要
 - ⚖️ **License: Source-Available** — Free for internal and professional use / Redistribution and re-hosting require permission（[LICENSE.md](LICENSE.md)）
 

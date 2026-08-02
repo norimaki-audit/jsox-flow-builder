@@ -2922,7 +2922,7 @@ function mgProceed(){try{localStorage.setItem("jsoxfb_mobile_ok","1");}catch(e){
    セルフテスト（?selftest=1）: 主要機能の自動スモーク
    実データに影響しないよう、開始時にdbを退避し終了時に復元する
    ================================================================= */
-const SELF_TEST_COUNT=22;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
+const SELF_TEST_COUNT=23;/* ドキュメント記載件数と一致させる（不一致時は下の宣言チェックが失敗する） */
 async function runSelfTest(){
   const results=[];const T=(name,fn)=>{try{const d=fn();results.push({name,pass:!!(d===undefined||d===true||(typeof d==="string")),detail:typeof d==="string"?d:"OK"});}catch(e){results.push({name,pass:false,detail:e.message});}};
   const eq=(a,b,msg)=>{if(a!==b)throw new Error((msg||"")+" 期待="+b+" 実際="+a);};
@@ -3012,7 +3012,28 @@ async function runSelfTest(){
       const before=JSON.stringify(db);
       eq(loadProjectData({processes:"x"},"テスト",{quiet:true}),false,"読込は失敗を返す");
       eq(JSON.stringify(db),before,"既存データが変化しない");});
-    // 20. プロジェクトダッシュボード集計・状態判定
+    // 20. 添付ファイルの受け入れ判定（allowlist・上限・名前の安全化）
+    T("添付の形式・容量チェック",()=>{
+      const mk=(n,sz)=>({name:n,size:sz||1024,type:""});
+      eq(attCheck(mk("a.png"),0,false,0).ok,true,"png許可");
+      eq(attCheck(mk("a.pdf"),0,false,0).ok,true,"pdf許可");
+      eq(attCheck(mk("a.xlsx"),0,false,0).ok,true,"xlsx許可");
+      eq(attCheck(mk("evil.html"),0,false,0).ok,false,"html拒否");
+      eq(attCheck(mk("evil.svg"),0,false,0).ok,false,"svg拒否");
+      eq(attCheck(mk("evil.js"),0,false,0).ok,false,"js拒否");
+      eq(attCheck(mk("evil.exe"),0,false,0).ok,false,"exe拒否");
+      eq(attCheck(mk("noext"),0,false,0).ok,false,"拡張子なし拒否");
+      eq(attCheck(mk("big.pdf",ATT_MAX_FILE+1),0,false,0).ok,false,"1ファイル上限");
+      eq(attCheck(mk("big.pdf",ATT_MAX_FILE+1),0,true,0).ok,true,"フォルダ格納は上限が緩い");
+      eq(attCheck(mk("a.png"),ATT_MAX_COUNT,false,0).ok,false,"件数上限");
+      eq(attCheck(mk("a.png",1024),0,false,ATT_MAX_TOTAL).ok,false,"合計容量上限");
+      eq(attKind("a.PNG"),"image","大文字拡張子も画像と判定");
+      eq(attKind("a.pdf"),"file","pdfは画像扱いしない");
+      eq(attSafeName("../../etc/passwd").indexOf("/"),-1,"相対パスの区切りを除去");
+      eq(/[\/]/.test(attSafeName("..\..\win\evil.png")),false,"パス区切りを除去");
+      eq(attSafeName(".hidden.png").startsWith("."),false,"先頭ドットを除去");
+      eq(attSafeName(""),"file","空名はfile");});
+    // 21. プロジェクトダッシュボード集計・状態判定
     T("プロジェクト全体集計",()=>{
       const st=procStats(P());eq(st.act>0,true,"工程集計");eq(st.ctrls>0,true,"統制集計");
       eq(["未着手","作業中","要確認","未反映","完了"].includes(st.status),true,"状態が定義内");
@@ -4276,19 +4297,124 @@ function fmtSize(n){if(n>=1048576)return (n/1048576).toFixed(1)+"MB";if(n>=1024)
 let _evCid=null;
 function attachEvidence(cid){_evCid=cid;const fi=document.getElementById("evFileInput");fi.value="";fi.click();}
 function onEvFile(e){const cid=_evCid;if(!cid){return;}const files=[...e.target.files];if(!files.length)return;const o=evOf(cid);
-  if((db.evStore||"browser")==="dir"&&FSA_OK){
+  const dirMode=(db.evStore||"browser")==="dir"&&FSA_OK;
+  const okFiles=[];let added=0;
+  for(const f of files){
+    const c=attCheck(f,(o.files||[]).length+okFiles.length,dirMode,added);
+    if(!c.ok){alert(c.reason);continue;}
+    okFiles.push(f);added+=f.size||0;
+  }
+  if(!okFiles.length)return;
+  if(dirMode){
     (async()=>{let n=0;
-      for(const f of files){
-        try{const path=await evWriteDirFile(cid,f);o.files.push({name:f.name,type:f.type,size:f.size,store:"dir",path:path,addedAt:today()});n++;}
+      for(const f of okFiles){
+        try{const path=await evWriteDirFile(cid,f);o.files.push({name:attSafeName(f.name),type:f.type,size:f.size,store:"dir",path:path,addedAt:today()});n++;}
         catch(err){alert(`「${f.name}」の保存に失敗: `+err.message);}
       }
       if(n){markDirty();renderEv();toast(n+"件をフォルダへ保存しました。");}
     })();
     return;
   }
-  let pending=files.length;const done=()=>{if(--pending<=0){markDirty();renderEv();}};
-  files.forEach(f=>{if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした（フォルダ格納なら制限なし。「保存先フォルダ…」から設定できます）。`);done();return;}const fr=new FileReader();fr.onload=()=>{o.files.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};fr.onerror=done;fr.readAsDataURL(f);});}
+  let pending=okFiles.length;const done=()=>{if(--pending<=0){markDirty();renderEv();}};
+  okFiles.forEach(f=>{const fr=new FileReader();
+    fr.onload=()=>{o.files.push({name:attSafeName(f.name),type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
+    fr.onerror=()=>{alert(`「${f.name}」の読み取りに失敗したため追加しませんでした。`);done();};
+    fr.readAsDataURL(f);});}
 document.getElementById("evFileInput").addEventListener("change",onEvFile);
+
+/* ===== 添付ファイルの安全な取り扱い（方針: 外部入力を信用しない） =====
+   ・受け入れる形式を allowlist で明示（HTML/SVG/スクリプト等は受け付けない）
+   ・1ファイル/件数/合計容量に上限を設ける
+   ・blob: URL は生成元と同一オリジンのため、任意のHTML/SVGを新規タブで開くと
+     スクリプトが本アプリの権限で実行され得る。したがって画面で開くのは画像のみ
+     （<img> 経由＝スクリプトは実行されない）とし、それ以外は必ずダウンロード保存する。 */
+const ATT_TYPES={
+  png:"image",jpg:"image",jpeg:"image",gif:"image",webp:"image",
+  pdf:"file",xlsx:"file",xlsm:"file",xls:"file",docx:"file",doc:"file",
+  pptx:"file",ppt:"file",csv:"file",txt:"file",zip:"file",msg:"file",eml:"file"
+};
+const ATT_MAX_FILE=5*1048576;        /* ブラウザ内格納: 1ファイル */
+const ATT_MAX_FILE_DIR=50*1048576;   /* フォルダ格納: 1ファイル */
+const ATT_MAX_COUNT=20;              /* 1か所あたりの件数 */
+const ATT_MAX_TOTAL=25*1048576;      /* プロジェクト全体のブラウザ内格納 合計 */
+const ATT_ACCEPT="."+Object.keys(ATT_TYPES).join(",.");
+
+function attExt(name){const m=String(name||"").toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:"";}
+function attKind(name){return ATT_TYPES[attExt(name)]||null;}
+/* パス区切り・制御文字・先頭ドットを除去（保存名/ダウンロード名の両方で使用） */
+function attSafeName(name){
+  let n=String(name||"").replace(/[\\/:*?"<>|]/g,"_");
+  n=n.replace(/[\u0000-\u001f\u007f]/g,"");
+  n=n.replace(/^[.\s]+/,"");
+  n=n.trim().slice(0,120);
+  return n||"file";
+}
+/* プロジェクト全体でブラウザ内に抱えている添付の合計バイト数 */
+function attTotalStored(){
+  let n=0;
+  (db.processes||[]).forEach(p=>{
+    (p.steps||[]).forEach(st=>(st.atts||[]).forEach(f=>{if(f.store!=="dir")n+=f.size||0;}));
+    Object.values(p.evidence||{}).forEach(o=>(o.files||[]).forEach(f=>{if(f.store!=="dir")n+=f.size||0;}));
+  });
+  (db.library||[]).forEach(it=>(it.files||[]).forEach(f=>{if(f.store!=="dir")n+=f.size||0;}));
+  return n;
+}
+const attMB=b=>Math.round(b/1048576*10)/10;
+/* 受け入れ可否の判定。dirMode=true はフォルダ格納（容量上限が緩い） */
+function attCheck(file,curCount,dirMode,addedBytes){
+  const name=file.name||"";
+  if(!attKind(name))return {ok:false,reason:`「${name}」は対応していない形式のため追加しませんでした。\n対応形式: ${Object.keys(ATT_TYPES).join(", ")}\n（HTML・SVG・実行ファイル等は安全のため受け付けません）`};
+  if(curCount>=ATT_MAX_COUNT)return {ok:false,reason:`添付は1か所あたり${ATT_MAX_COUNT}件までです。不要な添付を解除してから追加してください。`};
+  const lim=dirMode?ATT_MAX_FILE_DIR:ATT_MAX_FILE;
+  if(file.size>lim)return {ok:false,reason:`「${name}」（${attMB(file.size)}MB）は上限${attMB(lim)}MBを超えるため追加しませんでした。`+(dirMode?"":"\n大きなファイルは［保存先フォルダ…］を設定するとフォルダへ直接保存できます。")};
+  if(!dirMode){
+    const total=attTotalStored()+(addedBytes||0)+file.size;
+    if(total>ATT_MAX_TOTAL)return {ok:false,reason:`ブラウザ内に保存できる添付の合計（${attMB(ATT_MAX_TOTAL)}MB）を超えるため追加しませんでした。\n現在 約${attMB(attTotalStored())}MB。［保存先フォルダ…］の設定、または不要な添付の解除をご検討ください。`};
+  }
+  return {ok:true};
+}
+/* 画像プレビュー（<img> 経由のためスクリプトは実行されない） */
+function attPreview(name,blob){
+  let m=document.getElementById("attPrevModal");
+  if(!m){
+    m=document.createElement("div");m.id="attPrevModal";
+    m.style.cssText="position:fixed;inset:0;background:rgba(26,26,23,.86);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px";
+    m.innerHTML='<div style="background:#fff;border:1px solid var(--c-border);max-width:92vw;max-height:92vh;display:flex;flex-direction:column">'
+      +'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--c-border)">'
+      +'<b id="attPrevName" style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b>'
+      +'<button class="sm" id="attPrevDl">ダウンロード</button>'
+      +'<button class="opbtn" onclick="attPreviewClose()" aria-label="閉じる">×</button></div>'
+      +'<div style="overflow:auto;padding:10px;background:#F4F6F6"><img id="attPrevImg" alt="" style="max-width:86vw;max-height:74vh;display:block;margin:0 auto"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener("click",e=>{if(e.target===m)attPreviewClose();});
+  }
+  const u=URL.createObjectURL(blob);
+  m._url=u;m.style.display="flex";
+  document.getElementById("attPrevName").textContent=name;
+  document.getElementById("attPrevImg").src=u;
+  document.getElementById("attPrevImg").alt=name;
+  document.getElementById("attPrevDl").onclick=()=>attDownload(name,blob);
+}
+function attPreviewClose(){
+  const m=document.getElementById("attPrevModal");if(!m)return;
+  m.style.display="none";
+  document.getElementById("attPrevImg").removeAttribute("src");
+  if(m._url){URL.revokeObjectURL(m._url);m._url=null;}
+}
+function attDownload(name,blob){
+  const u=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=u;a.download=attSafeName(name);
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),60000);
+}
+/* 添付を開く唯一の入口。画像はプレビュー、それ以外はダウンロード保存。
+   allowlist外（過去に追加された古いデータ等）は必ずダウンロードのみとする。 */
+function attView(f,blob){
+  if(!blob){alert("ファイルを開けませんでした。");return;}
+  if(attKind(f&&f.name)==="image"){attPreview(f.name,blob);return;}
+  attDownload((f&&f.name)||"file",blob);
+  toast("ダウンロードしました（安全のため、画像以外はアプリ内で開かずに保存します）。",5000);
+}
 /* =================================================================
    証憑のフォルダ保存（File System Access API / Chrome・Edge）
    ================================================================= */
@@ -4395,34 +4521,41 @@ function stepAttRender(){
 async function stepAttFiles(files){
   const st=P().steps[_stepAttIdx];if(!st||!files.length)return;
   st.atts=st.atts||[];
-  if(db.evStore==="dir"&&FSA_OK){
+  const dirMode=db.evStore==="dir"&&FSA_OK;
+  /* 取り込み前に検証し、受け入れられないものは理由を示して除外する */
+  const okFiles=[];let added=0;
+  for(const f of files){
+    const c=attCheck(f,st.atts.length+okFiles.length,dirMode,added);
+    if(!c.ok){alert(c.reason);continue;}
+    okFiles.push(f);added+=f.size||0;
+  }
+  if(!okFiles.length)return;
+  if(dirMode){
     let n=0;
-    for(const f of files){
-      try{const path=await stepWriteDirFile(st,f);st.atts.push({name:f.name,type:f.type,size:f.size,store:"dir",path:path,addedAt:today()});n++;}
+    for(const f of okFiles){
+      try{const path=await stepWriteDirFile(st,f);st.atts.push({name:attSafeName(f.name),type:f.type,size:f.size,store:"dir",path:path,addedAt:today()});n++;}
       catch(e){alert(e.message||"フォルダへの保存に失敗しました。");break;}
     }
     if(n){markDirty();stepAttRender();toast(n+"件をフォルダへ格納しました。");}
     return;
   }
-  let left=files.length;
+  let left=okFiles.length;
   const done=()=>{if(--left<=0){markDirty();stepAttRender();}};
-  files.forEach(f=>{
-    if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした（フォルダ格納なら制限なし。「保存先フォルダ…」から設定できます）。`);done();return;}
+  okFiles.forEach(f=>{
     const fr=new FileReader();
-    fr.onload=()=>{st.atts.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
-    fr.onerror=done;fr.readAsDataURL(f);
+    fr.onload=()=>{st.atts.push({name:attSafeName(f.name),type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
+    fr.onerror=()=>{alert(`「${f.name}」の読み取りに失敗したため追加しませんでした。`);done();};
+    fr.readAsDataURL(f);
   });
 }
 async function stepAttOpenFile(j){
   const st=P().steps[_stepAttIdx];const f=st&&st.atts&&st.atts[j];if(!f)return;
   if(f.store==="dir"){
     const file=await evReadDirFile(f);if(!file)return;
-    const url=URL.createObjectURL(file);window.open(url,"_blank");setTimeout(()=>URL.revokeObjectURL(url),60000);
-    return;
+    attView(f,file);return;
   }
   if(!f.data){alert("このファイルの実体は保存されていません（容量節約のため自動保存から除外された可能性があります。プロジェクトJSONを開き直すか、再添付してください）。");return;}
-  const b=dataUrlToBlob(f.data);if(!b){alert("ファイルを開けませんでした。");return;}
-  const url=URL.createObjectURL(b);window.open(url,"_blank");setTimeout(()=>URL.revokeObjectURL(url),60000);
+  attView(f,dataUrlToBlob(f.data));
 }
 function stepAttDel(j){
   const st=P().steps[_stepAttIdx];if(!st)return;
@@ -4431,18 +4564,17 @@ function stepAttDel(j){
   pushUndo();st.atts.splice(j,1);markDirty();stepAttRender();
 }
 document.getElementById("stepAttInput").addEventListener("change",e=>{stepAttFiles([...e.target.files]);e.target.value="";});
+/* ファイル選択ダイアログでも対応形式のみを提示する */
+["stepAttInput","evFileInput","libFileInput"].forEach(id=>{const el=document.getElementById(id);if(el)el.accept=ATT_ACCEPT;});
 async function openEvidenceAsync(cid,idx){
   const f=evOf(cid).files[idx];if(!f)return;
-  if(f.store==="dir"){const file=await evReadDirFile(f);if(!file)return;
-    const u=URL.createObjectURL(file);const w=window.open(u,"_blank");
-    if(!w)alert("ポップアップがブロックされました。");
-    setTimeout(()=>URL.revokeObjectURL(u),120000);return;}
+  if(f.store==="dir"){const file=await evReadDirFile(f);if(!file)return;attView(f,file);return;}
   openAttachment(f);
 }
 async function dlEvidenceAsync(cid,idx){
   const f=evOf(cid).files[idx];if(!f)return;
   if(f.store==="dir"){const file=await evReadDirFile(f);if(!file)return;
-    const u=URL.createObjectURL(file);const a=document.createElement("a");a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);return;}
+    attDownload(f.name,file);return;}
   dlAttachment(f);
 }
 /* ===== 添付ファイル: Blob化して開く/ダウンロード（data:URL直リンクはブラウザ制限で失敗するため） ===== */
@@ -4453,12 +4585,8 @@ function dataUrlToBlob(du){const m=String(du||"").match(/^data:([^;,]+)?(;base64
     return new Blob([decodeURIComponent(m[3])],{type:mime});
   }catch(e){return null;}}
 function openAttachment(f){if(!f||!f.data){alert("ファイルデータがありません。");return;}
-  const b=dataUrlToBlob(f.data);if(!b){alert("ファイルを開けませんでした。");return;}
-  const u=URL.createObjectURL(b);const w=window.open(u,"_blank");
-  if(!w)alert("ポップアップがブロックされました。ブラウザのアドレスバー付近の許可、または ⤓ ダウンロードをご利用ください。");
-  setTimeout(()=>URL.revokeObjectURL(u),120000);}
-function dlAttachment(f){if(!f||!f.data)return;const b=dataUrlToBlob(f.data);if(!b)return;
-  const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=f.name||"file";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);}
+  attView(f,dataUrlToBlob(f.data));}
+function dlAttachment(f){if(!f||!f.data)return;const b=dataUrlToBlob(f.data);if(!b)return;attDownload(f.name,b);}
 function openEvidence(cid,idx){openEvidenceAsync(cid,idx);}
 function openLibFile(id,i){const it=libArr().find(x=>x.id===id);if(it)openAttachment((it.files||[])[i]);}
 function dlEvidence(cid,idx){dlEvidenceAsync(cid,idx);}
@@ -4591,10 +4719,21 @@ function delLibLink(id,i){
 let _libId=null;
 function attachLibFile(id){_libId=id;const fi=document.getElementById("libFileInput");fi.value="";fi.click();}
 function onLibFile(e){const id=_libId;if(!id)return;const it=libArr().find(x=>x.id===id);if(!it)return;
-  const files=[...e.target.files];if(!files.length)return;it.files=it.files||[];let pending=files.length;
+  const files=[...e.target.files];if(!files.length)return;it.files=it.files||[];
+  const okFiles=[];let added=0;
+  for(const f of files){
+    const c=attCheck(f,it.files.length+okFiles.length,false,added);
+    if(!c.ok){alert(c.reason);continue;}
+    okFiles.push(f);added+=f.size||0;
+  }
+  if(!okFiles.length)return;
+  let pending=okFiles.length;
   const done=()=>{if(--pending<=0){markDirty();renderLibrary();}};
-  files.forEach(f=>{if(f.size>5*1048576){alert(`「${f.name}」は5MBを超えるため格納しませんでした。大容量はリンク登録を推奨します。`);done();return;}
-    const fr=new FileReader();fr.onload=()=>{it.files.push({name:f.name,type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};fr.onerror=done;fr.readAsDataURL(f);});}
+  okFiles.forEach(f=>{
+    const fr=new FileReader();
+    fr.onload=()=>{it.files.push({name:attSafeName(f.name),type:f.type,size:f.size,data:fr.result,addedAt:today()});done();};
+    fr.onerror=()=>{alert(`「${f.name}」の読み取りに失敗したため追加しませんでした。`);done();};
+    fr.readAsDataURL(f);});}
 function dlLibFile(id,i){const it=libArr().find(x=>x.id===id);if(it)dlAttachment((it.files||[])[i]);}
 function delLibFile(id,i){const it=libArr().find(x=>x.id===id);if(!it)return;const f=(it.files||[])[i];if(!f)return;if(!confirm(`添付「${f.name}」を削除しますか？`))return;pushUndo();it.files.splice(i,1);markDirty();renderLibrary();}
 function libTotalBytes(){let n=0;libArr().forEach(it=>(it.files||[]).forEach(f=>n+=f.size||0));return n;}
