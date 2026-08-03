@@ -78,6 +78,45 @@ jobs:
             || { echo "NG: 本体ライセンスの誤記（MIT/オープンソース）"; exit 1; }
           echo "✓ license consistency OK"
 
+      - name: ドキュメントと実装の整合チェック
+        run: |
+          python3 - <<'PY'
+          import re, sys, io
+          app = io.open("jsox_flow_builder.html", encoding="utf-8").read()
+          code = [x for x in re.findall(r"<script(?:\s[^>]*)?>([\s\S]*?)</script>", app) if "function renderFlow" in x][0]
+          guide = io.open("docs/USER_GUIDE.md", encoding="utf-8").read()
+          priv = io.open("docs/PRIVACY.md", encoding="utf-8").read()
+          ng = []
+          def const(name):
+              m = re.search(name + r"\s*=\s*([0-9*+\- ]+);", code)
+              return int(eval(m.group(1))) if m else None
+          MB = 1048576
+          # 添付の上限がガイドの記載と一致すること
+          for nm, tmpl in [("ATT_MAX_FILE", "1ファイル{}MB"), ("ATT_MAX_COUNT", "{}件"),
+                           ("ATT_MAX_TOTAL", "合計{}MB"), ("ATT_MAX_FILE_DIR", "{}MB")]:
+              v = const("const " + nm)
+              if v is None: ng.append(nm + " が読めない"); continue
+              t = tmpl.format(v if nm == "ATT_MAX_COUNT" else v // MB)
+              if t not in guide: ng.append("USER_GUIDE に「%s」の記載がない（%s）" % (t, nm))
+          # 受け入れ形式に HTML/SVG が混ざっていないこと
+          types = re.search(r"const ATT_TYPES=\{([\s\S]*?)\};", code).group(1)
+          exts = [e for e, _ in re.findall(r"(\w+):\"(image|file)\"", types)]
+          for bad in ("html", "htm", "svg", "js", "exe"):
+              if bad in exts: ng.append("危険な形式が allowlist に含まれる: " + bad)
+          # 自動取得する外部ホストが PRIVACY の記載どおりであること
+          hosts = set(re.findall(r'<link[^>]+href="https?://([^/"]+)', app))
+          hosts |= set(re.findall(r'<script[^>]+src="https?://([^/"]+)', app))
+          allowed = {"fonts.googleapis.com", "fonts.gstatic.com", "unpkg.com"}
+          if not hosts <= allowed: ng.append("PRIVACY 未記載の外部ホスト: %s" % sorted(hosts - allowed))
+          # 診断情報の扱いが PRIVACY に書かれていること（実装がある場合）
+          if "function diagInfo" in code and "診断" not in priv:
+              ng.append("診断情報の実装があるのに PRIVACY.md に記載がない")
+          if ng:
+              for x in ng: print("NG: " + x)
+              sys.exit(1)
+          print("✓ docs consistency OK")
+          PY
+
       - name: セルフテスト件数とドキュメントの一致
         run: |
           N=$(grep -oP 'const SELF_TEST_COUNT=\K\d+' jsox_flow_builder.html | head -1)
